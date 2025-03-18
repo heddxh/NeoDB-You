@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">NeoDB You</string>
+
+    <string name="entry_displayname_book">书籍</string>
+    <string name="entry_displayname_movie">电影</string>
+    <string name="entry_displayname_tv">电视剧</string>
+    <string name="entry_displayname_music">音乐</string>
+    <string name="entry_displayname_game">游戏</string>
+    <string name="entry_displayname_podcast">播客</string>
+    <string name="entry_displayname_performance">表演</string>
+
+    <string name="shelf_displayname_wishlist">愿望</string>
+    <string name="shelf_displayname_progress">进行中</string>
+    <string name="shelf_displayname_completed">已完成</string>
+    <string name="shelf_displayname_dropped">抛弃</string>
+
+</resources>
