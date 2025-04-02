@@ -3,42 +3,37 @@ package day.vitayuzu.neodb.data
 import android.util.Log
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.util.ShelfType
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 
 class Repository(private val remoteSource: RemoteSource = RemoteSource()) {
 
-    fun fetchMyAllShelf(): Flow<PagedMarkSchema> {
-        return flow {
-            for (type in ShelfType.entries) {
-                emitAll(fetchMyShelfByShelfType(type))
-            }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun fetchMyAllShelf(): Flow<PagedMarkSchema> =
+        flowOf(*ShelfType.entries.toTypedArray()).flatMapMerge {
+            fetchMyShelfByShelfType(it)
         }
-    }
 
-    private fun fetchMyShelfByShelfType(type: ShelfType): Flow<PagedMarkSchema> {
+    private fun fetchMyShelfByShelfType(shelfType: ShelfType): Flow<PagedMarkSchema> {
         return flow {
-            println("Start fetching $type")
-            var page = 1
-            val res = remoteSource.fetchMyShelf(type)
-            val maxPage = res.pages
-            while (page <= maxPage) {
-                emit(
-                    remoteSource.fetchMyShelf(
-                        type,
-                        page
-                    )
-                )
-                page++
+            val initialResponse = remoteSource.fetchMyShelf(shelfType)
+            val totalPages = initialResponse.pages
+            emit(initialResponse) // Emit the first page
+            for (page in 2..totalPages) {
+                emit(remoteSource.fetchMyShelf(shelfType, page))
             }
-            println("End fetching $type")
+        }.onStart {
+            Log.d("Repository", "Start fetching $shelfType")
+        }.onCompletion {
+            Log.d("Repository", "End fetching $shelfType")
         }.catch {
-            Log.d(
-                "Repository",
-                "fetchMyShelf: $it"
-            )
+            Log.e("Repository", "Error fetching $shelfType: $it")
         }
     }
 
