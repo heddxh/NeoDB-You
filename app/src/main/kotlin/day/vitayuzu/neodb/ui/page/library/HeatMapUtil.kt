@@ -1,4 +1,4 @@
-package day.vitayuzu.neodb.ui.library
+package day.vitayuzu.neodb.ui.page.library
 
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.util.EntryType

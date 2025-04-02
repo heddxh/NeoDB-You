@@ -1,4 +1,4 @@
-package day.vitayuzu.neodb.ui.library
+package day.vitayuzu.neodb.ui.page.library
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background

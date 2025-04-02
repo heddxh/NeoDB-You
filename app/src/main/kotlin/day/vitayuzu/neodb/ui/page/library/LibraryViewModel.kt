@@ -1,4 +1,4 @@
-package day.vitayuzu.neodb.ui.library
+package day.vitayuzu.neodb.ui.page.library
 
 import android.icu.util.GregorianCalendar
 import androidx.lifecycle.ViewModel

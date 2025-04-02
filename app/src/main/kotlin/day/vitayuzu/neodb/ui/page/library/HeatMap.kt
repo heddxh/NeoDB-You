@@ -1,4 +1,4 @@
-package day.vitayuzu.neodb.ui.library
+package day.vitayuzu.neodb.ui.page.library
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,11 +18,11 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.unit.dp
-import day.vitayuzu.neodb.ui.library.HeatMapBlockType.DefaultHeatMapEntry
-import day.vitayuzu.neodb.ui.library.HeatMapBlockType.DoubleHeatMapEntry
-import day.vitayuzu.neodb.ui.library.HeatMapBlockType.QuadrupleHeatMapEntry
-import day.vitayuzu.neodb.ui.library.HeatMapBlockType.SingleHeatMapEntry
-import day.vitayuzu.neodb.ui.library.HeatMapBlockType.TripleHeatMapEntry
+import day.vitayuzu.neodb.ui.page.library.HeatMapBlockType.DefaultHeatMapEntry
+import day.vitayuzu.neodb.ui.page.library.HeatMapBlockType.DoubleHeatMapEntry
+import day.vitayuzu.neodb.ui.page.library.HeatMapBlockType.QuadrupleHeatMapEntry
+import day.vitayuzu.neodb.ui.page.library.HeatMapBlockType.SingleHeatMapEntry
+import day.vitayuzu.neodb.ui.page.library.HeatMapBlockType.TripleHeatMapEntry
 import day.vitayuzu.neodb.ui.theme.kindColors
 import day.vitayuzu.neodb.util.EntryType
 
