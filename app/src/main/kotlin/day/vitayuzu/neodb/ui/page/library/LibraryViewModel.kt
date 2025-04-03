@@ -29,6 +29,7 @@ class LibraryViewModel(private val repo: Repository = Repository()) : ViewModel(
     }
 
     fun refresh() {
+        marks.clear()
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             repo.fetchMyAllShelf().collect { pagedMarkSchemaFlow ->
