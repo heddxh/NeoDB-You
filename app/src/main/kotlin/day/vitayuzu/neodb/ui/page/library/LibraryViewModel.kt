@@ -1,6 +1,6 @@
 package day.vitayuzu.neodb.ui.page.library
 
-import android.icu.util.GregorianCalendar
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import day.vitayuzu.neodb.data.Repository
@@ -11,6 +11,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import java.util.GregorianCalendar
 
 // FIXME: Move filtering to UI(LibraryPage)
 class LibraryViewModel(private val repo: Repository = Repository()) : ViewModel() {
@@ -34,6 +38,9 @@ class LibraryViewModel(private val repo: Repository = Repository()) : ViewModel(
             refreshDisplayedMarks()
             generateHeatMap()
             _uiState.update { it.copy(isLoading = false) }
+            marks.forEach {
+                Log.d("LibraryViewModel", "Mark: ${it.date} ${it.entry.title}")
+            }
         }
 
     }
@@ -83,23 +90,26 @@ class LibraryViewModel(private val repo: Repository = Repository()) : ViewModel(
 
     private fun generateHeatMap() {
         val heatMapDaysByWeek = marks
-            .groupBy { mark -> // Group by week index
+            .filter { // Only this year
+                it.date.year == Clock.System.todayIn(TimeZone.currentSystemDefault()).year
+            }.groupBy { mark -> // week-index -> marks
+                // TODO: change to kotlinx-datetime until https://github.com/Kotlin/kotlinx-datetime/issues/129
+                // FIXME: Locale and time zone
                 GregorianCalendar(
                     mark.date.year,
                     mark.date.monthNumber - 1, // GregorianCalendar month is 0-based
                     mark.date.dayOfMonth
                 ).get(GregorianCalendar.WEEK_OF_YEAR)
-            }
-            .mapValues { (weekIndex, marks) -> // Construct a week
-                return@mapValues marks.sortedBy { it.date }
-                    .groupBy { it.date }
+            }.mapValues { (weekIndex, marks) -> // Construct a week
+                return@mapValues marks
+                    .groupBy { it.date } // Get marks with same day
                     .map { (_, sameDayMarks) ->
                         HeatMapDayData(weekIndex, sameDayMarks)
                     }
             }
         // Heatmap should be in reverse order, newest week first
-        val heatMap =
-            (GregorianCalendar().get(GregorianCalendar.WEEK_OF_YEAR) downTo 0).map { weekIndex ->
+        val heatMap = (GregorianCalendar().get(GregorianCalendar.WEEK_OF_YEAR) downTo 0)
+            .map { weekIndex ->
                 HeatMapWeekUiState(
                     index = weekIndex,
                     blocks = heatMapDaysByWeek[weekIndex] ?: emptyList()

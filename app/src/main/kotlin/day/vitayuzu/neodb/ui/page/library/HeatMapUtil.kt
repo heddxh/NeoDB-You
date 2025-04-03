@@ -7,59 +7,66 @@ import kotlinx.datetime.isoDayNumber
 /**
  * Data for a day in heat map.
  * @param weekIndex: 0-based week index of this year
- * @param dayIndex: 0-based day index of this week
- * @param type: One implementation of [HeatMapBlockType]
+ * @param dayIndex: 0-based day index of this week (Monday = 0, Sunday = 6)
+ * @param type: One of [HeatMapBlockType]
  */
 data class HeatMapDayData(
     val weekIndex: Int = 0,
     val dayIndex: Int = 0,
-    val type: HeatMapBlockType = HeatMapBlockType.DefaultHeatMapEntry
+    val type: HeatMapBlockType = HeatMapBlockType.None
 ) {
     constructor(
         weekIndex: Int,
-        marks: List<Mark>
+        marks: List<Mark> // Assume marks is not empty
     ) : this(
         weekIndex = weekIndex,
-        dayIndex = marks[0].date.dayOfWeek.isoDayNumber - 1, // isoDayNumber is 1-based
-        type = when (marks.groupBy { it.entry.category }.size) {
-            0 -> HeatMapBlockType.DefaultHeatMapEntry
-            1 -> HeatMapBlockType.SingleHeatMapEntry(marks[0].entry.category)
-            2 -> HeatMapBlockType.DoubleHeatMapEntry(
-                marks[0].entry.category,
-                marks[1].entry.category
-            )
-
-            3 -> HeatMapBlockType.TripleHeatMapEntry(
-                marks[0].entry.category,
-                marks[1].entry.category,
-                marks[2].entry.category
-            )
-
-            else -> HeatMapBlockType.QuadrupleHeatMapEntry(
-                marks[0].entry.category,
-                marks[1].entry.category,
-                marks[2].entry.category,
-                marks[3].entry.category
-            )
-        }
+        dayIndex = marks.first().date.dayOfWeek.isoDayNumber - 1, // isoDayNumber is 1-based
+        type = determineBlockType(marks)
     )
+
+    companion object {
+        private fun determineBlockType(marks: List<Mark>): HeatMapBlockType {
+            val distinctCategories = marks.map { it.entry.category }.toSet()
+            return when (distinctCategories.size) {
+                1 -> HeatMapBlockType.Single(distinctCategories.first())
+                2 -> HeatMapBlockType.Double(
+                    distinctCategories.take(2).component1(),
+                    distinctCategories.take(2).component2()
+                )
+                3 -> HeatMapBlockType.Triple(
+                    distinctCategories.take(3).component1(),
+                    distinctCategories.take(3).component2(),
+                    distinctCategories.take(3).component3()
+                )
+                4 -> HeatMapBlockType.Quadruple(
+                    distinctCategories.take(4).component1(),
+                    distinctCategories.take(4).component2(),
+                    distinctCategories.take(4).component3(),
+                    distinctCategories.take(4).component4()
+                )
+                else -> HeatMapBlockType.None
+            }
+        }
+    }
 }
 
 sealed interface HeatMapBlockType {
-    data object DefaultHeatMapEntry : HeatMapBlockType
-    data class SingleHeatMapEntry(val kind: EntryType) : HeatMapBlockType
-    data class DoubleHeatMapEntry(
+    data object None : HeatMapBlockType
+
+    data class Single(val kind: EntryType) : HeatMapBlockType
+
+    data class Double(
         val kind1: EntryType,
         val kind2: EntryType
     ) : HeatMapBlockType
 
-    data class TripleHeatMapEntry(
+    data class Triple(
         val kind1: EntryType,
         val kind2: EntryType,
         val kind3: EntryType
     ) : HeatMapBlockType
 
-    data class QuadrupleHeatMapEntry(
+    data class Quadruple(
         val kind1: EntryType,
         val kind2: EntryType,
         val kind3: EntryType,
