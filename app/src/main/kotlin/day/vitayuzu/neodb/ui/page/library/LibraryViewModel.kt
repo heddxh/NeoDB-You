@@ -28,7 +28,8 @@ class LibraryViewModel(private val repo: Repository = Repository()) : ViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             repo.fetchMyAllShelf().collect { pagedMarkSchemaFlow ->
-                marks += pagedMarkSchemaFlow.data?.map { Mark(it) } ?: emptyList()
+                marks += pagedMarkSchemaFlow.data?.map { Mark(it) }?.sortedByDescending { it.date }
+                         ?: emptyList()
             }
             refreshDisplayedMarks()
             generateHeatMap()
