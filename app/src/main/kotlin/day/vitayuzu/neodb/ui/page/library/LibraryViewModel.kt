@@ -16,7 +16,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import java.util.GregorianCalendar
 
-// FIXME: Move filtering to UI(LibraryPage)
+// FIXME: May move filtering to UI(LibraryPage)
+// FIXME: make refreshDisplayedMarks() and generateHeatMap() pure functions and only call in refresh()
 class LibraryViewModel(private val repo: Repository = Repository()) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LibraryUiState())

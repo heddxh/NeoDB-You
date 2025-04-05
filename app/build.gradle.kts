@@ -19,6 +19,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        addManifestPlaceholders(
+            mapOf("oidcRedirectScheme" to "day.vitayuzu.neodb")
+        )
     }
 
     buildTypes {
@@ -70,4 +74,10 @@ dependencies {
     implementation(libs.coil.network.okhttp)
 
     implementation(libs.kotlinx.datetime)
+
+    // Oauth2
+    implementation(libs.kmp.oidc.appsupport)
+    implementation(libs.kmp.oidc.ktor)
+    implementation(libs.datastore.preferences)
+    implementation(libs.ktor.client.auth)
 }
