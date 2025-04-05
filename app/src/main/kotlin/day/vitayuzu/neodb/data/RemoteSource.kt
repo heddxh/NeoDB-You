@@ -1,7 +1,7 @@
 package day.vitayuzu.neodb.data
 
 import android.util.Log
-import day.vitayuzu.neodb.data.schema.OauthClient
+import day.vitayuzu.neodb.data.schema.AuthClientIdentify
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.util.APP_NAME
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
@@ -37,7 +37,7 @@ class RemoteSource(private val dispatcher: CoroutineDispatcher = Dispatchers.IO)
         api.fetchMyShelf(type, page)
     }
 
-    suspend fun registerOauthAPP(): Result<OauthClient> = withContext(dispatcher) {
+    suspend fun registerOauthAPP(): Result<AuthClientIdentify> = withContext(dispatcher) {
         try {
             val result = api.registerOauthAPP()
             Result.success(result)
@@ -87,5 +87,5 @@ interface NeoDbApi {
         @Field("client_name") clientName: String = APP_NAME,
         @Field("redirect_uris") redirectUris: String = AUTH_CALLBACK,
         @Field("website") website: String = WEBSITE
-    ): OauthClient
+    ): AuthClientIdentify
 }

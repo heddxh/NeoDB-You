@@ -8,8 +8,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
+import day.vitayuzu.neodb.ui.page.login.LoginPage
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import kotlinx.serialization.Serializable
+import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 
 @Serializable
 object Home
@@ -20,9 +22,17 @@ object Library
 @Serializable
 object Settings
 
+@Serializable
+object Login
+
 class MainActivity : ComponentActivity() {
+
+    // Auth/Oauth2
+    private val codeAuthFlowFactory = AndroidCodeAuthFlowFactory(useWebView = false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        codeAuthFlowFactory.registerActivity(this)
         enableEdgeToEdge()
         setContent {
             NeoDBYouTheme {
@@ -30,8 +40,9 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = Library // FIXME: Should be [Home]
+                    startDestination = Login // FIXME: Should be [Home]
                 ) {
+                    composable<Login> { LoginPage(codeAuthFlowFactory) }
                     composable<Home> {}
                     composable<Library> { LibraryPage() }
                     composable<Settings> {}
