@@ -10,8 +10,9 @@ import kotlinx.coroutines.launch
 import org.publicvalue.multiplatform.oidc.OpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 
-class LoginViewModel(private val authRepository: AuthRepository = AuthRepository()): ViewModel() {
-
+class LoginViewModel(
+    private val authRepository: AuthRepository = AuthRepository(),
+) : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
 
@@ -35,5 +36,5 @@ class LoginViewModel(private val authRepository: AuthRepository = AuthRepository
 data class LoginUiState(
     val isLoading: Boolean = false,
     val username: String = "",
-    val password: String = ""
+    val password: String = "",
 )

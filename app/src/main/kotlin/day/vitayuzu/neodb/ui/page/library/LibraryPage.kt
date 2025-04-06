@@ -32,59 +32,62 @@ import day.vitayuzu.neodb.util.ShelfType
 
 @OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalFoundationApi::class
+    ExperimentalFoundationApi::class,
 )
 @Composable
 fun LibraryPage(
     modifier: Modifier = Modifier,
-    viewModel: LibraryViewModel = viewModel()
+    viewModel: LibraryViewModel = viewModel(),
 ) {
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
+                colors =
+                    topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.primary,
+                    ),
                 title = {
                     Text(stringResource(R.string.library_title))
-                })
+                },
+            )
         },
     ) { innerPadding ->
         PullToRefreshBox(
             modifier = Modifier.padding(innerPadding),
             isRefreshing = uiState.isLoading,
-            onRefresh = viewModel::refresh
+            onRefresh = viewModel::refresh,
         ) {
             LazyColumn {
                 stickyHeader {
                     PrimaryTabRow(
-                        selectedTabIndex = ShelfType.entries.indexOf(uiState.selectedShelfType)
+                        selectedTabIndex = ShelfType.entries.indexOf(uiState.selectedShelfType),
                     ) {
                         for (type in ShelfType.entries) {
                             Tab(
                                 selected = type == uiState.selectedShelfType,
                                 onClick = { viewModel.switchShelfType(type) },
-                                text = { Text(stringResource(type.toR())) })
+                                text = { Text(stringResource(type.toR())) },
+                            )
                         }
                     }
                     EntryTypeFilterChipsRow(
                         selectedEntryTypes = uiState.selectedEntryTypes,
                         onClick = viewModel::toggleSelectedEntryType,
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface),
                     )
                 }
                 item { HeatMap(uiState.heatMap) }
                 items(
                     items = uiState.displayedMarks,
-                    key = { it.entry.url }) {
+                    key = { it.entry.url },
+                ) {
                     EntryMarkCard(
                         it.entry,
-                        it
+                        it,
                     )
                 }
             }
@@ -101,7 +104,7 @@ private fun EntryTypeFilterChipsRow(
     LazyRow(
         modifier = modifier,
         contentPadding = PaddingValues(horizontal = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         for (type in EntryType.entries) {
             item {

@@ -26,7 +26,6 @@ object Settings
 object Login
 
 class MainActivity : ComponentActivity() {
-
     // Auth/Oauth2
     private val codeAuthFlowFactory = AndroidCodeAuthFlowFactory(useWebView = false)
 
@@ -40,7 +39,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = Login // FIXME: Should be [Home]
+                    startDestination = Login, // FIXME: Should be [Home]
                 ) {
                     composable<Login> { LoginPage(codeAuthFlowFactory) }
                     composable<Home> {}

@@ -31,7 +31,7 @@ import day.vitayuzu.neodb.util.EntryType
 @Composable
 fun HeatMap(
     weeks: List<HeatMapWeekUiState>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 8.dp),
@@ -49,17 +49,17 @@ fun HeatMap(
 @Composable
 fun HeatMapWeekColumn(
     blocks: List<HeatMapDayData>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-
-    val blockModifier = Modifier
-        .size(24.dp)
-        .clip(MaterialTheme.shapes.extraSmall)
+    val blockModifier =
+        Modifier
+            .size(24.dp)
+            .clip(MaterialTheme.shapes.extraSmall)
 
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Top),
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
+        modifier = modifier,
     ) {
         (0..6).map { index ->
             val block = blocks.find { it.dayIndex == index }
@@ -68,34 +68,40 @@ fun HeatMapWeekColumn(
             } else {
                 when (block.type) {
                     is None -> DefaultHeatMapBlock(blockModifier)
-                    is Single -> SingleHeatMapBlock(
-                        kind = block.type.kind,
-                        modifier = blockModifier
-                    )
-                    is Double -> DoubleHeatMapBlock(
-                        topRight = block.type.kind1,
-                        bottomLeft = block.type.kind2,
-                        modifier = blockModifier
-                    )
-                    is Triple -> TripleHeatMapBlock(
-                        kind1 = block.type.kind1,
-                        kind2 = block.type.kind2,
-                        kind3 = block.type.kind3,
-                        modifier = blockModifier
-                    )
-                    is Quadruple -> QuadrupleHeatMapBlock(
-                        kind1 = block.type.kind1,
-                        kind2 = block.type.kind2,
-                        kind3 = block.type.kind3,
-                        kind4 = block.type.kind4,
-                        modifier = blockModifier
-                    )
+                    is Single ->
+                        SingleHeatMapBlock(
+                            kind = block.type.kind,
+                            modifier = blockModifier,
+                        )
+
+                    is Double ->
+                        DoubleHeatMapBlock(
+                            topRight = block.type.kind1,
+                            bottomLeft = block.type.kind2,
+                            modifier = blockModifier,
+                        )
+
+                    is Triple ->
+                        TripleHeatMapBlock(
+                            kind1 = block.type.kind1,
+                            kind2 = block.type.kind2,
+                            kind3 = block.type.kind3,
+                            modifier = blockModifier,
+                        )
+
+                    is Quadruple ->
+                        QuadrupleHeatMapBlock(
+                            kind1 = block.type.kind1,
+                            kind2 = block.type.kind2,
+                            kind3 = block.type.kind3,
+                            kind4 = block.type.kind4,
+                            modifier = blockModifier,
+                        )
                 }
             }
         }
     }
 }
-
 
 @Composable
 fun DefaultHeatMapBlock(modifier: Modifier = Modifier) {
@@ -105,12 +111,13 @@ fun DefaultHeatMapBlock(modifier: Modifier = Modifier) {
 @Composable
 fun SingleHeatMapBlock(
     modifier: Modifier = Modifier,
-    kind: EntryType = EntryType.Default
+    kind: EntryType = EntryType.Default,
 ) {
     Box(
-        modifier = modifier
-            .background(MaterialTheme.colorScheme.kindColors(kind))
-            .clickable { Log.d("HeatMap", kind.name) }
+        modifier =
+            modifier
+                .background(MaterialTheme.colorScheme.kindColors(kind))
+                .clickable { Log.d("HeatMap", kind.name) },
     )
 }
 
@@ -118,24 +125,28 @@ fun SingleHeatMapBlock(
 fun DoubleHeatMapBlock(
     topRight: EntryType,
     bottomLeft: EntryType,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val bottomLeftColor = MaterialTheme.colorScheme.kindColors(bottomLeft)
     Box(
-        modifier = modifier
-            .clickable { Log.d("HeatMap", "${topRight.name} ${bottomLeft.name}") }
-            .background(MaterialTheme.colorScheme.kindColors(topRight)) // Top right
-            .drawWithCache { // Button left
-                val path = Path().apply {
-                    moveTo(0f, 0f)
-                    lineTo(size.width, size.height)
-                    lineTo(0f, size.height)
-                    close()
-                }
-                onDrawBehind {
-                    drawPath(path, bottomLeftColor, style = Fill)
-                }
-            })
+        modifier =
+            modifier
+                .clickable { Log.d("HeatMap", "${topRight.name} ${bottomLeft.name}") }
+                .background(MaterialTheme.colorScheme.kindColors(topRight)) // Top right
+                .drawWithCache {
+                    // Button left
+                    val path =
+                        Path().apply {
+                            moveTo(0f, 0f)
+                            lineTo(size.width, size.height)
+                            lineTo(0f, size.height)
+                            close()
+                        }
+                    onDrawBehind {
+                        drawPath(path, bottomLeftColor, style = Fill)
+                    }
+                },
+    )
 }
 
 @Composable
@@ -143,28 +154,34 @@ fun TripleHeatMapBlock(
     kind1: EntryType,
     kind2: EntryType,
     kind3: EntryType,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    Row(modifier = modifier.clickable {
-        Log.d(
-            "HeatMap",
-            "${kind1.name} ${kind2.name} ${kind3.name}"
-        )
-    }) {
+    Row(
+        modifier =
+            modifier.clickable {
+                Log.d(
+                    "HeatMap",
+                    "${kind1.name} ${kind2.name} ${kind3.name}",
+                )
+            },
+    ) {
         Box(
-            modifier = Modifier
-                .size(8.dp, 24.dp)
-                .background(MaterialTheme.colorScheme.kindColors(kind1))
+            modifier =
+                Modifier
+                    .size(8.dp, 24.dp)
+                    .background(MaterialTheme.colorScheme.kindColors(kind1)),
         )
         Box(
-            modifier = Modifier
-                .size(8.dp, 24.dp)
-                .background(MaterialTheme.colorScheme.kindColors(kind2))
+            modifier =
+                Modifier
+                    .size(8.dp, 24.dp)
+                    .background(MaterialTheme.colorScheme.kindColors(kind2)),
         )
         Box(
-            modifier = Modifier
-                .size(8.dp, 24.dp)
-                .background(MaterialTheme.colorScheme.kindColors(kind3))
+            modifier =
+                Modifier
+                    .size(8.dp, 24.dp)
+                    .background(MaterialTheme.colorScheme.kindColors(kind3)),
         )
     }
 }
@@ -175,37 +192,43 @@ fun QuadrupleHeatMapBlock(
     kind2: EntryType,
     kind3: EntryType,
     kind4: EntryType,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.clickable {
-        Log.d(
-            "HeatMap",
-            "${kind1.name} ${kind2.name} ${kind3.name} ${kind4.name}"
-        )
-    }
+    Column(
+        modifier =
+            modifier.clickable {
+                Log.d(
+                    "HeatMap",
+                    "${kind1.name} ${kind2.name} ${kind3.name} ${kind4.name}",
+                )
+            },
     ) {
         Row {
             Box(
-                modifier = Modifier
-                    .size(12.dp)
-                    .background(MaterialTheme.colorScheme.kindColors(kind1))
+                modifier =
+                    Modifier
+                        .size(12.dp)
+                        .background(MaterialTheme.colorScheme.kindColors(kind1)),
             )
             Box(
-                modifier = Modifier
-                    .size(12.dp)
-                    .background(MaterialTheme.colorScheme.kindColors(kind2))
+                modifier =
+                    Modifier
+                        .size(12.dp)
+                        .background(MaterialTheme.colorScheme.kindColors(kind2)),
             )
         }
         Row {
             Box(
-                modifier = Modifier
-                    .size(12.dp)
-                    .background(MaterialTheme.colorScheme.kindColors(kind3))
+                modifier =
+                    Modifier
+                        .size(12.dp)
+                        .background(MaterialTheme.colorScheme.kindColors(kind3)),
             )
             Box(
-                modifier = Modifier
-                    .size(12.dp)
-                    .background(MaterialTheme.colorScheme.kindColors(kind4))
+                modifier =
+                    Modifier
+                        .size(12.dp)
+                        .background(MaterialTheme.colorScheme.kindColors(kind4)),
             )
         }
     }

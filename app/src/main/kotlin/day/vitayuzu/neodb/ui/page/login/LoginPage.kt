@@ -10,21 +10,21 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 
-
 @Composable
 fun LoginPage(
     authFlowFactory: AndroidCodeAuthFlowFactory,
     modifier: Modifier = Modifier,
-    viewModel: LoginViewModel = viewModel()
+    viewModel: LoginViewModel = viewModel(),
 ) {
     Scaffold {
         Button(
-            modifier = Modifier
-                .padding(it)
-                .fillMaxWidth(),
+            modifier =
+                Modifier
+                    .padding(it)
+                    .fillMaxWidth(),
             onClick = {
                 viewModel.login(authFlowFactory)
-            }
+            },
         ) {
             Text("Login")
         }
