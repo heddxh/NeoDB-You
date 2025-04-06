@@ -28,39 +28,45 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
-class RemoteSource(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) {
-
+class RemoteSource(
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
+) {
     suspend fun fetchMyShelf(
         type: ShelfType,
-        page: Int = 1
-    ): PagedMarkSchema = withContext(dispatcher) {
-        api.fetchMyShelf(type, page)
-    }
-
-    suspend fun registerOauthAPP(): Result<AuthClientIdentify> = withContext(dispatcher) {
-        try {
-            val result = api.registerOauthAPP()
-            Result.success(result)
-        } catch (e: Exception) {
-            Result.failure(e)
+        page: Int = 1,
+    ): PagedMarkSchema =
+        withContext(dispatcher) {
+            api.fetchMyShelf(type, page)
         }
-    }
+
+    suspend fun registerOauthAPP(): Result<AuthClientIdentify> =
+        withContext(dispatcher) {
+            try {
+                val result = api.registerOauthAPP()
+                Result.success(result)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
 
     // NOTE: May should be a separate object if we have multiple APIs(sources)
     companion object {
-        private val client = ktorfit {
-            Log.d("RemoteSource", "Initializing Ktorfit client...")
-            baseUrl(BASEURL)
-            httpClient(HttpClient {
-                install(ContentNegotiation) {
-                    json(Json { ignoreUnknownKeys = true })
-                }
-                install(Logging) {
-                    logger = Logger.ANDROID
-                    level = LogLevel.NONE
-                }
-            })
-        }
+        private val client =
+            ktorfit {
+                Log.d("RemoteSource", "Initializing Ktorfit client...")
+                baseUrl(BASEURL)
+                httpClient(
+                    HttpClient {
+                        install(ContentNegotiation) {
+                            json(Json { ignoreUnknownKeys = true })
+                        }
+                        install(Logging) {
+                            logger = Logger.ANDROID
+                            level = LogLevel.NONE
+                        }
+                    },
+                )
+            }
         val api = client.createNeoDbApi()
     }
 }
@@ -74,11 +80,11 @@ class RemoteSource(private val dispatcher: CoroutineDispatcher = Dispatchers.IO)
 interface NeoDbApi {
     @GET("me/shelf/{type}")
     @Headers(
-        "Content-Type: application/json"
+        "Content-Type: application/json",
     )
     suspend fun fetchMyShelf(
         @Path("type") type: ShelfType,
-        @Query("page") page: Int = 1
+        @Query("page") page: Int = 1,
     ): PagedMarkSchema
 
     @POST("v1/apps")
@@ -86,6 +92,6 @@ interface NeoDbApi {
     suspend fun registerOauthAPP(
         @Field("client_name") clientName: String = APP_NAME,
         @Field("redirect_uris") redirectUris: String = AUTH_CALLBACK,
-        @Field("website") website: String = WEBSITE
+        @Field("website") website: String = WEBSITE,
     ): AuthClientIdentify
 }

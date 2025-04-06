@@ -19,18 +19,19 @@ data class Entry(
     val url: String,
     val des: String,
     val coverUrl: String?,
-    val rating: Float?
+    val rating: Float?,
 ) {
     constructor(schema: EntrySchema) : this(
         title = schema.displayTitle,
-        category = try {
-            EntryType.valueOf(schema.category.replaceFirstChar { it.uppercase() })
-        } catch (_: IllegalArgumentException) {
-            EntryType.Default
-        },
+        category =
+            try {
+                EntryType.valueOf(schema.category.replaceFirstChar { it.uppercase() })
+            } catch (_: IllegalArgumentException) {
+                EntryType.Default
+            },
         url = schema.url,
         des = schema.description,
         coverUrl = schema.coverImageUrl,
-        rating = schema.rating
+        rating = schema.rating,
     )
 }

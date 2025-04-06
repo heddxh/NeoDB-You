@@ -12,16 +12,17 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 
-class Repository(private val remoteSource: RemoteSource = RemoteSource()) {
-
+class Repository(
+    private val remoteSource: RemoteSource = RemoteSource(),
+) {
     @OptIn(ExperimentalCoroutinesApi::class)
     fun fetchMyAllShelf(): Flow<PagedMarkSchema> =
         flowOf(*ShelfType.entries.toTypedArray()).flatMapMerge {
             fetchMyShelfByShelfType(it)
         }
 
-    private fun fetchMyShelfByShelfType(shelfType: ShelfType): Flow<PagedMarkSchema> {
-        return flow {
+    private fun fetchMyShelfByShelfType(shelfType: ShelfType): Flow<PagedMarkSchema> =
+        flow {
             val initialResponse = remoteSource.fetchMyShelf(shelfType)
             val totalPages = initialResponse.pages
             emit(initialResponse) // Emit the first page
@@ -35,6 +36,4 @@ class Repository(private val remoteSource: RemoteSource = RemoteSource()) {
         }.catch {
             Log.e("Repository", "Error fetching $shelfType: $it")
         }
-    }
-
 }

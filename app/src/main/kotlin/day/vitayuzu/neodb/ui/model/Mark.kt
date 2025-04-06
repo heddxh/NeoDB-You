@@ -19,15 +19,18 @@ data class Mark(
     val shelfType: ShelfType,
     val date: LocalDate,
     val rating: Int?,
-    val comment: String?
+    val comment: String?,
 ) {
     constructor(scheme: MarkScheme) : this(
         entry = Entry(scheme.entrySchema),
         shelfType = ShelfType.valueOf(scheme.shelfType),
-        date = Instant.parse(scheme.createdTime)
-            .toLocalDateTime(timeZone = TimeZone.currentSystemDefault()).date,
+        date =
+            Instant
+                .parse(scheme.createdTime)
+                .toLocalDateTime(timeZone = TimeZone.currentSystemDefault())
+                .date,
         rating = scheme.ratingGrade,
-        comment = scheme.commentText
+        comment = scheme.commentText,
     )
 
     val fullStars = rating?.div(2) ?: 0

@@ -10,5 +10,5 @@ data class AuthClientIdentify(
     val name: String,
     @SerialName("redirect_uri") val redirectUri: String,
     @SerialName("vapid_key") val vapidKey: String,
-    val website: String
+    val website: String,
 )
