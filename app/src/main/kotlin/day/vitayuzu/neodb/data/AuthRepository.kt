@@ -3,9 +3,10 @@ package day.vitayuzu.neodb.data
 import android.util.Log
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
 import org.publicvalue.multiplatform.oidc.OpenIdConnectClient
+import javax.inject.Inject
 
-class AuthRepository(
-    private val remoteSource: RemoteSource = RemoteSource(),
+class AuthRepository @Inject constructor(
+    private val remoteSource: RemoteSource,
     private val preferenceSource: LocalPreferenceSource,
 ) {
     suspend fun registerAppIfNeeded(): Result<OpenIdConnectClient> {

@@ -6,6 +6,7 @@ import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.util.APP_NAME
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
 import day.vitayuzu.neodb.util.BASEURL
+import day.vitayuzu.neodb.util.IoDispatcher
 import day.vitayuzu.neodb.util.ShelfType
 import day.vitayuzu.neodb.util.WEBSITE
 import de.jensklingenberg.ktorfit.http.Field
@@ -24,49 +25,46 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import javax.inject.Inject
 
-class RemoteSource(
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
+class RemoteSource @Inject constructor(
+    @IoDispatcher private val dispatcher: CoroutineDispatcher,
 ) {
     suspend fun fetchMyShelf(
         type: ShelfType,
         page: Int = 1,
-    ): PagedMarkSchema =
-        withContext(dispatcher) {
-            api.fetchMyShelf(type, page)
-        }
+    ): PagedMarkSchema = withContext(dispatcher) {
+        api.fetchMyShelf(type, page)
+    }
 
-    suspend fun registerOauthAPP(): Result<AuthClientIdentify> =
-        withContext(dispatcher) {
-            try {
-                val result = api.registerOauthAPP()
-                Result.success(result)
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
+    suspend fun registerOauthAPP(): Result<AuthClientIdentify> = withContext(dispatcher) {
+        try {
+            val result = api.registerOauthAPP()
+            Result.success(result)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
+    }
 
     // NOTE: May should be a separate object if we have multiple APIs(sources)
     companion object {
-        private val client =
-            ktorfit {
-                Log.d("RemoteSource", "Initializing Ktorfit client...")
-                baseUrl(BASEURL)
-                httpClient(
-                    HttpClient {
-                        install(ContentNegotiation) {
-                            json(Json { ignoreUnknownKeys = true })
-                        }
-                        install(Logging) {
-                            logger = Logger.ANDROID
-                            level = LogLevel.NONE
-                        }
-                    },
-                )
-            }
+        private val client = ktorfit {
+            Log.d("RemoteSource", "Initializing Ktorfit client...")
+            baseUrl(BASEURL)
+            httpClient(
+                HttpClient {
+                    install(ContentNegotiation) {
+                        json(Json { ignoreUnknownKeys = true })
+                    }
+                    install(Logging) {
+                        logger = Logger.ANDROID
+                        level = LogLevel.NONE
+                    }
+                },
+            )
+        }
         val api = client.createNeoDbApi()
     }
 }
@@ -79,9 +77,7 @@ class RemoteSource(
  */
 interface NeoDbApi {
     @GET("me/shelf/{type}")
-    @Headers(
-        "Content-Type: application/json",
-    )
+    @Headers("Content-Type: application/json")
     suspend fun fetchMyShelf(
         @Path("type") type: ShelfType,
         @Query("page") page: Int = 1,

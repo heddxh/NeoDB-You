@@ -7,27 +7,21 @@ import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.AndroidEntryPoint
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
 import day.vitayuzu.neodb.ui.page.login.LoginPage
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
-import kotlinx.serialization.Serializable
+import day.vitayuzu.neodb.util.Navi.Home
+import day.vitayuzu.neodb.util.Navi.Library
+import day.vitayuzu.neodb.util.Navi.Login
+import day.vitayuzu.neodb.util.Navi.Settings
 import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
+import javax.inject.Inject
 
-@Serializable
-object Home
-
-@Serializable
-object Library
-
-@Serializable
-object Settings
-
-@Serializable
-object Login
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     // Auth/Oauth2
-    private val codeAuthFlowFactory = AndroidCodeAuthFlowFactory(useWebView = false)
+    @Inject lateinit var codeAuthFlowFactory: AndroidCodeAuthFlowFactory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +35,7 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     startDestination = Login, // FIXME: Should be [Home]
                 ) {
-                    composable<Login> { LoginPage(codeAuthFlowFactory) }
+                    composable<Login> { LoginPage() }
                     composable<Home> {}
                     composable<Library> { LibraryPage() }
                     composable<Settings> {}

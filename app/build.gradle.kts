@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.ktorfit)
     alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.google.hilt.android)
 }
 
 android {
@@ -21,7 +22,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         addManifestPlaceholders(
-            mapOf("oidcRedirectScheme" to "day.vitayuzu.neodb")
+            mapOf("oidcRedirectScheme" to "day.vitayuzu.neodb"),
         )
     }
 
@@ -30,7 +31,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -80,4 +81,8 @@ dependencies {
     implementation(libs.kmp.oidc.ktor)
     implementation(libs.datastore.preferences)
     implementation(libs.ktor.client.auth)
+
+    implementation(libs.google.hilt.android)
+    ksp(libs.google.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
 }

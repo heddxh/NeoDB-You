@@ -1,10 +1,10 @@
 [versions]
 agp = "8.9.1"
 kotlin = "2.1.10"
-coreKtx = "1.15.0"
+coreKtx = "1.16.0"
 lifecycleViewModel = "2.8.7"
 activityCompose = "1.10.1"
-composeBom = "2025.03.01"
+composeBom = "2025.04.00"
 ksp = "2.1.10-1.0.31"
 ktorfitLib = "2.4.0"
 kotlinxSerializationJson = "1.8.0"
@@ -15,6 +15,8 @@ coil = "3.1.0"
 nav = "2.8.9"
 kmpOidc = "0.12.2"
 datastore = "1.1.4"
+hilt = "2.56.1"
+hiltCompose = "1.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -38,6 +40,9 @@ kmp-oidc-appsupport = { group = "io.github.kalinjul.kotlin.multiplatform", name 
 kmp-oidc-ktor = { group = "io.github.kalinjul.kotlin.multiplatform", name = "oidc-ktor", version.ref = "kmpOidc" }
 ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor" }
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+google-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+google-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltCompose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -46,4 +51,4 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfitLib" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-
+google-hilt-android = { id = 'com.google.dagger.hilt.android', version.ref = "hilt" }

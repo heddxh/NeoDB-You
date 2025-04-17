@@ -3,6 +3,7 @@ package day.vitayuzu.neodb.ui.page.library
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import day.vitayuzu.neodb.data.Repository
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.util.EntryType
@@ -15,12 +16,12 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import java.util.GregorianCalendar
+import javax.inject.Inject
 
 // FIXME: May move filtering to UI(LibraryPage)
 // FIXME: make refreshDisplayedMarks() and generateHeatMap() pure functions and only call in refresh()
-class LibraryViewModel(
-    private val repo: Repository = Repository(),
-) : ViewModel() {
+@HiltViewModel
+class LibraryViewModel @Inject constructor(private val repo: Repository) : ViewModel() {
     private val _uiState = MutableStateFlow(LibraryUiState())
     val uiState = _uiState.asStateFlow()
 
@@ -50,12 +51,11 @@ class LibraryViewModel(
     fun toggleSelectedEntryType(which: EntryType) {
         _uiState.update {
             it.copy(
-                selectedEntryTypes =
-                    if (which in it.selectedEntryTypes) {
-                        it.selectedEntryTypes - which
-                    } else {
-                        it.selectedEntryTypes + which
-                    },
+                selectedEntryTypes = if (which in it.selectedEntryTypes) {
+                    it.selectedEntryTypes - which
+                } else {
+                    it.selectedEntryTypes + which
+                },
             )
         }
         refreshDisplayedMarks()
@@ -72,21 +72,19 @@ class LibraryViewModel(
         if (_uiState.value.selectedEntryTypes.isEmpty()) {
             _uiState.update { curr ->
                 curr.copy(
-                    displayedMarks =
-                        marks.filter {
-                            it.shelfType == curr.selectedShelfType
-                        },
+                    displayedMarks = marks.filter {
+                        it.shelfType == curr.selectedShelfType
+                    },
                 )
             }
             return
         }
         _uiState.update { curr ->
             curr.copy(
-                displayedMarks =
-                    marks.filter {
-                        it.entry.category in curr.selectedEntryTypes &&
-                            it.shelfType == curr.selectedShelfType
-                    },
+                displayedMarks = marks.filter {
+                    it.entry.category in curr.selectedEntryTypes &&
+                        it.shelfType == curr.selectedShelfType
+                },
             )
         }
     }
@@ -97,37 +95,35 @@ class LibraryViewModel(
     }
 
     private fun generateHeatMap() {
-        val heatMapDaysByWeek =
-            marks
-                .filter {
-                    // Only this year
-                    it.date.year == Clock.System.todayIn(TimeZone.currentSystemDefault()).year
-                }.groupBy { mark ->
-                    // week-index -> marks
-                    // TODO: change to kotlinx-datetime until https://github.com/Kotlin/kotlinx-datetime/issues/129
-                    // FIXME: Locale and time zone
-                    GregorianCalendar(
-                        mark.date.year,
-                        mark.date.monthNumber - 1, // GregorianCalendar month is 0-based
-                        mark.date.dayOfMonth,
-                    ).get(GregorianCalendar.WEEK_OF_YEAR)
-                }.mapValues { (weekIndex, marks) ->
-                    // Construct a week
-                    return@mapValues marks
-                        .groupBy { it.date } // Get marks with same day
-                        .map { (_, sameDayMarks) ->
-                            HeatMapDayData(weekIndex, sameDayMarks)
-                        }
-                }
+        val heatMapDaysByWeek = marks
+            .filter {
+                // Only this year
+                it.date.year == Clock.System.todayIn(TimeZone.currentSystemDefault()).year
+            }.groupBy { mark ->
+                // week-index -> marks
+                // TODO: change to kotlinx-datetime until https://github.com/Kotlin/kotlinx-datetime/issues/129
+                // FIXME: Locale and time zone
+                GregorianCalendar(
+                    mark.date.year,
+                    mark.date.monthNumber - 1, // GregorianCalendar month is 0-based
+                    mark.date.dayOfMonth,
+                ).get(GregorianCalendar.WEEK_OF_YEAR)
+            }.mapValues { (weekIndex, marks) ->
+                // Construct a week
+                return@mapValues marks
+                    .groupBy { it.date } // Get marks with same day
+                    .map { (_, sameDayMarks) ->
+                        HeatMapDayData(weekIndex, sameDayMarks)
+                    }
+            }
         // Heatmap should be in reverse order, newest week first
         val heatMap =
-            (GregorianCalendar().get(GregorianCalendar.WEEK_OF_YEAR) downTo 0)
-                .map { weekIndex ->
-                    HeatMapWeekUiState(
-                        index = weekIndex,
-                        blocks = heatMapDaysByWeek[weekIndex] ?: emptyList(),
-                    )
-                }
+            (GregorianCalendar().get(GregorianCalendar.WEEK_OF_YEAR) downTo 0).map { weekIndex ->
+                HeatMapWeekUiState(
+                    index = weekIndex,
+                    blocks = heatMapDaysByWeek[weekIndex] ?: emptyList(),
+                )
+            }
         _uiState.update { it.copy(heatMap = heatMap) }
     }
 }

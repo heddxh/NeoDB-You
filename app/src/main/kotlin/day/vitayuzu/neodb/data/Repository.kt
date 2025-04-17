@@ -11,29 +11,27 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
+import javax.inject.Inject
 
-class Repository(
-    private val remoteSource: RemoteSource = RemoteSource(),
-) {
+class Repository @Inject constructor(private val remoteSource: RemoteSource) {
     @OptIn(ExperimentalCoroutinesApi::class)
     fun fetchMyAllShelf(): Flow<PagedMarkSchema> =
         flowOf(*ShelfType.entries.toTypedArray()).flatMapMerge {
             fetchMyShelfByShelfType(it)
         }
 
-    private fun fetchMyShelfByShelfType(shelfType: ShelfType): Flow<PagedMarkSchema> =
-        flow {
-            val initialResponse = remoteSource.fetchMyShelf(shelfType)
-            val totalPages = initialResponse.pages
-            emit(initialResponse) // Emit the first page
-            for (page in 2..totalPages) {
-                emit(remoteSource.fetchMyShelf(shelfType, page))
-            }
-        }.onStart {
-            Log.d("Repository", "Start fetching $shelfType")
-        }.onCompletion {
-            Log.d("Repository", "End fetching $shelfType")
-        }.catch {
-            Log.e("Repository", "Error fetching $shelfType: $it")
+    private fun fetchMyShelfByShelfType(shelfType: ShelfType): Flow<PagedMarkSchema> = flow {
+        val initialResponse = remoteSource.fetchMyShelf(shelfType)
+        val totalPages = initialResponse.pages
+        emit(initialResponse) // Emit the first page
+        for (page in 2..totalPages) {
+            emit(remoteSource.fetchMyShelf(shelfType, page))
         }
+    }.onStart {
+        Log.d("Repository", "Start fetching $shelfType")
+    }.onCompletion {
+        Log.d("Repository", "End fetching $shelfType")
+    }.catch {
+        Log.e("Repository", "Error fetching $shelfType: $it")
+    }
 }
