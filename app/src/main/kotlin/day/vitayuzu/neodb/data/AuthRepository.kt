@@ -14,19 +14,18 @@ class AuthRepository @Inject constructor(
         val clientSecret = preferenceSource.getAuthClientSecret()
 
         if (clientId != null && clientSecret != null) {
-            Log.d("AuthRepository", "Found saved auth client")
+            Log.d("AuthRepository", "Found saved auth client identification")
             return Result.success(constructAuthClient(clientId, clientSecret))
         } else {
-            Log.d("AuthRepository", "No saved auth client found, registering...")
+            Log.d("AuthRepository", "No saved auth client identification found, registering...")
             val oauthClientResult = remoteSource.registerOauthAPP()
 
             if (oauthClientResult.isSuccess) {
-                val oauthClientData =
-                    oauthClientResult.getOrElse {
-                        return signalRegistrationFailure()
-                    }
+                val oauthClientData = oauthClientResult.getOrElse {
+                    return signalRegistrationFailure()
+                }
                 try {
-                    preferenceSource.saveAuthClientIdentify(oauthClientData)
+                    preferenceSource.storeAuthClientIdentify(oauthClientData)
                     Log.d("AuthRepository", "Saved auth client")
                     return Result.success(
                         constructAuthClient(
@@ -40,6 +39,15 @@ class AuthRepository @Inject constructor(
             } else {
                 return signalRegistrationFailure()
             }
+        }
+    }
+
+    suspend fun getAccessToken(): String? {
+        try {
+            return preferenceSource.getAccessToken()
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Failed to get access token", e)
+            return null
         }
     }
 
@@ -72,6 +80,7 @@ class AuthRepository @Inject constructor(
             this.clientId = clientId
             this.clientSecret = clientSecret
             redirectUri = AUTH_CALLBACK
+            scope = "read write"
         }
     }
 }

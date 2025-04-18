@@ -18,6 +18,7 @@ import javax.inject.Inject
  * NOTE: [DataStore] is moved to `Dispatchers.IO` under the hood.
  */
 class LocalPreferenceSource @Inject constructor(private val dataStore: DataStore<Preferences>) {
+
     suspend fun storeAuthCode(code: String) {
         dataStore.edit { it[AUTH_CODE] = code }
     }
@@ -28,7 +29,7 @@ class LocalPreferenceSource @Inject constructor(private val dataStore: DataStore
         }
     }
 
-    suspend fun saveAuthClientIdentify(identify: AuthClientIdentify) {
+    suspend fun storeAuthClientIdentify(identify: AuthClientIdentify) {
         dataStore.edit {
             it[CLIENT_ID] = identify.clientId
             it[CLIENT_SECRET] = identify.clientSecret
@@ -44,6 +45,13 @@ class LocalPreferenceSource @Inject constructor(private val dataStore: DataStore
 
     suspend fun getAuthClientSecret(): String? = dataStore.data
         .map { it[CLIENT_SECRET] }
+        .catch {
+            Log.e("AuthRepository", "Error while reading preferences", it)
+            emit(null)
+        }.firstOrNull()
+
+    suspend fun getAccessToken(): String? = dataStore.data
+        .map { it[ACCESS_TOKEN] }
         .catch {
             Log.e("AuthRepository", "Error while reading preferences", it)
             emit(null)

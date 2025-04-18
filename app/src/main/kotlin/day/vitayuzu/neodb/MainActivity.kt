@@ -33,9 +33,9 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = Login, // FIXME: Should be [Home]
+                    startDestination = Login,
                 ) {
-                    composable<Login> { LoginPage() }
+                    composable<Login> { LoginPage({ navController.navigate(Library) }) }
                     composable<Home> {}
                     composable<Library> { LibraryPage() }
                     composable<Settings> {}
