@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -82,13 +83,18 @@ fun MainScaffold(modifier: Modifier = Modifier) {
             }
         },
     ) {
-        MainNavi(Modifier.padding(it))
+        MainNavi(
+            navController = navController,
+            modifier = Modifier.padding(it),
+        )
     }
 }
 
 @Composable
-fun MainNavi(modifier: Modifier = Modifier) {
-    val navController = rememberNavController()
+fun MainNavi(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+) {
     NavHost(
         navController = navController,
         startDestination = Login,
