@@ -51,6 +51,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Main scaffold for the app.
+ * It contains the bottom navigation bar, top appbar and the main content(screens).
+ */
 @Composable
 fun MainScaffold(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
@@ -90,6 +94,10 @@ fun MainScaffold(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Main navigation for the app.
+ * Control which screen to show in the [MainScaffold].
+ */
 @Composable
 fun MainNavi(
     navController: NavHostController,

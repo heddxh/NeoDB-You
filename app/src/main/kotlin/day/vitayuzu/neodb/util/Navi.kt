@@ -7,6 +7,9 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents the different navigation destinations within the application.
+ */
 sealed interface Navi {
     @Serializable
     data object Home : Navi
@@ -21,6 +24,7 @@ sealed interface Navi {
     data object Login
 
     companion object {
+        // Top level screens
         val mainScreens = listOf(
             MainScreen("Home", Home, Icons.Default.Home),
             MainScreen("Library", Library, Icons.Default.DateRange), // FIXME: library icon
@@ -29,6 +33,12 @@ sealed interface Navi {
     }
 }
 
+/**
+ * Data class representing a main screen in the bottom navigation bar.
+ * @param name Display name of the screen.
+ * @param route Route of the screen, for type safe navigation.
+ * @param icon The icon to display for this screen in the bottom navigation bar.
+ */
 data class MainScreen<T : Navi>(
     val name: String,
     val route: T,
