@@ -24,7 +24,7 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             if (authRepository.getAccessToken() != null) {
-                Log.d("LoginViewModel", "User has access token")
+                Log.d("LoginViewModel", "Found access token")
                 _uiState.update { it.copy(isLoading = false, isLoggedIn = true) }
             }
         }
