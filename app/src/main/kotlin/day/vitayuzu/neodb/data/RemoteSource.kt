@@ -2,8 +2,10 @@ package day.vitayuzu.neodb.data
 
 import day.vitayuzu.neodb.data.schema.AuthClientIdentify
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
+import day.vitayuzu.neodb.data.schema.TrendingItemSchema
 import day.vitayuzu.neodb.util.APP_NAME
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
+import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.IoDispatcher
 import day.vitayuzu.neodb.util.ShelfType
 import day.vitayuzu.neodb.util.WEBSITE
@@ -29,6 +31,10 @@ class RemoteSource @Inject constructor(
         api.fetchMyShelf(type, page)
     }
 
+    suspend fun fetchTrending(type: EntryType): List<TrendingItemSchema> = withContext(dispatcher) {
+        api.fetchTrending(type)
+    }
+
     suspend fun registerOauthAPP(): Result<AuthClientIdentify> = withContext(dispatcher) {
         try {
             val result = api.registerOauthAPP()
@@ -46,13 +52,7 @@ class RemoteSource @Inject constructor(
  * Note: should not be private since Ktorfit need to generate the implementation(extend it).
  */
 interface NeoDbApi {
-    @GET("me/shelf/{type}")
-    @Headers("Content-Type: application/json")
-    suspend fun fetchMyShelf(
-        @Path("type") type: ShelfType,
-        @Query("page") page: Int = 1,
-    ): PagedMarkSchema
-
+    // Auth
     @POST("v1/apps")
     @FormUrlEncoded
     suspend fun registerOauthAPP(
@@ -60,4 +60,17 @@ interface NeoDbApi {
         @Field("redirect_uris") redirectUris: String = AUTH_CALLBACK,
         @Field("website") website: String = WEBSITE,
     ): AuthClientIdentify
+
+    @GET("me/shelf/{type}")
+    @Headers("Content-Type: application/json")
+    suspend fun fetchMyShelf(
+        @Path("type") type: ShelfType,
+        @Query("page") page: Int = 1,
+    ): PagedMarkSchema
+
+    @GET("trending/{type}")
+    @Headers("Content-Type: application/json")
+    suspend fun fetchTrending(
+        @Path("type") type: EntryType,
+    ): List<TrendingItemSchema>
 }

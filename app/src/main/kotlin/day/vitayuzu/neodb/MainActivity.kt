@@ -22,6 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import day.vitayuzu.neodb.ui.page.home.HomeScreen
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
 import day.vitayuzu.neodb.ui.page.login.LoginPage
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
@@ -109,7 +110,7 @@ fun MainNavi(
         modifier = modifier,
     ) {
         composable<Login> { LoginPage({ navController.navigate(Library) }) }
-        composable<Home> {}
+        composable<Home> { HomeScreen() }
         composable<Library> { LibraryPage() }
         composable<Settings> {}
     }
