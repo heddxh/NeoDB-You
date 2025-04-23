@@ -111,7 +111,7 @@ fun DefaultHeatMapBlock(modifier: Modifier = Modifier) {
 @Composable
 fun SingleHeatMapBlock(
     modifier: Modifier = Modifier,
-    kind: EntryType = EntryType.Default,
+    kind: EntryType = EntryType.default,
 ) {
     Box(
         modifier =

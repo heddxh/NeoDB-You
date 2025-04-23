@@ -43,14 +43,14 @@ val ColorScheme.ratingColor: Color
 @Composable
 fun ColorScheme.kindColors(kind: EntryType): Color =
     when (kind) {
-        EntryType.Book -> BookColor
-        EntryType.Game -> GameColor
-        EntryType.Movie -> MovieColor
-        EntryType.Music -> MusicColor
-        EntryType.Performance -> PerformanceColor
-        EntryType.Tv -> TVColor
-        EntryType.Podcast -> PodcastColor
-        EntryType.Default -> OtherColor
+        EntryType.book -> BookColor
+        EntryType.game -> GameColor
+        EntryType.movie -> MovieColor
+        EntryType.music -> MusicColor
+        EntryType.performance -> PerformanceColor
+        EntryType.tv -> TVColor
+        EntryType.podcast -> PodcastColor
+        EntryType.default -> OtherColor
     }
 
 @Composable

@@ -276,7 +276,7 @@ private class EntryCardPreviewDataProvider : PreviewParameterProvider<Entry> {
     private val entryDumpFull =
         Entry(
             title = "十三机兵防卫圈",
-            category = EntryType.Movie,
+            category = EntryType.movie,
             coverUrl = "https://www.figma.com/file/pnexnznliZacGHbV45utnX/image/2cab87f3e7d82d7be03f16df26f580392d4632a7",
             des = "《十三机兵防卫圈》是制作《胧村正》和《圣骑士物语》两大作品的 Vanillaware 小组操刀制作的全新原创  IP，游戏继承了工作室一贯的水彩画风，精美的 2D  手绘风格让人着迷。游戏仍然是横版玩法，加入了机械等未来朋克元素，相信会给喜欢该工作室的玩家带来全新的游戏体验。",
             url = "https://www.baidu.com",
@@ -286,7 +286,7 @@ private class EntryCardPreviewDataProvider : PreviewParameterProvider<Entry> {
     private val entryDumpNull =
         Entry(
             title = "Hello titlefoooooooooBarrrrrrrrsakisakisaki",
-            category = EntryType.Movie,
+            category = EntryType.movie,
             coverUrl = "https://www.figma.com/file/pnexnznliZacGHbV45utnX/image/2cab87f3e7d82d7be03f16df26f580392d4632a7",
             des = "《十三机兵防卫圈》是制作《胧村正》和《圣骑士物语》两大作品的 Vanillaware 小组操刀制作的全新原创  IP，游戏继承了工作室一贯的水彩画风，精美的 2D  手绘风格让人着迷。游戏仍然是横版玩法，加入了机械等未来朋克元素，相信会给喜欢该工作室的玩家带来全新的游戏体验。",
             url = "https://www.baidu.com",
@@ -303,7 +303,7 @@ private val dumpMark =
     Mark(
         Entry(
             title = "十三机兵防卫圈",
-            category = EntryType.Movie,
+            category = EntryType.movie,
             coverUrl = "https://www.figma.com/file/pnexnznliZacGHbV45utnX/image/2cab87f3e7d82d7be03f16df26f580392d4632a7",
             des = "《十三机兵防卫圈》是制作《胧村正》和《圣骑士物语》两大作品的 Vanillaware 小组操刀制作的全新原创  IP，游戏继承了工作室一贯的水彩画风，精美的 2D  手绘风格让人着迷。游戏仍然是横版玩法，加入了机械等未来朋克元素，相信会给喜欢该工作室的玩家带来全新的游戏体验。",
             url = "https://www.baidu.com",

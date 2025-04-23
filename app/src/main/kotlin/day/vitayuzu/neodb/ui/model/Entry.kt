@@ -1,6 +1,7 @@
 package day.vitayuzu.neodb.ui.model
 
 import day.vitayuzu.neodb.data.schema.EntrySchema
+import day.vitayuzu.neodb.data.schema.TrendingItemSchema
 import day.vitayuzu.neodb.util.EntryType
 
 /**
@@ -23,12 +24,17 @@ data class Entry(
 ) {
     constructor(schema: EntrySchema) : this(
         title = schema.displayTitle,
-        category =
-            try {
-                EntryType.valueOf(schema.category.replaceFirstChar { it.uppercase() })
-            } catch (_: IllegalArgumentException) {
-                EntryType.Default
-            },
+        category = EntryType.valueOf(schema.category),
+        url = schema.url,
+        des = schema.description,
+        coverUrl = schema.coverImageUrl,
+        rating = schema.rating,
+    )
+
+    // TODO: merge into EntrySchema
+    constructor(schema: TrendingItemSchema) : this(
+        title = schema.displayTitle,
+        category = EntryType.valueOf(schema.category),
         url = schema.url,
         des = schema.description,
         coverUrl = schema.coverImageUrl,

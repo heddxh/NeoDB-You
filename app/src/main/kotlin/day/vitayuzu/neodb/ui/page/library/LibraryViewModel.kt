@@ -1,6 +1,5 @@
 package day.vitayuzu.neodb.ui.page.library
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,9 +41,9 @@ class LibraryViewModel @Inject constructor(private val repo: Repository) : ViewM
             refreshDisplayedMarks()
             generateHeatMap()
             _uiState.update { it.copy(isLoading = false) }
-            marks.forEach {
-                Log.d("LibraryViewModel", "Mark: ${it.date} ${it.entry.title}")
-            }
+//            marks.forEach {
+//                Log.d("LibraryViewModel", "Mark: ${it.date} ${it.entry.title}")
+//            }
         }
     }
 
