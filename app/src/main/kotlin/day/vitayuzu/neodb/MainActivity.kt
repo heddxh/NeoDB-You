@@ -109,7 +109,7 @@ fun MainNavi(
         startDestination = Login,
         modifier = modifier,
     ) {
-        composable<Login> { LoginPage({ navController.navigate(Library) }) }
+        composable<Login> { LoginPage({ navController.navigate(Home) }) }
         composable<Home> { HomeScreen() }
         composable<Library> { LibraryPage() }
         composable<Settings> {}

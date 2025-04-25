@@ -25,8 +25,8 @@ class HomeViewModel @Inject constructor(private val repo: Repository) : ViewMode
     private fun updateTrending() {
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            repo.fetchTrending().collect {
-                it.forEach { (type, list) ->
+            repo.fetchTrending().collect { result ->
+                result.forEach { (type, list) ->
                     _uiState.update { curr ->
                         when (type) {
                             EntryType.book -> curr.copy(book = list.map { Entry(it) })
