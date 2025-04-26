@@ -9,10 +9,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.carousel.CarouselDefaults
-import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
+import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,24 +22,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.util.EntryType
 
-@Composable
-fun HomeScreen(
+@Composable fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val numberOfEachTrending = 8
+    val numberOfEachTrending = 10
 
     // HACK: https://issuetracker.google.com/issues/362137847#comment5
-    // Wait until data is loaded
-    if (!uiState.isLoading) {
+    if (uiState.isLoading) {
+        LinearProgressIndicator(modifier = modifier.fillMaxWidth())
+    } else {
         val trendingModifier = Modifier.fillMaxWidth()
         LazyColumn(
             modifier = modifier.fillMaxWidth(),
@@ -96,9 +98,7 @@ fun HomeScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TrendingSection(
+@OptIn(ExperimentalMaterial3Api::class) @Composable fun TrendingSection(
     data: List<Entry>,
     type: EntryType,
     modifier: Modifier = Modifier,
@@ -108,25 +108,28 @@ fun TrendingSection(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start,
     ) {
-        val carouselState = rememberCarouselState { data.size }
         Text(
             text = "Trending ${stringResource(type.toR())}", // TODO: i18n "Trending"
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(start = 8.dp),
         )
         Spacer(modifier = Modifier.height(4.dp))
-        HorizontalUncontainedCarousel(
+
+        val carouselState = rememberCarouselState { data.size }
+        HorizontalMultiBrowseCarousel(
             state = carouselState,
             itemSpacing = 8.dp, // NOTE: I think the library's implementation is wrong, but leave it
-            itemWidth = type.coverDimension.first.dp,
+            preferredItemWidth = type.coverDimension.first.dp,
+            minSmallItemWidth = type.coverDimension.first.times(0.8.dp),
+            maxSmallItemWidth = type.coverDimension.first.dp,
             contentPadding = PaddingValues(horizontal = 8.dp),
             flingBehavior = CarouselDefaults.singleAdvanceFlingBehavior(carouselState),
         ) {
             val item = data[it]
             AsyncImage(
                 model = item.coverUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+                contentDescription = item.title,
+                contentScale = ContentScale.FillHeight,
                 modifier = Modifier
                     .height(type.coverDimension.second.dp)
                     .maskClip(MaterialTheme.shapes.small),
