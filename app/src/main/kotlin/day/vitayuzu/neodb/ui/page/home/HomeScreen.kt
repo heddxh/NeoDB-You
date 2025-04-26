@@ -140,15 +140,19 @@ fun TrendingSection(
  * @return Pair of (width, height)
  */
 val EntryType.coverDimension: Pair<Int, Int>
-    // TODO: add more dimensions for different types
     get() = when (this) {
         // Octavo size(229 x 152), commonly used for hardbacks.
         // See: https://en.wikipedia.org/wiki/Book_size#United_States
         EntryType.book -> (100 to 151)
         // Copy from one of switch game cover on NeoDB(268 x 434), sorry...
         EntryType.game -> (100 to 162)
+        // One Sheet size in US.
+        // See: https://en.wikipedia.org/wiki/Film_poster#United_States
         EntryType.movie -> (100 to 148)
+        // Album size
+        // See: https://en.wikipedia.org/wiki/Album_cover#Album_covers_in_the_age_of_downloads_and_streaming
         EntryType.music -> (100 to 100)
+        // From the TVDB
         EntryType.tv -> (100 to 147)
         else -> (100 to 100)
     }
