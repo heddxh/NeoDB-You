@@ -85,7 +85,7 @@ fun EntryMarkCard(
                 AsyncImage(
                     model = entry.coverUrl,
                     contentDescription = "Cover image of ${entry.title}",
-                    contentScale = ContentScale.Fit,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier.width(114.dp),
                     alignment = Alignment.CenterStart,
                 )
