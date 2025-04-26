@@ -109,7 +109,7 @@ import day.vitayuzu.neodb.util.EntryType
         horizontalAlignment = Alignment.Start,
     ) {
         Text(
-            text = "Trending ${stringResource(type.toR())}", // TODO: i18n "Trending"
+            text = stringResource(type.toR()),
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(start = 8.dp),
         )
