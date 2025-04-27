@@ -24,6 +24,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
+import coil3.request.crossfade
 import dagger.hilt.android.AndroidEntryPoint
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
@@ -46,6 +49,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         codeAuthFlowFactory.registerActivity(this)
+        SingletonImageLoader.setSafe {
+            ImageLoader
+                .Builder(this)
+                .crossfade(true)
+                .build()
+        }
         enableEdgeToEdge()
         setContent {
             NeoDBYouTheme {
