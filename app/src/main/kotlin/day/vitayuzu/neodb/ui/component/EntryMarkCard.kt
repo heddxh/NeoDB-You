@@ -7,43 +7,28 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFromBaseline
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
-import coil3.ColorImage
 import coil3.annotation.ExperimentalCoilApi
-import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePreviewHandler
-import coil3.compose.LocalAsyncImagePreviewHandler
-import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.model.Mark
-import day.vitayuzu.neodb.ui.theme.ratingColor
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.datetime.Instant
@@ -77,19 +62,13 @@ fun EntryMarkCard(
                     .height(160.dp)
                     .padding(8.dp),
         ) {
-            val previewHandler =
-                AsyncImagePreviewHandler {
-                    ColorImage(Color.LightGray.toArgb())
-                }
-            CompositionLocalProvider(LocalAsyncImagePreviewHandler provides previewHandler) {
-                AsyncImage(
-                    model = entry.coverUrl,
-                    contentDescription = "Cover image of ${entry.title}",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.width(114.dp),
-                    alignment = Alignment.CenterStart,
-                )
-            }
+            RemoteImage(
+                imageUrl = entry.coverUrl,
+                contentDescription = "Cover image of ${entry.title}",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.width(114.dp),
+                alignment = Alignment.CenterStart,
+            )
 
             Column(
                 verticalArrangement = Arrangement.Top,
@@ -198,58 +177,6 @@ fun UserMark(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun RatingStars(
-    full: Int,
-    half: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        horizontalArrangement =
-            Arrangement.spacedBy(
-                2.dp,
-                Alignment.Start,
-            ),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier,
-    ) {
-        repeat(full) {
-            StarIcon()
-        }
-        if (half) {
-            StarIcon(isHalf = true)
-        }
-    }
-}
-
-@Composable
-fun StarIcon(
-    modifier: Modifier = Modifier,
-    isHalf: Boolean = false,
-) {
-    if (isHalf) {
-        Icon(
-            painterResource(R.drawable.star_half),
-            tint = MaterialTheme.colorScheme.ratingColor,
-            contentDescription = null,
-            modifier =
-                modifier
-                    .size(16.dp)
-                    .offset(y = (-0.5).dp), // Visually center
-        )
-    } else {
-        Icon(
-            Icons.Filled.Star,
-            tint = MaterialTheme.colorScheme.ratingColor,
-            contentDescription = null,
-            modifier =
-                modifier
-                    .size(16.dp)
-                    .offset(y = (-0.5).dp), // Visually center
-        )
     }
 }
 
