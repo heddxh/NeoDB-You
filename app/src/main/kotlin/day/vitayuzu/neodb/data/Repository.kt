@@ -43,7 +43,7 @@ class Repository @Inject constructor(private val remoteSource: RemoteSource) {
         }
     }
 
-    fun fetchTrendingByEntryType(type: EntryType): Flow<List<TrendingItemSchema>> = flow {
+    private fun fetchTrendingByEntryType(type: EntryType): Flow<List<TrendingItemSchema>> = flow {
         emit(remoteSource.fetchTrending(type))
     }.onStart {
         Log.d("Repository", "Trending: Start fetching $type")
@@ -66,5 +66,18 @@ class Repository @Inject constructor(private val remoteSource: RemoteSource) {
         Log.d("Repository", "End fetching $shelfType")
     }.catch {
         Log.e("Repository", "Error fetching $shelfType: $it")
+    }
+
+    fun fetchDetail(
+        type: EntryType,
+        uuid: String,
+    ) = flow {
+        emit(remoteSource.fetchDetail(type, uuid))
+    }.onStart {
+        Log.d("Repository", "Start fetching $type $uuid")
+    }.onCompletion {
+        Log.d("Repository", "End fetching $type $uuid")
+    }.catch {
+        Log.e("Repository", "Error fetching $type $uuid: $it")
     }
 }

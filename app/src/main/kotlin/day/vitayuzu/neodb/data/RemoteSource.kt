@@ -3,6 +3,7 @@ package day.vitayuzu.neodb.data
 import day.vitayuzu.neodb.data.schema.AuthClientIdentify
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.data.schema.TrendingItemSchema
+import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.util.APP_NAME
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
 import day.vitayuzu.neodb.util.EntryType
@@ -12,7 +13,6 @@ import day.vitayuzu.neodb.util.WEBSITE
 import de.jensklingenberg.ktorfit.http.Field
 import de.jensklingenberg.ktorfit.http.FormUrlEncoded
 import de.jensklingenberg.ktorfit.http.GET
-import de.jensklingenberg.ktorfit.http.Headers
 import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
@@ -33,6 +33,13 @@ class RemoteSource @Inject constructor(
 
     suspend fun fetchTrending(type: EntryType): List<TrendingItemSchema> = withContext(dispatcher) {
         api.fetchTrending(type)
+    }
+
+    suspend fun fetchDetail(
+        type: EntryType,
+        uuid: String,
+    ) = withContext(dispatcher) {
+        api.fetchDetail(type, uuid)
     }
 
     suspend fun registerOauthAPP(): Result<AuthClientIdentify> = withContext(dispatcher) {
@@ -62,15 +69,19 @@ interface NeoDbApi {
     ): AuthClientIdentify
 
     @GET("me/shelf/{type}")
-    @Headers("Content-Type: application/json")
     suspend fun fetchMyShelf(
         @Path("type") type: ShelfType,
         @Query("page") page: Int = 1,
     ): PagedMarkSchema
 
     @GET("trending/{type}")
-    @Headers("Content-Type: application/json")
     suspend fun fetchTrending(
         @Path("type") type: EntryType,
     ): List<TrendingItemSchema>
+
+    @GET("{type}/{uuid}")
+    suspend fun fetchDetail(
+        @Path("type") type: EntryType,
+        @Path("uuid") uuid: String,
+    ): DetailSchema
 }
