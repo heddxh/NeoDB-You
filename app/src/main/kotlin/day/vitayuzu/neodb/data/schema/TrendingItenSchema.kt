@@ -1,5 +1,7 @@
 package day.vitayuzu.neodb.data.schema
 
+import day.vitayuzu.neodb.data.schema.detail.ExternalResource
+import day.vitayuzu.neodb.data.schema.detail.LocalizedData
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -14,9 +16,9 @@ data class TrendingItemSchema(
     @SerialName("display_title") val displayTitle: String = "",
     @SerialName("external_resources") val externalResources: List<ExternalResource> = listOf(),
     val id: String = "",
-    @SerialName("localized_description") val localizedDescription: List<LocalizedDescription> =
+    @SerialName("localized_description") val localizedDescription: List<LocalizedData> =
         listOf(),
-    @SerialName("localized_title") val localizedTitle: List<LocalizedTitle> = listOf(),
+    @SerialName("localized_title") val localizedTitle: List<LocalizedData> = listOf(),
     @SerialName("parent_uuid") val parentUuid: String? = null,
     val rating: Float? = null,
     @SerialName("rating_count") val ratingCount: Int? = null,
@@ -27,18 +29,3 @@ data class TrendingItemSchema(
     val url: String = "",
     val uuid: String = "",
 )
-
-@Serializable
-data class LocalizedTitle(
-    val lang: String = "",
-    val text: String = "",
-)
-
-@Serializable
-data class LocalizedDescription(
-    val lang: String = "",
-    val text: String = "",
-)
-
-@Serializable
-data class ExternalResource(val url: String = "")

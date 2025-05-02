@@ -1,8 +1,10 @@
 package day.vitayuzu.neodb.util
 
 import day.vitayuzu.neodb.R
+import kotlinx.serialization.Serializable
 
 @Suppress("ktlint:standard:enum-entry-name-case", "EnumEntryName")
+@Serializable
 enum class EntryType {
     book,
     movie,
