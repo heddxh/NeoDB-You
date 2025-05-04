@@ -28,7 +28,6 @@ data class PerformanceSchema(
     override val tags: List<String>?,
     // Specific fields
     @SerialName("orig_title") val origTitle: String?,
-    @SerialName("other_title") val otherTitle: List<String>,
     val genre: List<String>,
     val language: List<String>,
     @SerialName("opening_date") val openingDate: String?,

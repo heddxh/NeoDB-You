@@ -39,7 +39,12 @@ class RemoteSource @Inject constructor(
         type: EntryType,
         uuid: String,
     ) = withContext(dispatcher) {
-        api.fetchDetail(type, uuid)
+        val typeStringEndpoint = if (type == EntryType.music) {
+            "album"
+        } else {
+            type.toString()
+        }
+        api.fetchDetail(typeStringEndpoint, uuid)
     }
 
     suspend fun registerOauthAPP(): Result<AuthClientIdentify> = withContext(dispatcher) {
@@ -81,7 +86,7 @@ interface NeoDbApi {
 
     @GET("{type}/{uuid}")
     suspend fun fetchDetail(
-        @Path("type") type: EntryType,
+        @Path("type") type: String,
         @Path("uuid") uuid: String,
     ): DetailSchema
 }

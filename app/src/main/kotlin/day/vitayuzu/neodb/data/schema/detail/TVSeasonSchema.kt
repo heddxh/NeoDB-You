@@ -5,8 +5,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("movie")
-data class MovieSchema(
+@SerialName("tv_season")
+data class TVSeasonSchema(
     // Common fields
     override val id: String,
     override val type: String,
@@ -27,6 +27,7 @@ data class MovieSchema(
     @SerialName("rating_distribution") override val ratingDistribution: List<Int>?,
     override val tags: List<String>?,
     // Specific fields
+    @SerialName("season_number") val seasonCount: Int?,
     @SerialName("orig_title") val origTitle: String?,
     val director: List<String>,
     val playwright: List<String>,
@@ -36,6 +37,7 @@ data class MovieSchema(
     val area: List<String>,
     val year: Int?,
     val site: String?,
-    val duration: String?,
+    @SerialName("episode_count") val episodeCount: Int?,
+    @SerialName("episode_uuids") val seasonUuids: List<String>,
     val imdb: String?,
 ) : DetailSchema

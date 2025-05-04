@@ -29,7 +29,6 @@ data class TVShowSchema(
     // Specific fields
     @SerialName("season_count") val seasonCount: Int?,
     @SerialName("orig_title") val origTitle: String?,
-    @SerialName("other_title") val otherTitle: List<String>,
     val director: List<String>,
     val playwright: List<String>,
     val actor: List<String>,

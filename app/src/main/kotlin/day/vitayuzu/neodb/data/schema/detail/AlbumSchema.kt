@@ -27,7 +27,6 @@ data class AlbumSchema(
     @SerialName("rating_distribution") override val ratingDistribution: List<Int>?,
     override val tags: List<String>?,
     // Specific fields
-    @SerialName("other_title") val otherTitle: List<String>,
     val genre: List<String>,
     val artist: List<String>,
     val company: List<String>,

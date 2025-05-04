@@ -16,6 +16,7 @@ import day.vitayuzu.neodb.data.NeoDbApi
 import day.vitayuzu.neodb.data.createNeoDbApi
 import de.jensklingenberg.ktorfit.ktorfit
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
@@ -25,6 +26,7 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.util.appendIfNameAndValueAbsent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
@@ -79,8 +81,16 @@ object NetworkModule {
             baseUrl(BASEURL)
             httpClient(
                 HttpClient {
+                    install(DefaultRequest) {
+                        headers.appendIfNameAndValueAbsent("Content-Type", "application/json")
+                    }
                     install(ContentNegotiation) {
-                        json(Json { ignoreUnknownKeys = true })
+                        json(
+                            Json {
+                                ignoreUnknownKeys = true
+                                isLenient = true // Allow unquoted string
+                            },
+                        )
                     }
                     install(Logging) {
                         logger = Logger.ANDROID

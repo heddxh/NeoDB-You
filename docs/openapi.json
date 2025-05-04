@@ -232,12 +232,12 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK",
+          "302": {
+            "description": "Found",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ItemSchema"
+                  "$ref": "#/components/schemas/RedirectedResult"
                 }
               }
             }
@@ -252,8 +252,18 @@
               }
             }
           },
-          "404": {
-            "description": "Not Found",
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
             "content": {
               "application/json": {
                 "schema": {
@@ -263,7 +273,7 @@
             }
           }
         },
-        "description": "Convert a URL from a supported site (e.g. https://m.imdb.com/title/tt2852400/) to an item.\n\nIf the item is not available in the catalog, HTTP 202 will be returned.\nWait 15 seconds or longer, call with same input again, it may return the actual fetched item.\nSome site may take ~90 seconds to fetch.\nIf not getting the item after 120 seconds, please stop and consider the URL is not available.",
+        "description": "Convert a URL from a supported site (e.g. https://m.imdb.com/title/tt2852400/) to an item.\n\nIf the URL is not supported by this server, HTTP 422 will be returned.\nIf the item is available in the catalog, HTTP 302 will be returned.\nIf the item is not available in the catalog, HTTP 202 will be returned.\nWait 15 seconds or longer, call with same input again, it may return the actual fetched item.\nSome site may take ~90 seconds to fetch.\nIf not getting the item after 120 seconds, please stop and consider the URL is not available.\nFrequent request may result with HTTP 429.",
         "tags": [
           "catalog"
         ]
@@ -527,6 +537,23 @@
               "minimum": 1,
               "title": "Page",
               "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
             },
             "required": false
           }
@@ -1161,6 +1188,23 @@
               "type": "integer"
             },
             "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            },
+            "required": false
           }
         ],
         "responses": {
@@ -1506,6 +1550,23 @@
               "type": "integer"
             },
             "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            },
+            "required": false
           }
         ],
         "responses": {
@@ -1762,6 +1823,23 @@
               "minimum": 1,
               "title": "Page",
               "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
             },
             "required": false
           }
@@ -2057,6 +2135,23 @@
               "minimum": 1,
               "title": "Page",
               "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
             },
             "required": false
           }
@@ -2368,6 +2463,23 @@
               "type": "integer"
             },
             "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            },
+            "required": false
           }
         ],
         "responses": {
@@ -2466,6 +2578,23 @@
               "minimum": 1,
               "title": "Page",
               "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
             },
             "required": false
           }
@@ -2733,6 +2862,154 @@
         ]
       }
     },
+    "/api/me/shelf/items/{item_uuids}": {
+      "get": {
+        "operationId": "journal_apis_shelf_get_marks_by_item_list",
+        "summary": "Get Marks By Item List",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_uuids",
+            "schema": {
+              "title": "Item Uuids",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MarkSchema"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          }
+        },
+        "description": "Get a list of holding mark on current user's shelf by a list of item uuids.\n\nInput should be no more than 20, comma-separated.\nOutput has no guarenteed order, and may has less items than input,\nas some items may be merged/deleted or not marked.",
+        "tags": [
+          "shelf"
+        ],
+        "security": [
+          {
+            "OAuthAccessTokenAuth": []
+          }
+        ]
+      }
+    },
+    "/api/me/shelf/item/{item_uuid}/logs": {
+      "get": {
+        "operationId": "journal_apis_shelf_get_mark_logs_by_item",
+        "summary": "Get Mark Logs By Item",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_uuid",
+            "schema": {
+              "title": "Item Uuid",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedMarkLogSchema"
+                }
+              }
+            }
+          },
+          "302": {
+            "description": "Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          }
+        },
+        "description": "Get holding mark on current user's shelf by item uuid",
+        "tags": [
+          "shelf"
+        ],
+        "security": [
+          {
+            "OAuthAccessTokenAuth": []
+          }
+        ]
+      }
+    },
     "/api/me/tag/": {
       "get": {
         "operationId": "journal_apis_tag_list_tags",
@@ -2762,6 +3039,23 @@
               "minimum": 1,
               "title": "Page",
               "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
             },
             "required": false
           }
@@ -3119,6 +3413,23 @@
               "type": "integer"
             },
             "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            },
+            "required": false
           }
         ],
         "responses": {
@@ -3390,7 +3701,7 @@
             }
           }
         },
-        "description": "Get posts for an item\n\n`type` is optional, can be a comma separated list of \"comment\", \"review\", \"collection\", \"mark\"; default is \"comment,review\"",
+        "description": "Get posts for an item\n\n`type` is optional, can be a comma separated list of `comment`, `review`, `collection`, `note`, `mark`; default is `comment,review`",
         "tags": [
           "catalog"
         ],
@@ -3705,13 +4016,6 @@
             "title": "Brief",
             "type": "string"
           },
-          "other_title": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Other Title",
-            "type": "array"
-          },
           "genre": {
             "items": {
               "type": "string"
@@ -3796,7 +4100,6 @@
           "rating_distribution",
           "tags",
           "brief",
-          "other_title",
           "genre",
           "artist",
           "company"
@@ -4580,13 +4883,6 @@
             ],
             "title": "Orig Title"
           },
-          "other_title": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Other Title",
-            "type": "array"
-          },
           "director": {
             "items": {
               "type": "string"
@@ -4691,7 +4987,6 @@
           "rating_distribution",
           "tags",
           "brief",
-          "other_title",
           "director",
           "playwright",
           "actor",
@@ -4858,13 +5153,6 @@
             ],
             "title": "Orig Title"
           },
-          "other_title": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Other Title",
-            "type": "array"
-          },
           "genre": {
             "items": {
               "type": "string"
@@ -4986,7 +5274,6 @@
           "parent_uuid",
           "display_title",
           "external_resources",
-          "other_title",
           "genre",
           "language",
           "director",
@@ -5656,13 +5943,6 @@
             ],
             "title": "Orig Title"
           },
-          "other_title": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Other Title",
-            "type": "array"
-          },
           "director": {
             "items": {
               "type": "string"
@@ -5774,7 +6054,6 @@
           "rating_distribution",
           "tags",
           "brief",
-          "other_title",
           "director",
           "playwright",
           "actor",
@@ -5953,13 +6232,6 @@
             ],
             "title": "Orig Title"
           },
-          "other_title": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Other Title",
-            "type": "array"
-          },
           "director": {
             "items": {
               "type": "string"
@@ -6071,7 +6343,6 @@
           "rating_distribution",
           "tags",
           "brief",
-          "other_title",
           "director",
           "playwright",
           "actor",
@@ -6081,6 +6352,52 @@
           "season_uuids"
         ],
         "title": "TVShowSchema",
+        "type": "object"
+      },
+      "RedirectedResult": {
+        "properties": {
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "url"
+        ],
+        "title": "RedirectedResult",
+        "type": "object"
+      },
+      "Gallery": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemSchema"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "items"
+        ],
+        "title": "Gallery",
         "type": "object"
       },
       "ItemSchema": {
@@ -6250,52 +6567,6 @@
         "title": "ItemSchema",
         "type": "object"
       },
-      "Gallery": {
-        "properties": {
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/ItemSchema"
-            },
-            "title": "Items",
-            "type": "array"
-          }
-        },
-        "required": [
-          "name",
-          "items"
-        ],
-        "title": "Gallery",
-        "type": "object"
-      },
-      "RedirectedResult": {
-        "properties": {
-          "message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Message"
-          },
-          "url": {
-            "title": "Url",
-            "type": "string"
-          }
-        },
-        "required": [
-          "message",
-          "url"
-        ],
-        "title": "RedirectedResult",
-        "type": "object"
-      },
       "Input": {
         "properties": {
           "page": {
@@ -6303,6 +6574,18 @@
             "minimum": 1,
             "title": "Page",
             "type": "integer"
+          },
+          "page_size": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Size"
           }
         },
         "title": "Input",
@@ -6694,13 +6977,6 @@
             ],
             "title": "Orig Title"
           },
-          "other_title": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Other Title",
-            "type": "array"
-          },
           "language": {
             "items": {
               "type": "string"
@@ -6815,7 +7091,6 @@
           "parent_uuid",
           "display_title",
           "external_resources",
-          "other_title",
           "language",
           "director",
           "playwright",
@@ -6876,6 +7151,10 @@
           "html_content": {
             "title": "Html Content",
             "type": "string"
+          },
+          "is_dynamic": {
+            "title": "Is Dynamic",
+            "type": "boolean"
           }
         },
         "required": [
@@ -6887,7 +7166,8 @@
           "title",
           "brief",
           "cover",
-          "html_content"
+          "html_content",
+          "is_dynamic"
         ],
         "title": "CollectionSchema",
         "type": "object"
@@ -7490,6 +7770,57 @@
         "title": "MarkInSchema",
         "type": "object"
       },
+      "MarkLogSchema": {
+        "properties": {
+          "shelf_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShelfType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "shelf_type",
+          "timestamp"
+        ],
+        "title": "MarkLogSchema",
+        "type": "object"
+      },
+      "PagedMarkLogSchema": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/MarkLogSchema"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "pages": {
+            "title": "Pages",
+            "type": "integer"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "pages",
+          "count"
+        ],
+        "title": "PagedMarkLogSchema",
+        "type": "object"
+      },
       "PagedTagSchema": {
         "properties": {
           "data": {
@@ -7839,6 +8170,7 @@
             "title": "Remote Url"
           },
           "meta": {
+            "additionalProperties": true,
             "title": "Meta",
             "type": "object"
           },
@@ -8074,6 +8406,7 @@
           "ext_neodb": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
