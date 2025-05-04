@@ -25,6 +25,12 @@ sealed interface Navi {
     @Serializable
     data object Login
 
+    @Serializable
+    data class Detail(
+        val type: EntryType,
+        val uuid: String,
+    )
+
     companion object {
         // Top level screens
         val mainScreens = listOf(

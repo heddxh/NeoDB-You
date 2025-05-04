@@ -21,6 +21,7 @@ data class Entry(
     val des: String,
     val coverUrl: String?,
     val rating: Float?,
+    val uuid: String,
 ) {
     constructor(schema: EntrySchema) : this(
         title = schema.displayTitle,
@@ -29,6 +30,7 @@ data class Entry(
         des = schema.description,
         coverUrl = schema.coverImageUrl,
         rating = schema.rating,
+        uuid = schema.uuid,
     )
 
     // TODO: merge into EntrySchema
@@ -39,5 +41,6 @@ data class Entry(
         des = schema.description,
         coverUrl = schema.coverImageUrl,
         rating = schema.rating,
+        uuid = schema.uuid,
     )
 }

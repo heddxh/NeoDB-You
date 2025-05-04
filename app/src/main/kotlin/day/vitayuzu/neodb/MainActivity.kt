@@ -24,14 +24,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.request.crossfade
 import dagger.hilt.android.AndroidEntryPoint
+import day.vitayuzu.neodb.ui.page.detail.DetailPage
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
 import day.vitayuzu.neodb.ui.page.login.LoginPage
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
+import day.vitayuzu.neodb.util.Navi
 import day.vitayuzu.neodb.util.Navi.Companion.mainScreens
 import day.vitayuzu.neodb.util.Navi.Home
 import day.vitayuzu.neodb.util.Navi.Library
@@ -126,12 +129,22 @@ fun MainNavi(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Login,
+        startDestination = Home,
         modifier = modifier,
     ) {
         composable<Login> { LoginPage({ navController.navigate(Home) }) }
-        composable<Home> { HomeScreen() }
+        composable<Home> {
+            HomeScreen(
+                onClickEntry = { type, uuid ->
+                    navController.navigate(Navi.Detail(type, uuid))
+                },
+            )
+        }
         composable<Library> { LibraryPage() }
         composable<Settings> {}
+        composable<Navi.Detail> {
+            val detailEntry: Navi.Detail = it.toRoute()
+            DetailPage(detailEntry.type, detailEntry.uuid)
+        }
     }
 }

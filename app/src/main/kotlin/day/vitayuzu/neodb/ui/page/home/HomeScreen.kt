@@ -1,5 +1,6 @@
 package day.vitayuzu.neodb.ui.page.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -29,9 +30,11 @@ import coil3.compose.AsyncImage
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.util.EntryType
 
-@Composable fun HomeScreen(
+@Composable
+fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
+    onClickEntry: (EntryType, String) -> Unit = { _, _ -> },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -52,6 +55,7 @@ import day.vitayuzu.neodb.util.EntryType
                     data = uiState.book.take(numberOfEachTrending),
                     type = EntryType.book,
                     modifier = trendingModifier,
+                    onClickEntry = onClickEntry,
                 )
             }
             // Game
@@ -60,6 +64,7 @@ import day.vitayuzu.neodb.util.EntryType
                     data = uiState.game.take(numberOfEachTrending),
                     type = EntryType.game,
                     modifier = trendingModifier,
+                    onClickEntry = onClickEntry,
                 )
             }
             // Movie
@@ -68,6 +73,7 @@ import day.vitayuzu.neodb.util.EntryType
                     data = uiState.movie.take(numberOfEachTrending),
                     type = EntryType.movie,
                     modifier = trendingModifier,
+                    onClickEntry = onClickEntry,
                 )
             }
             // TV
@@ -76,6 +82,7 @@ import day.vitayuzu.neodb.util.EntryType
                     data = uiState.tv.take(numberOfEachTrending),
                     type = EntryType.tv,
                     modifier = trendingModifier,
+                    onClickEntry = onClickEntry,
                 )
             }
             // Music
@@ -84,6 +91,7 @@ import day.vitayuzu.neodb.util.EntryType
                     data = uiState.music.take(numberOfEachTrending),
                     type = EntryType.music,
                     modifier = trendingModifier,
+                    onClickEntry = onClickEntry,
                 )
             }
             // Podcast
@@ -92,16 +100,20 @@ import day.vitayuzu.neodb.util.EntryType
                     data = uiState.podcast.take(numberOfEachTrending),
                     type = EntryType.podcast,
                     modifier = trendingModifier,
+                    onClickEntry = onClickEntry,
                 )
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class) @Composable fun TrendingSection(
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TrendingSection(
     data: List<Entry>,
     type: EntryType,
     modifier: Modifier = Modifier,
+    onClickEntry: (type: EntryType, uuid: String) -> Unit = { _, _ -> },
 ) {
     Column(
         modifier = modifier,
@@ -132,7 +144,8 @@ import day.vitayuzu.neodb.util.EntryType
                 contentScale = ContentScale.FillHeight,
                 modifier = Modifier
                     .height(type.coverDimension.second.dp)
-                    .maskClip(MaterialTheme.shapes.small),
+                    .maskClip(MaterialTheme.shapes.small)
+                    .clickable { onClickEntry(type, item.uuid) },
             )
         }
     }
