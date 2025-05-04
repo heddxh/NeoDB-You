@@ -140,7 +140,13 @@ fun MainNavi(
                 },
             )
         }
-        composable<Library> { LibraryPage() }
+        composable<Library> {
+            LibraryPage(
+                onClickEntry = { type, uuid ->
+                    navController.navigate(Navi.Detail(type, uuid))
+                },
+            )
+        }
         composable<Settings> {}
         composable<Navi.Detail> {
             val detailEntry: Navi.Detail = it.toRoute()

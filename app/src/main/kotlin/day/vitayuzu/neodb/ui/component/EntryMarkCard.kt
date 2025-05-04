@@ -22,45 +22,30 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
-import coil3.annotation.ExperimentalCoilApi
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.util.EntryType
-import day.vitayuzu.neodb.util.ShelfType
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 
-@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun EntryMarkCard(
     entry: Entry,
     mark: Mark?,
     modifier: Modifier = Modifier,
+    onClickEntry: (EntryType, String) -> Unit = { _, _ -> },
 ) {
     Card(
         modifier = modifier,
-        colors =
-            CardDefaults.cardColors(
-                contentColor = MaterialTheme.colorScheme.onBackground,
-                containerColor = MaterialTheme.colorScheme.background,
-            ),
+        onClick = { onClickEntry(entry.category, entry.uuid) },
+        colors = CardDefaults.cardColors(
+            contentColor = MaterialTheme.colorScheme.onBackground,
+            containerColor = MaterialTheme.colorScheme.background,
+        ),
     ) {
         Row(
-            horizontalArrangement =
-                Arrangement.spacedBy(
-                    16.dp,
-                    Alignment.Start,
-                ),
+            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
             verticalAlignment = Alignment.CenterVertically,
-            modifier =
-                Modifier
-                    .height(160.dp)
-                    .padding(8.dp),
+            modifier = Modifier.height(160.dp).padding(8.dp),
         ) {
             RemoteImage(
                 imageUrl = entry.coverUrl,
@@ -75,9 +60,7 @@ fun EntryMarkCard(
                 horizontalAlignment = Alignment.Start,
                 modifier = Modifier.fillMaxSize(),
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.weight(1f),
@@ -137,18 +120,12 @@ fun UserMark(
         Column(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start,
-            modifier =
-                Modifier
-                    .padding(horizontal = 8.dp)
-                    .padding(bottom = 8.dp),
+            modifier = Modifier.padding(horizontal = 8.dp).padding(bottom = 8.dp),
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .paddingFromBaseline(top = 20.5.dp),
+                modifier = Modifier.fillMaxWidth().paddingFromBaseline(top = 20.5.dp),
             ) {
                 if (mark.rating != null) {
                     RatingStars(
@@ -179,69 +156,3 @@ fun UserMark(
         }
     }
 }
-
-@Preview
-@Composable
-private fun UserMarkPreview(
-//    @PreviewParameter(UserMarkPreviewDataProvider::class) mark: Mark
-) {
-    UserMark(dumpMark)
-}
-
-@Preview
-@Composable
-private fun EntryCardPreview(
-    @PreviewParameter(EntryCardPreviewDataProvider::class) entry: Entry,
-) {
-    EntryMarkCard(
-        entry = entry,
-        mark = dumpMark,
-    )
-}
-
-private class EntryCardPreviewDataProvider : PreviewParameterProvider<Entry> {
-    private val entryDumpFull =
-        Entry(
-            title = "十三机兵防卫圈",
-            category = EntryType.movie,
-            coverUrl = "https://www.figma.com/file/pnexnznliZacGHbV45utnX/image/2cab87f3e7d82d7be03f16df26f580392d4632a7",
-            des = "《十三机兵防卫圈》是制作《胧村正》和《圣骑士物语》两大作品的 Vanillaware 小组操刀制作的全新原创  IP，游戏继承了工作室一贯的水彩画风，精美的 2D  手绘风格让人着迷。游戏仍然是横版玩法，加入了机械等未来朋克元素，相信会给喜欢该工作室的玩家带来全新的游戏体验。",
-            url = "https://www.baidu.com",
-            rating = 4.5f,
-        )
-
-    private val entryDumpNull =
-        Entry(
-            title = "Hello titlefoooooooooBarrrrrrrrsakisakisaki",
-            category = EntryType.movie,
-            coverUrl = "https://www.figma.com/file/pnexnznliZacGHbV45utnX/image/2cab87f3e7d82d7be03f16df26f580392d4632a7",
-            des = "《十三机兵防卫圈》是制作《胧村正》和《圣骑士物语》两大作品的 Vanillaware 小组操刀制作的全新原创  IP，游戏继承了工作室一贯的水彩画风，精美的 2D  手绘风格让人着迷。游戏仍然是横版玩法，加入了机械等未来朋克元素，相信会给喜欢该工作室的玩家带来全新的游戏体验。",
-            url = "https://www.baidu.com",
-            rating = null,
-        )
-    override val values =
-        sequenceOf(
-            entryDumpFull,
-            entryDumpNull,
-        )
-}
-
-private val dumpMark =
-    Mark(
-        Entry(
-            title = "十三机兵防卫圈",
-            category = EntryType.movie,
-            coverUrl = "https://www.figma.com/file/pnexnznliZacGHbV45utnX/image/2cab87f3e7d82d7be03f16df26f580392d4632a7",
-            des = "《十三机兵防卫圈》是制作《胧村正》和《圣骑士物语》两大作品的 Vanillaware 小组操刀制作的全新原创  IP，游戏继承了工作室一贯的水彩画风，精美的 2D  手绘风格让人着迷。游戏仍然是横版玩法，加入了机械等未来朋克元素，相信会给喜欢该工作室的玩家带来全新的游戏体验。",
-            url = "https://www.baidu.com",
-            rating = 4.5f,
-        ),
-        ShelfType.complete,
-        Instant
-            .parse(
-                "2025-01-31T12:33:37.976Z",
-            ).toLocalDateTime(TimeZone.currentSystemDefault())
-            .date,
-        9,
-        "结尾致谢有墨田区观光协会，特别想去隅田川边逛一逛。\r\n\r\n搜到的一个解读：https://forum.gamer.com.tw/C.php?bsn=76911&snA=6",
-    )

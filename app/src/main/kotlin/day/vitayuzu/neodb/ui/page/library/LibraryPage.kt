@@ -31,6 +31,7 @@ import day.vitayuzu.neodb.util.ShelfType
 fun LibraryPage(
     modifier: Modifier = Modifier,
     viewModel: LibraryViewModel = hiltViewModel(),
+    onClickEntry: (EntryType, String) -> Unit = { _, _ -> },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -66,8 +67,9 @@ fun LibraryPage(
                     key = { it.entry.url },
                 ) {
                     EntryMarkCard(
-                        it.entry,
-                        it,
+                        entry = it.entry,
+                        mark = it,
+                        onClickEntry = onClickEntry,
                     )
                 }
             }
