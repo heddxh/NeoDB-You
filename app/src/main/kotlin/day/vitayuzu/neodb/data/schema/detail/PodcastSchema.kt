@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("podcast")
+@SerialName("Podcast")
 data class PodcastSchema(
     // Common fields
     override val id: String,

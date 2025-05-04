@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("performance")
+@SerialName("Performance")
 data class PerformanceSchema(
     // Common fields
     override val id: String,

@@ -11,7 +11,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
  */
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
-@JsonClassDiscriminator("category")
+@JsonClassDiscriminator("type")
 sealed interface DetailSchema {
     val id: String
     val type: String

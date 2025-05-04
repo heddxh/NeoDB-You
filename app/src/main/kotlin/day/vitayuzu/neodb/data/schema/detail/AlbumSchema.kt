@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("music")
+@SerialName("Album")
 data class AlbumSchema(
     // Common fields
     override val id: String,

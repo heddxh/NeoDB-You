@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("game")
+@SerialName("Game")
 data class GameSchema(
     // Common fields
     override val id: String,
