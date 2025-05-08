@@ -1,10 +1,10 @@
 [versions]
-agp = "8.9.1"
+agp = "8.10.0"
 kotlin = "2.1.10"
 coreKtx = "1.16.0"
 lifecycleViewModel = "2.8.7"
 activityCompose = "1.10.1"
-composeBom = "2025.04.00"
+composeBom = "2025.04.01"
 ksp = "2.1.10-1.0.31"
 ktorfitLib = "2.4.0"
 kotlinxSerializationJson = "1.8.0"
@@ -14,9 +14,10 @@ slf4jAndroid = "1.7.36"
 coil = "3.1.0"
 nav = "2.8.9"
 kmpOidc = "0.12.2"
-datastore = "1.1.4"
+datastore = "1.2.0-alpha01"
 hilt = "2.56.1"
 hiltCompose = "1.2.0"
+junit = "4.13.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -43,6 +44,7 @@ datastore-preferences = { group = "androidx.datastore", name = "datastore-prefer
 google-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 google-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltCompose" }
+junit4 = { group = "junit", name = "junit", version.ref = "junit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

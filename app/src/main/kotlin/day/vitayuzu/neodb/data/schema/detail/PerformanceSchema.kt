@@ -4,6 +4,7 @@ import day.vitayuzu.neodb.util.EntryType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+// TODO: Add performance products
 @Serializable
 @SerialName("Performance")
 data class PerformanceSchema(
