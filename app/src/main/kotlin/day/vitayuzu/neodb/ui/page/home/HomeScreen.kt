@@ -38,8 +38,6 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val numberOfEachTrending = 10
-
     // HACK: https://issuetracker.google.com/issues/362137847#comment5
     if (uiState.isLoading) {
         LinearProgressIndicator(modifier = modifier.fillMaxWidth())
@@ -52,7 +50,7 @@ fun HomeScreen(
             // Book
             item {
                 TrendingSection(
-                    data = uiState.book.take(numberOfEachTrending),
+                    data = uiState.book,
                     type = EntryType.book,
                     modifier = trendingModifier,
                     onClickEntry = onClickEntry,
@@ -61,7 +59,7 @@ fun HomeScreen(
             // Game
             item {
                 TrendingSection(
-                    data = uiState.game.take(numberOfEachTrending),
+                    data = uiState.game,
                     type = EntryType.game,
                     modifier = trendingModifier,
                     onClickEntry = onClickEntry,
@@ -70,7 +68,7 @@ fun HomeScreen(
             // Movie
             item {
                 TrendingSection(
-                    data = uiState.movie.take(numberOfEachTrending),
+                    data = uiState.movie,
                     type = EntryType.movie,
                     modifier = trendingModifier,
                     onClickEntry = onClickEntry,
@@ -79,7 +77,7 @@ fun HomeScreen(
             // TV
             item {
                 TrendingSection(
-                    data = uiState.tv.take(numberOfEachTrending),
+                    data = uiState.tv,
                     type = EntryType.tv,
                     modifier = trendingModifier,
                     onClickEntry = onClickEntry,
@@ -88,7 +86,7 @@ fun HomeScreen(
             // Music
             item {
                 TrendingSection(
-                    data = uiState.music.take(numberOfEachTrending),
+                    data = uiState.music,
                     type = EntryType.music,
                     modifier = trendingModifier,
                     onClickEntry = onClickEntry,
@@ -97,7 +95,7 @@ fun HomeScreen(
             // Podcast
             item {
                 TrendingSection(
-                    data = uiState.podcast.take(numberOfEachTrending),
+                    data = uiState.podcast,
                     type = EntryType.podcast,
                     modifier = trendingModifier,
                     onClickEntry = onClickEntry,
