@@ -7,7 +7,16 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import day.vitayuzu.neodb.data.Repository
-import day.vitayuzu.neodb.data.schema.detail.DetailSchema
+import day.vitayuzu.neodb.data.schema.detail.AlbumSchema
+import day.vitayuzu.neodb.data.schema.detail.EditionSchema
+import day.vitayuzu.neodb.data.schema.detail.GameSchema
+import day.vitayuzu.neodb.data.schema.detail.MovieSchema
+import day.vitayuzu.neodb.data.schema.detail.PerformanceSchema
+import day.vitayuzu.neodb.data.schema.detail.PodcastSchema
+import day.vitayuzu.neodb.data.schema.detail.TVSeasonSchema
+import day.vitayuzu.neodb.data.schema.detail.TVShowSchema
+import day.vitayuzu.neodb.ui.model.Detail
+import day.vitayuzu.neodb.ui.model.toDetail
 import day.vitayuzu.neodb.util.EntryType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,7 +26,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel(assistedFactory = DetailViewModel.Factory::class)
 class DetailViewModel @AssistedInject constructor(
     @Assisted val type: EntryType,
-    @Assisted val uuid: String,
+    @Assisted val uuid: String, // FIXME: tv is kinds of confusing, should be season instead of show
     private val repo: Repository,
 ) : ViewModel() {
 
@@ -42,8 +51,18 @@ class DetailViewModel @AssistedInject constructor(
     ) {
         _uiState.update { DetailUiState.Loading }
         viewModelScope.launch {
-            repo.fetchDetail(type, uuid).collect { detailRes ->
-                _uiState.update { DetailUiState.Success(detailRes) }
+            repo.fetchDetail(type, uuid).collect { detailSchema ->
+                val detail = when (detailSchema) {
+                    is EditionSchema -> detailSchema.toDetail()
+                    is GameSchema -> detailSchema.toDetail()
+                    is MovieSchema -> detailSchema.toDetail()
+                    is TVShowSchema -> detailSchema.toDetail()
+                    is TVSeasonSchema -> detailSchema.toDetail()
+                    is AlbumSchema -> detailSchema.toDetail()
+                    is PodcastSchema -> detailSchema.toDetail()
+                    is PerformanceSchema -> detailSchema.toDetail()
+                }
+                _uiState.update { DetailUiState.Success(detail) }
             }
         }
     }
@@ -53,7 +72,7 @@ sealed interface DetailUiState {
     data object Loading : DetailUiState
 
     data class Success(
-        val detail: DetailSchema, // FIXME: Should not reference schema directly
+        val detail: Detail,
         val reviewList: List<ReviewUiState> = emptyList(),
     ) : DetailUiState
 
