@@ -35,7 +35,7 @@ fun StarsWithScores(
             half = rating > rating.toInt(),
         )
         Text(
-            text = rating.toString(),
+            text = "%.1f".format(rating),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.ratingColor,
         )
