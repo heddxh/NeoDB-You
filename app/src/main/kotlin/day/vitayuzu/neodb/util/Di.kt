@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.Log
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStoreFile
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,6 +14,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import day.vitayuzu.neodb.data.LocalPreferenceSource
 import day.vitayuzu.neodb.data.NeoDbApi
+import day.vitayuzu.neodb.data.RealRepository
+import day.vitayuzu.neodb.data.Repository
 import day.vitayuzu.neodb.data.createNeoDbApi
 import de.jensklingenberg.ktorfit.ktorfit
 import io.ktor.client.HttpClient
@@ -36,6 +39,14 @@ import javax.inject.Singleton
 
 @HiltAndroidApp
 class NeoDBYouApp : Application()
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class RepositoryModule {
+    @Binds
+    @Singleton
+    abstract fun bindRealRepository(impl: RealRepository): Repository
+}
 
 @Module
 @InstallIn(SingletonComponent::class)

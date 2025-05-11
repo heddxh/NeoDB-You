@@ -2,6 +2,7 @@ package day.vitayuzu.neodb.data
 
 import day.vitayuzu.neodb.data.schema.AuthClientIdentify
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
+import day.vitayuzu.neodb.data.schema.PaginatedPostList
 import day.vitayuzu.neodb.data.schema.TrendingItemSchema
 import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.util.APP_NAME
@@ -47,6 +48,14 @@ class RemoteSource @Inject constructor(
         api.fetchDetail(typeStringEndpoint, uuid)
     }
 
+    suspend fun fetchItemPosts(
+        uuid: String,
+        type: String,
+        page: Int,
+    ) = withContext(dispatcher) {
+        api.fetchItemPosts(uuid, type, page)
+    }
+
     suspend fun registerOauthAPP(): Result<AuthClientIdentify> = withContext(dispatcher) {
         try {
             val result = api.registerOauthAPP()
@@ -89,4 +98,11 @@ interface NeoDbApi {
         @Path("type") type: String,
         @Path("uuid") uuid: String,
     ): DetailSchema
+
+    @GET("item/{uuid}/posts/")
+    suspend fun fetchItemPosts(
+        @Path("uuid") uuid: String,
+        @Query("type") type: String,
+        @Query("page") page: Int,
+    ): PaginatedPostList
 }

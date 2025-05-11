@@ -1,8 +1,11 @@
 package day.vitayuzu.neodb.data
 
 import android.util.Log
+import day.vitayuzu.neodb.data.schema.HasPages
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
+import day.vitayuzu.neodb.data.schema.PaginatedPostList
 import day.vitayuzu.neodb.data.schema.TrendingItemSchema
+import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,18 +19,31 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 
-class Repository @Inject constructor(private val remoteSource: RemoteSource) {
+interface Repository {
+    fun fetchMyAllShelf(): Flow<PagedMarkSchema>
+
+    fun fetchTrending(): Flow<Map<EntryType, List<TrendingItemSchema>>>
+
+    fun fetchDetail(
+        type: EntryType,
+        uuid: String,
+    ): Flow<DetailSchema>
+
+    fun fetchItemPosts(uuid: String): Flow<PaginatedPostList>
+}
+
+class RealRepository @Inject constructor(private val remoteSource: RemoteSource) : Repository {
 
     // Concurrently fetch all shelves
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun fetchMyAllShelf(): Flow<PagedMarkSchema> =
+    override fun fetchMyAllShelf(): Flow<PagedMarkSchema> =
         flowOf(*ShelfType.entries.toTypedArray()).flatMapMerge {
             fetchMyShelfByShelfType(it)
         }
 
     // Concurrently fetch all trending, return a map of type to trending
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun fetchTrending(): Flow<Map<EntryType, List<TrendingItemSchema>>> {
+    override fun fetchTrending(): Flow<Map<EntryType, List<TrendingItemSchema>>> {
         val typeInTrending = listOf(
             EntryType.book,
             EntryType.movie,
@@ -45,13 +61,7 @@ class Repository @Inject constructor(private val remoteSource: RemoteSource) {
 
     private fun fetchTrendingByEntryType(type: EntryType): Flow<List<TrendingItemSchema>> = flow {
         emit(remoteSource.fetchTrending(type))
-    }.onStart {
-        Log.d("Repository", "Trending: Start fetching $type")
-    }.onCompletion {
-        Log.d("Repository", "Trending: End fetching $type")
-    }.catch {
-        Log.e("Repository", "Trending: Error fetching $type: $it")
-    }
+    }.log(type.toString())
 
     private fun fetchMyShelfByShelfType(shelfType: ShelfType): Flow<PagedMarkSchema> = flow {
         val initialResponse = remoteSource.fetchMyShelf(shelfType)
@@ -60,24 +70,35 @@ class Repository @Inject constructor(private val remoteSource: RemoteSource) {
         for (page in 2..totalPages) {
             emit(remoteSource.fetchMyShelf(shelfType, page))
         }
-    }.onStart {
-        Log.d("Repository", "Start fetching $shelfType")
-    }.onCompletion {
-        Log.d("Repository", "End fetching $shelfType")
-    }.catch {
-        Log.e("Repository", "Error fetching $shelfType: $it")
-    }
+    }.log(shelfType.toString())
 
-    fun fetchDetail(
+    override fun fetchDetail(
         type: EntryType,
         uuid: String,
     ) = flow {
         emit(remoteSource.fetchDetail(type, uuid))
-    }.onStart {
-        Log.d("Repository", "Start fetching $type $uuid")
-    }.onCompletion {
-        Log.d("Repository", "End fetching $type $uuid")
-    }.catch {
-        Log.e("Repository", "Error fetching $type $uuid: $it")
+    }.log("$type $uuid")
+
+    override fun fetchItemPosts(uuid: String) = pagedRequest { page ->
+        remoteSource.fetchItemPosts(uuid, "comment", page)
+    }.log("comment in $uuid")
+
+    // Helper function to log the request
+    private fun <T> Flow<T>.log(msg: String) = this
+        .onStart {
+            Log.d("Repository", "Start fetching $msg")
+        }.onCompletion {
+            Log.d("Repository", "End fetching $msg")
+        }.catch {
+            Log.e("Repository", "Error fetching $msg: $it")
+        }
+
+    private fun <T : HasPages> pagedRequest(request: suspend (Int) -> T) = flow {
+        val initialResponse = request(1)
+        val totalPages = initialResponse.pages
+        emit(initialResponse)
+        for (page in 2..totalPages) {
+            emit(request(page))
+        }
     }
 }

@@ -3667,6 +3667,16 @@
               "title": "Type"
             },
             "required": false
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "title": "Page",
+              "type": "integer"
+            },
+            "required": false
           }
         ],
         "responses": {
@@ -3676,6 +3686,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PaginatedPostList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
                 }
               }
             }
