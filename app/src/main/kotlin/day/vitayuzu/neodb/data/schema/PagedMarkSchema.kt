@@ -5,10 +5,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PagedMarkSchema(
-    val pages: Int,
     val data: List<MarkScheme>?,
     val count: Int,
-)
+    override val pages: Int,
+) : HasPages
 
 @Serializable
 data class MarkScheme(

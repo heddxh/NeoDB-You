@@ -63,13 +63,8 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
         emit(remoteSource.fetchTrending(type))
     }.log(type.toString())
 
-    private fun fetchMyShelfByShelfType(shelfType: ShelfType): Flow<PagedMarkSchema> = flow {
-        val initialResponse = remoteSource.fetchMyShelf(shelfType)
-        val totalPages = initialResponse.pages
-        emit(initialResponse) // Emit the first page
-        for (page in 2..totalPages) {
-            emit(remoteSource.fetchMyShelf(shelfType, page))
-        }
+    private fun fetchMyShelfByShelfType(shelfType: ShelfType) = pagedRequest { page ->
+        remoteSource.fetchMyShelf(shelfType, page)
     }.log(shelfType.toString())
 
     override fun fetchDetail(
