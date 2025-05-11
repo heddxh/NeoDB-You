@@ -1,9 +1,11 @@
 package day.vitayuzu.neodb.ui.page.detail
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,11 +13,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
@@ -28,11 +36,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.component.RemoteImage
 import day.vitayuzu.neodb.ui.component.StarsWithScores
 import day.vitayuzu.neodb.ui.model.Detail
 import day.vitayuzu.neodb.util.EntryType
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailPage(
     type: EntryType,
@@ -45,6 +55,7 @@ fun DetailPage(
 
     when (val state = uiState) { // Store in a temporary variable to enable smart cast
         is DetailUiState.Success -> Box(modifier = modifier) {
+            var showBottomSheet by remember { mutableStateOf(false) }
             // Background
             AsyncImage(
                 model = state.detail.coverUrl,
@@ -54,7 +65,25 @@ fun DetailPage(
                 modifier = Modifier.fillMaxSize().blur(12.dp),
             )
             // Content
-            DetailContent(data = state.detail)
+            DetailContent(
+                data = state.detail,
+                onClick = { showBottomSheet = true },
+            ) {
+                items(items = state.reviewList) {
+                    PostCard(
+                        avatarUrl = it.avatar,
+                        username = it.username,
+                        content = it.content,
+                        rating = it.rating,
+                    )
+                }
+            }
+            // Modal to show all detailed info
+            if (showBottomSheet) {
+                ModalBottomSheet(onDismissRequest = { showBottomSheet = false }) {
+                    ShowAllInfoModalContent(des = state.detail.des ?: "")
+                }
+            }
         }
 
         is DetailUiState.Loading -> LinearProgressIndicator(modifier = modifier.fillMaxWidth())
@@ -66,7 +95,8 @@ fun DetailPage(
 private fun DetailContent(
     data: Detail,
     modifier: Modifier = Modifier,
-    reviewCards: LazyListScope.() -> Unit = {},
+    onClick: () -> Unit = {},
+    postCards: LazyListScope.() -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize().padding(horizontal = 16.dp),
@@ -79,38 +109,16 @@ private fun DetailContent(
                 category = stringResource(data.type.toR()),
                 rating = data.rating,
                 info = data.info ?: "",
-                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                des = data.des ?: "",
+                modifier = Modifier.fillMaxWidth().padding(8.dp).clickable { onClick() },
             )
         }
 
-        // Description
-        if (data.des != null) {
-            item {
-                Text(
-                    text = data.des,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 6,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-
         // Review cards list
-        reviewCards()
-//        items(10) {
-//            ReviewCard(
-//                avatarUrl = "https://neodb.social/media/profile_images/2025/1/24/z9zuVzu-rBdbZmZUShr6KB2MQcw.jpg",
-//                username = "维他柚子酒",
-//                content = "我要吃炒面面包 Supporting line text lorem ipsum dolor sit amet, consectetur.",
-//                rating = 4.5f,
-//            )
-//        }
+        postCards()
     }
 }
 
-/**
- * @param rating Rating scores in 5 point system.
- */
 @Composable
 private fun DetailHeadingItem(
     title: String,
@@ -118,6 +126,7 @@ private fun DetailHeadingItem(
     category: String,
     rating: Float?,
     info: String,
+    des: String,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -129,7 +138,7 @@ private fun DetailHeadingItem(
             contentDescription = "Cover image of $title",
             contentScale = ContentScale.FillWidth,
             modifier = Modifier
-                .width(140.dp) // FIXME: some landscape cover looks ugly
+                .width(140.dp) // FIXME: some landscape or square cover looks ugly
                 .shadow(4.dp)
                 .clip(MaterialTheme.shapes.small),
         )
@@ -147,11 +156,20 @@ private fun DetailHeadingItem(
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.alpha(.5f),
             )
+            // Rating
             if (rating != null) StarsWithScores(rating)
+            // Info
             Text(
                 text = info,
                 style = MaterialTheme.typography.bodySmall,
-                maxLines = 3,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            // Description
+            Text(
+                text = des,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 5,
                 overflow = TextOverflow.Ellipsis,
             )
         }
@@ -159,11 +177,34 @@ private fun DetailHeadingItem(
 }
 
 @Composable
-private fun ReviewCard(
-    avatarUrl: String,
+private fun ShowAllInfoModalContent(
+    modifier: Modifier = Modifier,
+    des: String = "",
+) {
+    // TODO: complete the modal, and refine the UI
+    LazyColumn(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = stringResource(R.string.detail_field_description),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(des)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PostCard(
+    avatarUrl: String?,
     username: String,
     content: String,
-    rating: Float,
+    rating: Int?,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -188,7 +229,7 @@ private fun ReviewCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                StarsWithScores(rating)
+                if (rating != null) StarsWithScores(rating.toFloat())
             }
             Text(
                 text = content,

@@ -16,6 +16,7 @@ import day.vitayuzu.neodb.data.schema.detail.PodcastSchema
 import day.vitayuzu.neodb.data.schema.detail.TVSeasonSchema
 import day.vitayuzu.neodb.data.schema.detail.TVShowSchema
 import day.vitayuzu.neodb.ui.model.Detail
+import day.vitayuzu.neodb.ui.model.Post
 import day.vitayuzu.neodb.ui.model.toDetail
 import day.vitayuzu.neodb.util.EntryType
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +52,15 @@ class DetailViewModel @AssistedInject constructor(
     ) {
         _uiState.update { DetailUiState.Loading }
         viewModelScope.launch {
+            // Posts
+            val postList: MutableList<Post> = mutableListOf()
+            repo.fetchItemPosts(uuid).collect { paginatedPostList ->
+                paginatedPostList.data.forEach { schema ->
+                    postList.add(Post(schema))
+                }
+            }
+            postList.sortByDescending { it.date }
+            // Info
             repo.fetchDetail(type, uuid).collect { detailSchema ->
                 val detail = when (detailSchema) {
                     is EditionSchema -> detailSchema.toDetail()
@@ -62,7 +72,7 @@ class DetailViewModel @AssistedInject constructor(
                     is PodcastSchema -> detailSchema.toDetail()
                     is PerformanceSchema -> detailSchema.toDetail()
                 }
-                _uiState.update { DetailUiState.Success(detail) }
+                _uiState.update { DetailUiState.Success(detail, postList) }
             }
         }
     }
@@ -73,7 +83,7 @@ sealed interface DetailUiState {
 
     data class Success(
         val detail: Detail,
-        val reviewList: List<ReviewUiState> = emptyList(),
+        val reviewList: List<Post> = emptyList(),
     ) : DetailUiState
 
     data class Error(val message: String) : DetailUiState
@@ -82,5 +92,6 @@ sealed interface DetailUiState {
 data class ReviewUiState(
     val avatar: String?,
     val username: String,
+    val rating: Float?,
     val content: String,
 )

@@ -98,6 +98,7 @@ fun MainScaffold(modifier: Modifier = Modifier) {
                         label = { Text(stringResource(screen.name)) },
                         selected = currentScreen == screen,
                         onClick = {
+                            // FIXME: detail back to home
                             navController.navigate(screen.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true

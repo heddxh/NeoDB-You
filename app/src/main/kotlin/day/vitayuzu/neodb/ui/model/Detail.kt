@@ -27,9 +27,9 @@ fun EditionSchema.toDetail() = Detail(
     type = this.category,
     title = this.title,
     coverUrl = this.coverImageUrl,
-    rating = this.rating?.div(2),
+    rating = this.rating,
     des = this.description,
-    info = buildSet<String> {
+    info = buildSet {
         addAll(this@toDetail.author)
         addAll(this@toDetail.translator)
         addNotNull(this@toDetail.pubHouse)
@@ -45,7 +45,7 @@ fun GameSchema.toDetail() = Detail(
     coverUrl = this.coverImageUrl,
     rating = this.rating?.div(2),
     des = this.description,
-    info = buildSet<String> {
+    info = buildSet {
         addAll(this@toDetail.developer)
         addAll(this@toDetail.genre)
         // Take up to 5 platforms
@@ -61,7 +61,7 @@ fun MovieSchema.toDetail() = Detail(
     coverUrl = this.coverImageUrl,
     rating = this.rating?.div(2),
     des = this.description,
-    info = buildSet<String> {
+    info = buildSet {
         // Take up to 5 people
         addAll((this@toDetail.playwright + this@toDetail.actor + this@toDetail.director).take(5))
         addAll(this@toDetail.genre)
@@ -77,7 +77,7 @@ fun TVShowSchema.toDetail() = Detail(
     coverUrl = this.coverImageUrl,
     rating = this.rating?.div(2),
     des = this.description,
-    info = buildSet<String> {
+    info = buildSet {
         // Take up to 5 people
         addAll((this@toDetail.playwright + this@toDetail.actor + this@toDetail.director).take(5))
         addAll(this@toDetail.genre)
@@ -92,7 +92,7 @@ fun TVSeasonSchema.toDetail() = Detail(
     coverUrl = this.coverImageUrl,
     rating = this.rating?.div(2),
     des = this.description,
-    info = buildSet<String> {
+    info = buildSet {
         // Take up to 5 people
         addAll((this@toDetail.playwright + this@toDetail.actor + this@toDetail.director).take(5))
         addAll(this@toDetail.genre)
@@ -107,7 +107,7 @@ fun AlbumSchema.toDetail() = Detail(
     coverUrl = this.coverImageUrl,
     rating = this.rating?.div(2),
     des = this.description,
-    info = buildSet<String> {
+    info = buildSet {
         // Take up to 5 people
         addAll(this@toDetail.artist.take(5))
         addAll(this@toDetail.genre)
@@ -122,7 +122,7 @@ fun PodcastSchema.toDetail() = Detail(
     coverUrl = this.coverImageUrl,
     rating = this.rating?.div(2),
     des = this.description,
-    info = buildSet<String> {
+    info = buildSet {
         addAll(this@toDetail.genre)
         addAll(this@toDetail.host)
     }.filter { it.isNotBlank() }.joinToString(separator = " / "),
@@ -134,7 +134,7 @@ fun PerformanceSchema.toDetail() = Detail(
     coverUrl = this.coverImageUrl,
     rating = this.rating?.div(2),
     des = this.description,
-    info = buildSet<String> {
+    info = buildSet {
         addAll(this@toDetail.genre)
         addNotNull(this@toDetail.director.first())
         addNotNull(this@toDetail.playwright.first())

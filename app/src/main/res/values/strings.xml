@@ -19,4 +19,6 @@
     <string name="shelf_displayname_completed">已完成</string>
     <string name="shelf_displayname_dropped">抛弃</string>
 
+    <string name="detail_field_description">简介</string>
+
 </resources>
