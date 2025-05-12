@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity() {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScaffold(modifier: Modifier = Modifier) {
+private fun MainScaffold(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentScreen = mainScreens.find { screen ->
@@ -136,7 +136,7 @@ fun MainScaffold(modifier: Modifier = Modifier) {
  * Control which screen to show in the [MainScaffold].
  */
 @Composable
-fun MainNavi(
+private fun MainNavi(
     navController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
@@ -145,8 +145,8 @@ fun MainNavi(
         startDestination = Home,
         popExitTransition = {
             scaleOut(
-                targetScale = 0.9f,
-                transformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 0.5f),
+                targetScale = 0.8f,
+                transformOrigin = TransformOrigin.Center,
             )
         },
         popEnterTransition = { EnterTransition.None },
