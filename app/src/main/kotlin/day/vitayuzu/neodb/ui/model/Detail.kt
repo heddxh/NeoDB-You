@@ -43,7 +43,7 @@ fun GameSchema.toDetail() = Detail(
     type = this.category,
     title = this.title,
     coverUrl = this.coverImageUrl,
-    rating = this.rating?.div(2),
+    rating = this.rating,
     des = this.description,
     info = buildSet {
         addAll(this@toDetail.developer)
@@ -59,7 +59,7 @@ fun MovieSchema.toDetail() = Detail(
     type = this.category,
     title = this.title,
     coverUrl = this.coverImageUrl,
-    rating = this.rating?.div(2),
+    rating = this.rating,
     des = this.description,
     info = buildSet {
         // Take up to 5 people
@@ -75,7 +75,7 @@ fun TVShowSchema.toDetail() = Detail(
     type = this.category,
     title = this.title,
     coverUrl = this.coverImageUrl,
-    rating = this.rating?.div(2),
+    rating = this.rating, // FIXME: May not have this field
     des = this.description,
     info = buildSet {
         // Take up to 5 people
@@ -90,7 +90,7 @@ fun TVSeasonSchema.toDetail() = Detail(
     type = this.category,
     title = this.title,
     coverUrl = this.coverImageUrl,
-    rating = this.rating?.div(2),
+    rating = this.rating,
     des = this.description,
     info = buildSet {
         // Take up to 5 people
@@ -105,7 +105,7 @@ fun AlbumSchema.toDetail() = Detail(
     type = this.category,
     title = this.title,
     coverUrl = this.coverImageUrl,
-    rating = this.rating?.div(2),
+    rating = this.rating,
     des = this.description,
     info = buildSet {
         // Take up to 5 people
@@ -120,7 +120,7 @@ fun PodcastSchema.toDetail() = Detail(
     type = this.category,
     title = this.title,
     coverUrl = this.coverImageUrl,
-    rating = this.rating?.div(2),
+    rating = this.rating,
     des = this.description,
     info = buildSet {
         addAll(this@toDetail.genre)
@@ -132,7 +132,7 @@ fun PerformanceSchema.toDetail() = Detail(
     type = this.category,
     title = this.title,
     coverUrl = this.coverImageUrl,
-    rating = this.rating?.div(2),
+    rating = this.rating,
     des = this.description,
     info = buildSet {
         addAll(this@toDetail.genre)

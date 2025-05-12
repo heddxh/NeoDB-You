@@ -1,5 +1,6 @@
 package day.vitayuzu.neodb.ui.page.detail
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,7 +63,10 @@ fun DetailPage(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 alpha = 0.2f,
-                modifier = Modifier.fillMaxSize().blur(12.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .blur(12.dp)
+                    .background(MaterialTheme.colorScheme.background),
             )
             // Content
             DetailContent(
@@ -229,7 +233,7 @@ private fun PostCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                if (rating != null) StarsWithScores(rating.toFloat())
+                if (rating != null) StarsWithScores(rating = rating.toFloat(), showScores = false)
             }
             Text(
                 text = content,

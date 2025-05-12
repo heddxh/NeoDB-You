@@ -25,6 +25,7 @@ import day.vitayuzu.neodb.ui.theme.ratingColor
 fun StarsWithScores(
     rating: Float,
     modifier: Modifier = Modifier,
+    showScores: Boolean = true,
 ) {
     val ratingInFive = rating.div(2)
     Row(
@@ -36,11 +37,13 @@ fun StarsWithScores(
             full = ratingInFive.toInt(),
             half = ratingInFive > ratingInFive.toInt(),
         )
-        Text(
-            text = "%.1f".format(ratingInFive),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.ratingColor,
-        )
+        if (showScores) {
+            Text(
+                text = "%.1f".format(rating),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.ratingColor,
+            )
+        }
     }
 }
 
