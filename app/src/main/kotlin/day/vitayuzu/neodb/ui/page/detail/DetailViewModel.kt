@@ -39,40 +39,43 @@ class DetailViewModel @AssistedInject constructor(
         ): DetailViewModel
     }
 
-    private val _uiState = MutableStateFlow<DetailUiState>(DetailUiState.Loading)
-    val uiState = _uiState.asStateFlow()
+    private val _detailUiState = MutableStateFlow<DetailUiState>(DetailUiState.Loading)
+    val detailUiState = _detailUiState.asStateFlow()
+    private val _postUiState = MutableStateFlow(PostUiState())
+    val postUiState = _postUiState.asStateFlow()
 
     init {
-        refresh(type, uuid)
+        refreshDetail()
+        refreshPosts()
     }
 
-    fun refresh(
-        type: EntryType,
-        uuid: String,
-    ) {
-        _uiState.update { DetailUiState.Loading }
+    private fun refreshPosts() {
         viewModelScope.launch {
-            // Posts
-            val postList: MutableList<Post> = mutableListOf()
+            _postUiState.update { it.copy(isLoading = true) }
             repo.fetchItemPosts(uuid).collect { paginatedPostList ->
                 paginatedPostList.data.forEach { schema ->
-                    postList.add(Post(schema))
+                    _postUiState.update { it.copy(postList = it.postList + Post(schema)) }
                 }
             }
-            postList.sortByDescending { it.date }
-            // Info
-            repo.fetchDetail(type, uuid).collect { detailSchema ->
-                val detail = when (detailSchema) {
-                    is EditionSchema -> detailSchema.toDetail()
-                    is GameSchema -> detailSchema.toDetail()
-                    is MovieSchema -> detailSchema.toDetail()
-                    is TVShowSchema -> detailSchema.toDetail()
-                    is TVSeasonSchema -> detailSchema.toDetail()
-                    is AlbumSchema -> detailSchema.toDetail()
-                    is PodcastSchema -> detailSchema.toDetail()
-                    is PerformanceSchema -> detailSchema.toDetail()
+            _postUiState.update { it.copy(isLoading = false) }
+        }
+    }
+
+    private fun refreshDetail() {
+        viewModelScope.launch {
+            _detailUiState.update { DetailUiState.Loading }
+            repo.fetchDetail(type, uuid).collect {
+                val detail = when (it) {
+                    is EditionSchema -> it.toDetail()
+                    is GameSchema -> it.toDetail()
+                    is MovieSchema -> it.toDetail()
+                    is TVShowSchema -> it.toDetail()
+                    is TVSeasonSchema -> it.toDetail()
+                    is AlbumSchema -> it.toDetail()
+                    is PodcastSchema -> it.toDetail()
+                    is PerformanceSchema -> it.toDetail()
                 }
-                _uiState.update { DetailUiState.Success(detail, postList) }
+                _detailUiState.update { DetailUiState.Success(detail) }
             }
         }
     }
@@ -85,13 +88,9 @@ sealed interface DetailUiState {
         val detail: Detail,
         val reviewList: List<Post> = emptyList(),
     ) : DetailUiState
-
-    data class Error(val message: String) : DetailUiState
 }
 
-data class ReviewUiState(
-    val avatar: String?,
-    val username: String,
-    val rating: Float?,
-    val content: String,
+data class PostUiState(
+    val isLoading: Boolean = false,
+    val postList: List<Post> = emptyList(),
 )

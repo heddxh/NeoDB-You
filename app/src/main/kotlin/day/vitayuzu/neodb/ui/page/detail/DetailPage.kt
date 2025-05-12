@@ -1,9 +1,8 @@
 package day.vitayuzu.neodb.ui.page.detail
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,12 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,6 +30,7 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,9 +38,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import day.vitayuzu.neodb.R
-import day.vitayuzu.neodb.ui.component.RemoteImage
 import day.vitayuzu.neodb.ui.component.StarsWithScores
 import day.vitayuzu.neodb.ui.model.Detail
+import day.vitayuzu.neodb.ui.model.Post
 import day.vitayuzu.neodb.util.EntryType
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,46 +52,42 @@ fun DetailPage(
     viewModel: DetailViewModel =
         hiltViewModel<DetailViewModel, DetailViewModel.Factory> { it.create(type, uuid) },
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val detailUiState by viewModel.detailUiState.collectAsStateWithLifecycle()
+    val postUiState by viewModel.postUiState.collectAsStateWithLifecycle()
 
-    when (val state = uiState) { // Store in a temporary variable to enable smart cast
-        is DetailUiState.Success -> Box(modifier = modifier) {
-            var showBottomSheet by remember { mutableStateOf(false) }
-            // Background
-            AsyncImage(
-                model = state.detail.coverUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                alpha = 0.2f,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .blur(12.dp)
-                    .background(MaterialTheme.colorScheme.background),
-            )
-            // Content
-            DetailContent(
-                data = state.detail,
-                onClick = { showBottomSheet = true },
-            ) {
-                items(items = state.reviewList) {
-                    PostCard(
-                        avatarUrl = it.avatar,
-                        username = it.username,
-                        content = it.content,
-                        rating = it.rating,
-                    )
+    Surface(modifier = modifier) {
+        when (val state = detailUiState) { // Store in a temporary variable to enable smart cast
+            is DetailUiState.Success -> {
+                var showBottomSheet by remember { mutableStateOf(false) }
+                // Background
+                AsyncImage(
+                    model = state.detail.coverUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    alpha = 0.2f,
+                    modifier = Modifier.fillMaxSize().blur(12.dp),
+                )
+                // Content
+                DetailContent(
+                    data = state.detail,
+                    postList = postUiState.postList,
+                    onClick = { showBottomSheet = true },
+                )
+                // Modal to show all detailed info
+                if (showBottomSheet) {
+                    ModalBottomSheet(onDismissRequest = { showBottomSheet = false }) {
+                        ShowAllInfoModalContent(des = state.detail.des ?: "")
+                    }
                 }
             }
-            // Modal to show all detailed info
-            if (showBottomSheet) {
-                ModalBottomSheet(onDismissRequest = { showBottomSheet = false }) {
-                    ShowAllInfoModalContent(des = state.detail.des ?: "")
-                }
-            }
+
+            else -> {}
         }
-
-        is DetailUiState.Loading -> LinearProgressIndicator(modifier = modifier.fillMaxWidth())
-        else -> return
+        if (detailUiState is DetailUiState.Loading ||
+            postUiState.isLoading
+        ) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
     }
 }
 
@@ -99,8 +95,8 @@ fun DetailPage(
 private fun DetailContent(
     data: Detail,
     modifier: Modifier = Modifier,
+    postList: List<Post> = emptyList(),
     onClick: () -> Unit = {},
-    postCards: LazyListScope.() -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize().padding(horizontal = 16.dp),
@@ -114,12 +110,27 @@ private fun DetailContent(
                 rating = data.rating,
                 info = data.info ?: "",
                 des = data.des ?: "",
-                modifier = Modifier.fillMaxWidth().padding(8.dp).clickable { onClick() },
+                modifier = Modifier.fillMaxWidth().clickable(
+                    // Using this overload to skip composition
+                    interactionSource = null,
+                    indication = LocalIndication.current,
+                    onClick = onClick,
+                ),
             )
         }
 
         // Review cards list
-        postCards()
+        items(
+            items = postList.sortedByDescending { it.date },
+            key = { it.hashCode() },
+        ) {
+            PostCard(
+                avatarUrl = it.avatar,
+                username = it.username,
+                content = it.content,
+                rating = it.rating,
+            )
+        }
     }
 }
 
@@ -215,11 +226,15 @@ private fun PostCard(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        RemoteImage(
-            imageUrl = avatarUrl,
+        // Placeholder: https://mastodon.social/avatars/original/missing.png
+        AsyncImage(
+            model = avatarUrl,
             contentDescription = "Avatar of $username",
             contentScale = ContentScale.Crop,
-            modifier = Modifier.size(50.dp),
+            placeholder = painterResource(R.drawable.avatar_placeholder),
+            fallback = painterResource(R.drawable.avatar_placeholder),
+            error = painterResource(R.drawable.avatar_placeholder),
+            modifier = Modifier.size(50.dp).clip(MaterialTheme.shapes.small),
         )
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             // Username and rating stars
