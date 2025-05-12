@@ -28,7 +28,7 @@ space.
 
 ### Performance of `Modifier.clickable`
 
-Instead using `Modifier.clickable {}`, using the other overload to skip unnecessary recomposition:
+Instead of using `Modifier.clickable {}`, using the other overload to skip unnecessary recomposition:
 
 ```kotlin
 Modifier.clickable(
