@@ -40,13 +40,85 @@ Modifier.clickable(
 
 See: https://issuetracker.google.com/issues/241154852 and the comment of the source code.
 
+### Intrinsic Size
+
+The [official documentation](https://developer.android.com/develop/ui/compose/layouts/intrinsic-measurements)
+example for intrinsic measurements doesn't quite cover a common scenario.
+Imagine you have two buttons in a Row, each with text of different lengths. The goal is to make both
+buttons the same width, specifically matching the width of the widest button (so they both wrap its
+content perfectly).
+
+There are other methods to achieve this, but here I want to use `IntrinsicSize` to do it.
+
+It's straightforward to make children in a Row have equal widths using `Modifier.weight(1f)`.
+However,
+this typically makes them expand to fill the available space. The challenge here is different: we
+want to inform one child (or all children) about the preferred width of another (the widest one).
+This implies needing to measure the children before determining the parent Row's size.
+
+The documentation clearly explains how `Modifier.width(IntrinsicSize.Min)` functions in a Row. So,
+how
+does` Modifier.width(IntrinsicSize.Max)` behave in this context?
+
+Let's take a quick peek at the source code.
+
+Under the hood, `Row` is a custom layout. Its `MeasurePolicy` needs to implement functions from
+`IntrinsicMeasureScope` to report its intrinsic sizes correctly. Following the call chain, we find
+the
+relevant code for [
+`intrinsicMainAxisSize`](https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:compose/foundation/foundation-layout/src/commonMain/kotlin/androidx/compose/foundation/layout/RowColumnImpl.kt;l=415-438;drc=2c2677f4c3729b50080b6adf98d0c5e23d47d393) (
+which determines intrinsic width for a Row)
+
+```kotlin
+private inline fun intrinsicMainAxisSize(
+    children: List<IntrinsicMeasurable>,
+    mainAxisSize: IntrinsicMeasurable.(Int) -> Int,
+    crossAxisAvailable: Int,
+    mainAxisSpacing: Int
+): Int {
+    if (children.isEmpty()) return 0
+    var weightUnitSpace = 0
+    var fixedSpace = 0
+    var totalWeight = 0f
+    children.fastForEach { child ->
+        val weight = child.rowColumnParentData.weight
+        val size = child.mainAxisSize(crossAxisAvailable)
+        if (weight == 0f) {
+            fixedSpace += size
+        } else if (weight > 0f) {
+            totalWeight += weight
+            weightUnitSpace = max(weightUnitSpace, (size / weight).fastRoundToInt())
+        }
+    }
+    return (weightUnitSpace * totalWeight).fastRoundToInt() +
+        fixedSpace +
+        (children.size - 1) * mainAxisSpacing
+}
+```
+
+Notice how it considers the weight modifier. The key variable here is weightUnitSpace. It's
+calculated as the **maximum** (intrinsic size / weight) ratio among all weighted children.
+
+In our specific case, let's say both buttons have weight = 1f.
+
+1. For each button, `child.mainAxisSize(crossAxisAvailable)` will return its intrinsic width (the
+   width it needs to wrap its text).
+2. `weightUnitSpace` will then be
+   `max((intrinsic_width_button1 / 1f), (intrinsic_width_button2 / 1f))`.
+   This simplifies to the width of the wider button.
+3. `totalWeight` will be 1f + 1f = 2f.
+4. Ignoring spacing and fixed-size children for clarity, the function returns`(
+   width_of_wider_button * 2f)`.
+
+Now we get it.
+
 ## Ktor logging
 
 Add dependencies:
 
 ```toml
 slf4j-android = { group = "org.slf4j", name = "slf4j-android", version.ref = "slf4jAndroid" }
-ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
+ktor-client-logging = { group ant = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
 ```
 
 Then change logger:
