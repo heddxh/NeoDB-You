@@ -4,6 +4,7 @@ import day.vitayuzu.neodb.data.schema.AuthClientIdentify
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.data.schema.PaginatedPostList
 import day.vitayuzu.neodb.data.schema.TrendingItemSchema
+import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.util.APP_NAME
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
@@ -64,6 +65,10 @@ class RemoteSource @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun fetchMe(): UserSchema = withContext(dispatcher) {
+        api.fetchMe()
+    }
 }
 
 /**
@@ -105,4 +110,7 @@ interface NeoDbApi {
         @Query("type") type: String,
         @Query("page") page: Int,
     ): PaginatedPostList
+
+    @GET("me")
+    suspend fun fetchMe(): UserSchema
 }

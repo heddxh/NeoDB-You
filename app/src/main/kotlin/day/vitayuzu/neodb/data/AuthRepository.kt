@@ -2,6 +2,7 @@ package day.vitayuzu.neodb.data
 
 import android.util.Log
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
+import kotlinx.coroutines.flow.flow
 import org.publicvalue.multiplatform.oidc.OpenIdConnectClient
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -66,6 +67,10 @@ class AuthRepository @Inject constructor(
             Log.e("AuthRepository", "Failed to store access token", e)
         }
     }
+
+    fun fetchMe() = flow {
+        emit(remoteSource.fetchMe())
+    }.log("Fetch self account")
 
     private companion object {
         val AuthRegisterException: Exception = Exception("Failed to register app")

@@ -78,16 +78,6 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
         remoteSource.fetchItemPosts(uuid, "comment", page)
     }.log("comment in $uuid")
 
-    // Helper function to log the request
-    private fun <T> Flow<T>.log(msg: String) = this
-        .onStart {
-            Log.d("Repository", "Start fetching $msg")
-        }.onCompletion {
-            Log.d("Repository", "End fetching $msg")
-        }.catch {
-            Log.e("Repository", "Error fetching $msg: $it")
-        }
-
     private fun <T : HasPages> pagedRequest(request: suspend (Int) -> T) = flow {
         val initialResponse = request(1)
         val totalPages = initialResponse.pages
@@ -97,3 +87,13 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
         }
     }
 }
+
+// Helper function to log the request
+fun <T> Flow<T>.log(msg: String) = this
+    .onStart {
+        Log.d("Repository", "Start fetching $msg")
+    }.onCompletion {
+        Log.d("Repository", "End fetching $msg")
+    }.catch {
+        Log.e("Repository", "Error fetching $msg: $it")
+    }
