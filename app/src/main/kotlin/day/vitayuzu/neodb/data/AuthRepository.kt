@@ -3,12 +3,18 @@ package day.vitayuzu.neodb.data
 import android.util.Log
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
 import org.publicvalue.multiplatform.oidc.OpenIdConnectClient
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class AuthRepository @Inject constructor(
     private val remoteSource: RemoteSource,
     private val preferenceSource: LocalPreferenceSource,
 ) {
+
+    val isLogin = AtomicBoolean(false) // Cache in memory, initialized in [MainActivity]
+
     suspend fun registerAppIfNeeded(): Result<OpenIdConnectClient> {
         val clientId = preferenceSource.getAuthClientId()
         val clientSecret = preferenceSource.getAuthClientSecret()
@@ -47,6 +53,7 @@ class AuthRepository @Inject constructor(
             return preferenceSource.getAccessToken()
         } catch (e: Exception) {
             Log.e("AuthRepository", "Failed to get access token", e)
+            isLogin.set(false)
             return null
         }
     }
@@ -54,6 +61,7 @@ class AuthRepository @Inject constructor(
     suspend fun storeAccessToken(token: String) {
         try {
             preferenceSource.storeAccessToken(token)
+            isLogin.set(true)
         } catch (e: Exception) {
             Log.e("AuthRepository", "Failed to store access token", e)
         }

@@ -1,6 +1,7 @@
 package day.vitayuzu.neodb
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -22,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -35,10 +37,12 @@ import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.request.crossfade
 import dagger.hilt.android.AndroidEntryPoint
+import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
 import day.vitayuzu.neodb.ui.page.login.LoginPage
+import day.vitayuzu.neodb.ui.page.settings.SettingsPage
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.Navi
 import day.vitayuzu.neodb.util.Navi.Companion.mainScreens
@@ -46,6 +50,7 @@ import day.vitayuzu.neodb.util.Navi.Home
 import day.vitayuzu.neodb.util.Navi.Library
 import day.vitayuzu.neodb.util.Navi.Login
 import day.vitayuzu.neodb.util.Navi.Settings
+import kotlinx.coroutines.launch
 import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 import javax.inject.Inject
 
@@ -54,6 +59,8 @@ class MainActivity : ComponentActivity() {
 
     // Auth/Oauth2 factory
     @Inject lateinit var codeAuthFlowFactory: AndroidCodeAuthFlowFactory
+
+    @Inject lateinit var authRepository: AuthRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +71,18 @@ class MainActivity : ComponentActivity() {
                 .crossfade(true)
                 .build()
         }
+
+        // Check if logged in(access token exists)
+        // TODO: check if access token is valid somewhere else
+        lifecycleScope.launch {
+            if (authRepository.getAccessToken() != null) {
+                authRepository.isLogin.set(true)
+                Log.d("MainActivity", "Have logged in")
+            } else {
+                Log.d("MainActivity", "No logged in")
+            }
+        }
+
         enableEdgeToEdge()
         setContent {
             NeoDBYouTheme {
@@ -145,7 +164,7 @@ private fun MainNavi(
         startDestination = Home,
         popExitTransition = {
             scaleOut(
-                targetScale = 0.8f,
+                targetScale = 0.9f,
                 transformOrigin = TransformOrigin.Center,
             )
         },
@@ -167,7 +186,9 @@ private fun MainNavi(
                 },
             )
         }
-        composable<Settings> {}
+        composable<Settings> {
+            SettingsPage()
+        }
         composable<Navi.Detail> {
             val detailEntry: Navi.Detail = it.toRoute()
             DetailPage(detailEntry.type, detailEntry.uuid)
