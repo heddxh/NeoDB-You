@@ -13,11 +13,12 @@ ktor = "3.1.1"
 slf4jAndroid = "1.7.36"
 coil = "3.1.0"
 nav = "2.9.0"
-kmpOidc = "0.12.2"
+kmpOidc = "0.12.4"
 datastore = "1.2.0-alpha02"
 hilt = "2.56.1"
 hiltCompose = "1.2.0"
 junit = "4.13.2"
+browser = "1.8.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,6 +46,7 @@ google-hilt-android = { group = "com.google.dagger", name = "hilt-android", vers
 google-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltCompose" }
 junit4 = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

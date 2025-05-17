@@ -22,7 +22,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         addManifestPlaceholders(
-            mapOf("oidcRedirectScheme" to "day.vitayuzu.neodb"),
+            mapOf("oidcRedirectScheme" to this.applicationId.toString()),
         )
     }
 
@@ -77,8 +77,8 @@ dependencies {
     implementation(libs.kotlinx.datetime)
 
     // Oauth2
-    implementation(libs.kmp.oidc.appsupport)
-    implementation(libs.kmp.oidc.ktor)
+//    implementation(libs.kmp.oidc.appsupport)
+//    implementation(libs.kmp.oidc.ktor)
     implementation(libs.datastore.preferences)
     implementation(libs.ktor.client.auth)
 
@@ -87,4 +87,8 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     testImplementation(libs.junit4)
+
+    implementation("io.github.kalinjul.kotlin.multiplatform:oidc-appsupport:9.9.9-LOCAL")
+    implementation("io.github.kalinjul.kotlin.multiplatform:oidc-ktor:9.9.9-LOCAL")
+    implementation(libs.androidx.browser)
 }
