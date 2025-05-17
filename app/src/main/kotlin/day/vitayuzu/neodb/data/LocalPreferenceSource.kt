@@ -19,10 +19,6 @@ import javax.inject.Inject
  */
 class LocalPreferenceSource @Inject constructor(private val dataStore: DataStore<Preferences>) {
 
-    suspend fun storeAuthCode(code: String) {
-        dataStore.edit { it[AUTH_CODE] = code }
-    }
-
     suspend fun storeAccessToken(token: String) {
         dataStore.edit {
             it[ACCESS_TOKEN] = token
@@ -56,6 +52,15 @@ class LocalPreferenceSource @Inject constructor(private val dataStore: DataStore
             Log.e("AuthRepository", "Error while reading preferences", it)
             emit(null)
         }.firstOrNull()
+
+    suspend fun deleteAllAuthData() {
+        dataStore.edit {
+            it.remove(CLIENT_ID)
+            it.remove(CLIENT_SECRET)
+            it.remove(AUTH_CODE)
+            it.remove(ACCESS_TOKEN)
+        }
+    }
 
     private companion object {
         val CLIENT_ID = stringPreferencesKey("client_id")

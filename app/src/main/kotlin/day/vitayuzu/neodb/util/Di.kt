@@ -17,6 +17,7 @@ import day.vitayuzu.neodb.data.NeoDbApi
 import day.vitayuzu.neodb.data.RealRepository
 import day.vitayuzu.neodb.data.Repository
 import day.vitayuzu.neodb.data.createNeoDbApi
+import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.ktorfit
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.DefaultRequest
@@ -84,46 +85,48 @@ object DispatcherModule {
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
     @Singleton
     @Provides
-    fun provideApi(preferenceSource: LocalPreferenceSource): NeoDbApi {
-        val ktorfit = ktorfit {
-            Log.d("RemoteSource", "Initializing Ktorfit client...")
-            baseUrl(BASEURL)
-            httpClient(
-                HttpClient {
-                    install(DefaultRequest) {
-                        headers.appendIfNameAndValueAbsent("Content-Type", "application/json")
-                    }
-                    install(ContentNegotiation) {
-                        json(
-                            Json {
-                                ignoreUnknownKeys = true
-                                isLenient = true // Allow unquoted string
-                            },
-                        )
-                    }
-                    install(Logging) {
-                        logger = Logger.ANDROID
-                        level = LogLevel.NONE
-                    }
-                    install(Auth) {
-                        bearer {
-                            loadTokens {
-                                val token = preferenceSource.getAccessToken()
-                                if (token != null) {
-                                    // No expire time, no need to refresh
-                                    BearerTokens(token, null)
-                                } else {
-                                    Log.d("Ktorfit", "No token found, skipping bearer")
-                                    null
-                                }
+    fun provideApi(ktorfit: Ktorfit): NeoDbApi = ktorfit.createNeoDbApi()
+
+    @Singleton
+    @Provides
+    fun provideHttpClient(preferenceSource: LocalPreferenceSource): Ktorfit = ktorfit {
+        Log.d("RemoteSource", "Initializing Ktorfit client...")
+        baseUrl(BASEURL)
+        httpClient(
+            HttpClient {
+                install(DefaultRequest) {
+                    headers.appendIfNameAndValueAbsent("Content-Type", "application/json")
+                }
+                install(ContentNegotiation) {
+                    json(
+                        Json {
+                            ignoreUnknownKeys = true
+                            isLenient = true // Allow unquoted string
+                        },
+                    )
+                }
+                install(Logging) {
+                    logger = Logger.ANDROID
+                    level = LogLevel.NONE
+                }
+                install(Auth) {
+                    bearer {
+                        loadTokens {
+                            val token = preferenceSource.getAccessToken()
+                            if (token != null) {
+                                // No expire time, no need to refresh
+                                BearerTokens(token, null)
+                            } else {
+                                Log.d("Ktorfit", "No token found, skipping bearer")
+                                null
                             }
                         }
                     }
-                },
-            )
-        }
-        return ktorfit.createNeoDbApi()
+                }
+            },
+        )
     }
 }

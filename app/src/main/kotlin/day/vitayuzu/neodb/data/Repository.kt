@@ -88,7 +88,9 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
     }
 }
 
-// Helper function to log the request
+/**
+ * Helper function to log the request for a flow.
+ */
 fun <T> Flow<T>.log(msg: String) = this
     .onStart {
         Log.d("Repository", "Start fetching $msg")

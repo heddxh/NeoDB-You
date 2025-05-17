@@ -1,6 +1,7 @@
 package day.vitayuzu.neodb.ui.page.settings
 
 import android.util.Log
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,14 +28,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import day.vitayuzu.neodb.R
+import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 
 @Composable
 fun SettingsPage(
@@ -43,7 +46,7 @@ fun SettingsPage(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val uriHandler = LocalUriHandler.current
+    val ctx = LocalContext.current
 
     Surface(modifier = modifier.fillMaxSize()) {
         if (uiState.isLogin) {
@@ -52,9 +55,11 @@ fun SettingsPage(
                 username = uiState.username,
                 fediAccount = uiState.fediAccount,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                logOut = viewModel::logout,
             ) {
                 try {
-                    uriHandler.openUri(uiState.url) // FIXME: open in chrome tab
+                    val intent = CustomTabsIntent.Builder().build() // TODO: warmup
+                    intent.launchUrl(ctx, uiState.url.toUri())
                 } catch (e: Exception) {
                     Log.e("SettingsPage", "Failed to open ${uiState.url}", e)
                 }
@@ -63,8 +68,8 @@ fun SettingsPage(
             Box(modifier = Modifier.fillMaxSize()) {
                 Button(
                     modifier = Modifier.align(Alignment.Center),
-                    onClick = {},
-                ) { Text("Refresh") }
+                    onClick = viewModel::login,
+                ) { Text("Log in") }
             }
         }
     }
@@ -76,6 +81,7 @@ private fun UserProfilePart(
     username: String,
     fediAccount: String?,
     modifier: Modifier = Modifier,
+    logOut: () -> Unit = {},
     openAccountSetting: () -> Unit = {},
 ) {
     Column(
@@ -98,10 +104,10 @@ private fun UserProfilePart(
         if (fediAccount != null) {
             Text(
                 text = fediAccount,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
                     .clip(MaterialTheme.shapes.small)
-                    .background(MaterialTheme.colorScheme.surfaceDim)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .padding(horizontal = 6.dp, vertical = 2.dp),
             )
         }
@@ -110,27 +116,27 @@ private fun UserProfilePart(
             modifier = Modifier.width(IntrinsicSize.Max).padding(top = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         ) {
+            // Account Setting
             Button(
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors().copy(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 ),
-                onClick = {
-                    openAccountSetting()
-                },
+                onClick = openAccountSetting,
             ) {
                 Icon(Icons.Default.AccountBox, null)
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text("Account Setting", softWrap = false)
+                Text("Account setting", softWrap = false)
             }
+            // Log Out
             Button(
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors().copy(
                     containerColor = MaterialTheme.colorScheme.errorContainer,
                     contentColor = MaterialTheme.colorScheme.error,
                 ),
-                onClick = {},
+                onClick = logOut,
             ) {
                 Icon(Icons.AutoMirrored.Filled.ExitToApp, null)
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
@@ -140,13 +146,17 @@ private fun UserProfilePart(
     }
 }
 
-@Preview()
+@PreviewLightDark
 @Composable
 private fun PreviewUserAvatarAndName() {
-    UserProfilePart(
-        avatar = null,
-        username = "Heddxh",
-        fediAccount = "@vita_yuzu_wine@neodb.social",
-        modifier = Modifier.fillMaxWidth(),
-    )
+    NeoDBYouTheme {
+        Surface {
+            UserProfilePart(
+                avatar = null,
+                username = "Heddxh",
+                fediAccount = "@vita_yuzu_wine@neodb.social",
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
 }

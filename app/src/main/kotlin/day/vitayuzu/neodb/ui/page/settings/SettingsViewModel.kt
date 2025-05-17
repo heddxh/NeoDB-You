@@ -1,5 +1,6 @@
 package day.vitayuzu.neodb.ui.page.settings
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -9,19 +10,26 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(private val repo: AuthRepository) : ViewModel() {
 
+    @Inject lateinit var authFlowFactory: AndroidCodeAuthFlowFactory
+
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
+        refresh()
+    }
+
+    private fun refresh() {
         viewModelScope.launch {
             val isLogin = repo.isLogin.get()
             if (isLogin) {
-                repo.fetchMe().collect { schema ->
+                repo.fetchSelfAccountInfo().collect { schema ->
                     _uiState.update {
                         it.copy(
                             isLogin = true,
@@ -34,6 +42,41 @@ class SettingsViewModel @Inject constructor(private val repo: AuthRepository) : 
                 }
             } else {
                 _uiState.update { it.copy(isLogin = false) }
+            }
+        }
+    }
+
+    fun login() {
+        viewModelScope.launch {
+            // Clean persistence credential
+            repo.revoke()
+
+            val client = repo.registerAppIfNeeded().getOrThrow()
+            val flow = authFlowFactory.createAuthFlow(client)
+            try {
+                val tokens = flow.getAccessToken()
+                repo.storeAccessToken(tokens.access_token)
+                _uiState.update { it.copy(isLogin = true) }
+                refresh() // fetch user info
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Failed to login", e)
+            }
+        }
+    }
+
+    fun logout() {
+        if (!repo.isLogin.get()) {
+            Log.d("SettingsViewModel", "Already logged out, do nothing")
+        }
+        viewModelScope.launch {
+            val client = repo.registerAppIfNeeded().getOrThrow()
+            val code = client.revokeToken(repo.getAccessToken().orEmpty())
+            if (code.value == 200) {
+                repo.revoke()
+                _uiState.update { it.copy(isLogin = false) }
+                Log.d("SettingsViewModel", "Logout successfully")
+            } else {
+                Log.d("SettingsViewModel", "Logout failed: $code")
             }
         }
     }

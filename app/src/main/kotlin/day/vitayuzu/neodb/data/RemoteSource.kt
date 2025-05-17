@@ -66,8 +66,8 @@ class RemoteSource @Inject constructor(
         }
     }
 
-    suspend fun fetchMe(): UserSchema = withContext(dispatcher) {
-        api.fetchMe()
+    suspend fun fetchSelfAccountInfo(): UserSchema = withContext(dispatcher) {
+        api.fetchSelfAccountInfo()
     }
 }
 
@@ -112,5 +112,5 @@ interface NeoDbApi {
     ): PaginatedPostList
 
     @GET("me")
-    suspend fun fetchMe(): UserSchema
+    suspend fun fetchSelfAccountInfo(): UserSchema
 }
