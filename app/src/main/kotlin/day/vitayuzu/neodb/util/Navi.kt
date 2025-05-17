@@ -23,9 +23,6 @@ sealed interface Navi {
     data object Settings : Navi
 
     @Serializable
-    data object Login
-
-    @Serializable
     data class Detail(
         val type: EntryType,
         val uuid: String,

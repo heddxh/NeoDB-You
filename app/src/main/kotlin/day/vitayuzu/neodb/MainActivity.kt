@@ -41,14 +41,12 @@ import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
-import day.vitayuzu.neodb.ui.page.login.LoginPage
 import day.vitayuzu.neodb.ui.page.settings.SettingsPage
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.Navi
 import day.vitayuzu.neodb.util.Navi.Companion.mainScreens
 import day.vitayuzu.neodb.util.Navi.Home
 import day.vitayuzu.neodb.util.Navi.Library
-import day.vitayuzu.neodb.util.Navi.Login
 import day.vitayuzu.neodb.util.Navi.Settings
 import kotlinx.coroutines.launch
 import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
@@ -64,6 +62,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         codeAuthFlowFactory.registerActivity(this)
         SingletonImageLoader.setSafe {
             ImageLoader
@@ -76,8 +75,8 @@ class MainActivity : ComponentActivity() {
         // TODO: check if access token is valid somewhere else
         lifecycleScope.launch {
             if (authRepository.getAccessToken() != null) {
-                authRepository.isLogin.set(true)
                 Log.d("MainActivity", "Have logged in")
+                authRepository.isLogin.set(true)
             } else {
                 Log.d("MainActivity", "No logged in")
             }
@@ -171,7 +170,6 @@ private fun MainNavi(
         popEnterTransition = { EnterTransition.None },
         modifier = modifier,
     ) {
-        composable<Login> { LoginPage({ navController.navigate(Home) }) }
         composable<Home> {
             HomeScreen(
                 onClickEntry = { type, uuid ->
