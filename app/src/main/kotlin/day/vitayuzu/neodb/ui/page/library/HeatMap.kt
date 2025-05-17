@@ -105,7 +105,7 @@ fun HeatMapWeekColumn(
 
 @Composable
 fun DefaultHeatMapBlock(modifier: Modifier = Modifier) {
-    Box(modifier = modifier.background(MaterialTheme.colorScheme.onPrimary))
+    Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer))
 }
 
 @Composable

@@ -9,21 +9,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerSnapDistance
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.carousel.CarouselDefaults
-import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
-import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
@@ -105,7 +108,6 @@ fun HomeScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrendingSection(
     data: List<Entry>,
@@ -120,31 +122,46 @@ fun TrendingSection(
     ) {
         Text(
             text = stringResource(type.toR()),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(start = 8.dp),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 8.dp).alpha(.8f),
         )
         Spacer(modifier = Modifier.height(4.dp))
 
-        val carouselState = rememberCarouselState { data.size }
-        HorizontalMultiBrowseCarousel(
-            state = carouselState,
-            itemSpacing = 8.dp, // NOTE: I think the library's implementation is wrong, but leave it
-            preferredItemWidth = type.coverDimension.first.dp,
-            minSmallItemWidth = type.coverDimension.first.times(0.8.dp),
-            maxSmallItemWidth = type.coverDimension.first.dp,
+        val pagerState = rememberPagerState { data.size }
+        val flingBehavior = PagerDefaults.flingBehavior(
+            state = pagerState,
+            pagerSnapDistance = PagerSnapDistance.atMost(3),
+        )
+        HorizontalPager(
+            state = pagerState,
             contentPadding = PaddingValues(horizontal = 8.dp),
-            flingBehavior = CarouselDefaults.singleAdvanceFlingBehavior(carouselState),
+            pageSize = PageSize.Fixed(type.coverDimension.first.dp),
+            pageSpacing = 8.dp,
+            flingBehavior = flingBehavior,
+            key = { data[it].uuid },
         ) {
             val item = data[it]
-            AsyncImage(
-                model = item.coverUrl,
-                contentDescription = item.title,
-                contentScale = ContentScale.FillHeight,
-                modifier = Modifier
-                    .height(type.coverDimension.second.dp)
-                    .maskClip(MaterialTheme.shapes.small)
-                    .clickable { onClickEntry(type, item.uuid) },
-            )
+            Column {
+                AsyncImage(
+                    model = item.coverUrl,
+                    contentDescription = item.title,
+                    contentScale = ContentScale.FillHeight,
+                    //                placeholder = painterResource(R.drawable.image_placeholder),
+                    //                fallback = painterResource(R.drawable.image_placeholder),
+                    //                error = painterResource(R.drawable.image_placeholder),
+                    modifier = Modifier
+                        .height(type.coverDimension.second.dp)
+                        .clip(MaterialTheme.shapes.small)
+                        .clickable { onClickEntry(type, item.uuid) },
+                )
+                Text(
+                    text = item.title,
+                    style = MaterialTheme.typography.labelMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip,
+                    modifier = Modifier.alpha(.6f),
+                )
+            }
         }
     }
 }
