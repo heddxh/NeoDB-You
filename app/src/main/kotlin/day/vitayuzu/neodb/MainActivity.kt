@@ -10,8 +10,10 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -100,7 +102,7 @@ class MainActivity : ComponentActivity() {
 private fun MainScaffold(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val currentBackStack by navController.currentBackStackEntryAsState()
-    val currentScreen = mainScreens.find { screen ->
+    val currentMainScreen = mainScreens.find { screen ->
         currentBackStack?.destination?.hierarchy?.any { nav ->
             nav.hasRoute(screen.route::class)
         } ?: false
@@ -108,11 +110,11 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
     Scaffold(
         modifier = modifier,
         topBar = {
-            if (currentScreen != null) {
+            if (currentMainScreen != null) {
                 TopAppBar(
-                    title = { Text(stringResource(currentScreen.name)) },
+                    title = { Text(stringResource(currentMainScreen.name)) },
                     actions = {
-                        when (currentScreen.route) {
+                        when (currentMainScreen.route) {
                             Home, Library -> Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = null,
@@ -125,9 +127,24 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
                 )
             }
         },
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = currentBackStack?.destination?.hasRoute(Navi.Detail::class) == true,
+            ) {
+                FloatingActionButton(
+                    modifier = Modifier.animateEnterExit(),
+                    onClick = {},
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                    )
+                }
+            }
+        },
         bottomBar = {
             AnimatedVisibility(
-                visible = currentScreen in mainScreens,
+                visible = currentMainScreen in mainScreens,
                 enter = expandVertically(),
                 exit = shrinkVertically(),
             ) {
@@ -136,7 +153,7 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
                         NavigationBarItem(
                             icon = { Icon(screen.icon, contentDescription = null) },
                             label = { Text(stringResource(screen.name)) },
-                            selected = currentScreen == screen,
+                            selected = currentMainScreen == screen,
                             onClick = {
                                 // FIXME: detail back to home
                                 navController.navigate(screen.route) {

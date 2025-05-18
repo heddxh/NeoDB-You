@@ -256,6 +256,7 @@ private fun PostCard(
                 // TODO: render markdown content in posts
                 // TODO: collapsed/expand post
                 // TODO: show user status, like playing or played, etc
+                // FIXME: display name too long
                 Text(
                     text = username,
                     style = MaterialTheme.typography.titleSmall,
