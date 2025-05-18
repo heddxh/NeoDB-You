@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -24,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
@@ -42,6 +44,8 @@ import day.vitayuzu.neodb.ui.component.StarsWithScores
 import day.vitayuzu.neodb.ui.model.Detail
 import day.vitayuzu.neodb.ui.model.Post
 import day.vitayuzu.neodb.util.EntryType
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,15 +125,21 @@ private fun DetailContent(
 
         // Review cards list
         items(
-            items = postList.sortedByDescending { it.date },
+            items = postList,
             key = { it.hashCode() },
         ) {
+            // TODO: show human readable date, see [Instant.toReadableString]
             PostCard(
                 avatarUrl = it.avatar,
                 username = it.username,
                 content = it.content,
                 rating = it.rating,
+                date = it.date
+                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                    .date
+                    .toString(),
             )
+            HorizontalDivider(thickness = 0.2.dp)
         }
     }
 }
@@ -220,6 +230,7 @@ private fun PostCard(
     username: String,
     content: String,
     rating: Int?,
+    date: String,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -242,6 +253,9 @@ private fun PostCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
+                // TODO: render markdown content in posts
+                // TODO: collapsed/expand post
+                // TODO: show user status, like playing or played, etc
                 Text(
                     text = username,
                     style = MaterialTheme.typography.titleSmall,
@@ -255,6 +269,11 @@ private fun PostCard(
                 style = MaterialTheme.typography.bodySmall,
                 maxLines = 4,
                 overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = date,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.alpha(.5f).align(Alignment.End),
             )
         }
     }

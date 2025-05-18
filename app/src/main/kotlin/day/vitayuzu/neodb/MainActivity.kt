@@ -6,14 +6,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.expandVertically
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -24,8 +21,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -116,9 +113,11 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
                     title = { Text(stringResource(currentScreen.name)) },
                     actions = {
                         when (currentScreen.route) {
-                            Home, Library -> Button(
-                                onClick = {},
-                            ) { Icon(Icons.Default.Search, null) }
+                            Home, Library -> Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null,
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                            )
 
                             else -> {}
                         }
@@ -173,13 +172,13 @@ private fun MainNavi(
     NavHost(
         navController = navController,
         startDestination = Home,
-        popExitTransition = {
-            scaleOut(
-                targetScale = 0.9f,
-                transformOrigin = TransformOrigin.Center,
-            )
-        },
-        popEnterTransition = { EnterTransition.None },
+//        popExitTransition = {
+//            scaleOut(
+//                targetScale = 0.9f,
+//                transformOrigin = TransformOrigin.Center,
+//            )
+//        },
+//        popEnterTransition = { EnterTransition.None },
         modifier = modifier,
     ) {
         composable<Home> {

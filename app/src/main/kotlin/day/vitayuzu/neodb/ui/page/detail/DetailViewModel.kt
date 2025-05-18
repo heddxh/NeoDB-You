@@ -54,7 +54,11 @@ class DetailViewModel @AssistedInject constructor(
             _postUiState.update { it.copy(isLoading = true) }
             repo.fetchItemPosts(uuid).collect { paginatedPostList ->
                 paginatedPostList.data.forEach { schema ->
-                    _postUiState.update { it.copy(postList = it.postList + Post(schema)) }
+                    _postUiState.update {
+                        it.copy(
+                            postList = (it.postList + Post(schema)).sortedByDescending { it.date },
+                        )
+                    }
                 }
             }
             _postUiState.update { it.copy(isLoading = false) }

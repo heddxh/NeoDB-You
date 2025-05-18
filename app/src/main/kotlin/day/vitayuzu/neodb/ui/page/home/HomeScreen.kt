@@ -41,7 +41,8 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // HACK: https://issuetracker.google.com/issues/362137847#comment5
+    // TODO: add swipe refresh
+    // TODO: show fetched data immediately
     if (uiState.isLoading) {
         LinearProgressIndicator(modifier = modifier.fillMaxWidth())
     } else {
@@ -115,6 +116,7 @@ fun TrendingSection(
     modifier: Modifier = Modifier,
     onClickEntry: (type: EntryType, uuid: String) -> Unit = { _, _ -> },
 ) {
+    if (data.isEmpty()) return // return in advance if no data
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Top,
@@ -154,11 +156,12 @@ fun TrendingSection(
                         .clip(MaterialTheme.shapes.small)
                         .clickable { onClickEntry(type, item.uuid) },
                 )
+                // FIXME: may show 2 lines at most without mess the layout
                 Text(
                     text = item.title,
                     style = MaterialTheme.typography.labelMedium,
                     maxLines = 1,
-                    overflow = TextOverflow.Clip,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.alpha(.6f),
                 )
             }
