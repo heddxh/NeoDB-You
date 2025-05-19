@@ -53,6 +53,7 @@ fun DetailPage(
     type: EntryType,
     uuid: String,
     modifier: Modifier = Modifier,
+    showComposeModal: Boolean = false,
     viewModel: DetailViewModel =
         hiltViewModel<DetailViewModel, DetailViewModel.Factory> { it.create(type, uuid) },
 ) {
@@ -78,7 +79,8 @@ fun DetailPage(
                     onClick = { showBottomSheet = true },
                 )
                 // Modal to show all detailed info
-                if (showBottomSheet) {
+                // TODO: change [showBottomSheet] to false when showing compose modal
+                if (!showComposeModal && showBottomSheet) {
                     ModalBottomSheet(onDismissRequest = { showBottomSheet = false }) {
                         ShowAllInfoModalContent(des = state.detail.des ?: "")
                     }

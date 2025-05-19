@@ -26,6 +26,7 @@ fun StarsWithScores(
     rating: Float,
     modifier: Modifier = Modifier,
     showScores: Boolean = true,
+    size: Int = 16,
 ) {
     val ratingInFive = rating.div(2)
     Row(
@@ -36,6 +37,7 @@ fun StarsWithScores(
         RatingStars(
             full = ratingInFive.toInt(),
             half = ratingInFive > ratingInFive.toInt(),
+            size = size,
         )
         if (showScores) {
             Text(
@@ -53,20 +55,22 @@ fun RatingStars(
     half: Boolean,
     modifier: Modifier = Modifier,
     empty: Int = 5 - full - if (half) 1 else 0,
+    size: Int = 16,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.Start),
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier,
     ) {
+        // FIXME: remove or correctly calculate the offset according to the size
         repeat(full) {
-            StarIcon()
+            StarIcon(size = size, modifier = Modifier.offset(y = (-0.5).dp)) // Visually center
         }
         if (half) {
-            StarIcon(kind = Star.HALF)
+            StarIcon(size = size, kind = Star.HALF, modifier = Modifier.offset(y = (-0.5).dp))
         }
         repeat(empty) {
-            StarIcon(kind = Star.EMPTY)
+            StarIcon(size = size, kind = Star.EMPTY, modifier = Modifier.offset(y = (-0.5).dp))
         }
     }
 }
@@ -75,27 +79,28 @@ fun RatingStars(
 fun StarIcon(
     modifier: Modifier = Modifier,
     kind: Star = Star.FULL,
+    size: Int = 16,
 ) {
     when (kind) {
         Star.FULL -> Icon(
             Icons.Filled.Star,
             tint = MaterialTheme.colorScheme.ratingColor,
             contentDescription = null,
-            modifier = modifier.size(16.dp).offset(y = (-0.5).dp), // Visually center
+            modifier = modifier.size(size.dp),
         )
 
         Star.HALF -> Icon(
             painterResource(R.drawable.star_half),
             tint = MaterialTheme.colorScheme.ratingColor,
             contentDescription = null,
-            modifier = modifier.size(16.dp).offset(y = (-0.5).dp), // Visually center
+            modifier = modifier.size(size.dp),
         )
 
         Star.EMPTY -> Icon(
             painterResource(R.drawable.star_empty),
             tint = MaterialTheme.colorScheme.ratingColor,
             contentDescription = null,
-            modifier = modifier.size(16.dp).offset(y = (-0.5).dp), // Visually center
+            modifier = modifier.size(size.dp),
         )
     }
 }

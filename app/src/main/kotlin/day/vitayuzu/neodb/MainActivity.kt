@@ -22,6 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -107,6 +110,10 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
             nav.hasRoute(screen.route::class)
         } ?: false
     }
+
+    // FIXME: better way to pass this state
+    var showComposeModal by remember { mutableStateOf(false) }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -133,7 +140,7 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
             ) {
                 FloatingActionButton(
                     modifier = Modifier.animateEnterExit(),
-                    onClick = {},
+                    onClick = { showComposeModal = true },
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -173,6 +180,7 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
         MainNavi(
             navController = navController,
             modifier = Modifier.padding(it),
+            showComposeModal = showComposeModal,
         )
     }
 }
@@ -185,6 +193,7 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
 private fun MainNavi(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    showComposeModal: Boolean = false,
 ) {
     NavHost(
         navController = navController,
@@ -217,7 +226,11 @@ private fun MainNavi(
         }
         composable<Navi.Detail> {
             val detailEntry: Navi.Detail = it.toRoute()
-            DetailPage(detailEntry.type, detailEntry.uuid)
+            DetailPage(
+                type = detailEntry.type,
+                uuid = detailEntry.uuid,
+                showComposeModal = showComposeModal,
+            )
         }
     }
 }
