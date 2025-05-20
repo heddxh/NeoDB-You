@@ -54,6 +54,7 @@ fun DetailPage(
     uuid: String,
     modifier: Modifier = Modifier,
     showComposeModal: Boolean = false,
+    onDismissComposeModal: () -> Unit = {},
     viewModel: DetailViewModel =
         hiltViewModel<DetailViewModel, DetailViewModel.Factory> { it.create(type, uuid) },
 ) {
@@ -63,7 +64,7 @@ fun DetailPage(
     Surface(modifier = modifier) {
         when (val state = detailUiState) { // Store in a temporary variable to enable smart cast
             is DetailUiState.Success -> {
-                var showBottomSheet by remember { mutableStateOf(false) }
+                var showDesModal by remember { mutableStateOf(false) }
                 // Background
                 AsyncImage(
                     model = state.detail.coverUrl,
@@ -76,12 +77,19 @@ fun DetailPage(
                 DetailContent(
                     data = state.detail,
                     postList = postUiState.postList,
-                    onClick = { showBottomSheet = true },
+                    onClick = { showDesModal = true },
                 )
                 // Modal to show all detailed info
-                // TODO: change [showBottomSheet] to false when showing compose modal
-                if (!showComposeModal && showBottomSheet) {
-                    ModalBottomSheet(onDismissRequest = { showBottomSheet = false }) {
+                if (showComposeModal) {
+                    PostComposeModal(
+                        onDismiss = onDismissComposeModal,
+                        onSend = {
+                            viewModel.postMark(it)
+                            onDismissComposeModal()
+                        },
+                    )
+                } else if (showDesModal) {
+                    ModalBottomSheet(onDismissRequest = { showDesModal = false }) {
                         ShowAllInfoModalContent(des = state.detail.des ?: "")
                     }
                 }

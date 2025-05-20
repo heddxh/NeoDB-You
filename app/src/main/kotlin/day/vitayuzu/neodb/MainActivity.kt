@@ -181,6 +181,7 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
             navController = navController,
             modifier = Modifier.padding(it),
             showComposeModal = showComposeModal,
+            onDismissComposeModal = { showComposeModal = false },
         )
     }
 }
@@ -194,6 +195,7 @@ private fun MainNavi(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     showComposeModal: Boolean = false,
+    onDismissComposeModal: () -> Unit = {},
 ) {
     NavHost(
         navController = navController,
@@ -230,6 +232,7 @@ private fun MainNavi(
                 type = detailEntry.type,
                 uuid = detailEntry.uuid,
                 showComposeModal = showComposeModal,
+                onDismissComposeModal = onDismissComposeModal,
             )
         }
     }

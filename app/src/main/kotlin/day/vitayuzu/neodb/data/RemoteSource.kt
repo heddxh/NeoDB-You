@@ -1,8 +1,10 @@
 package day.vitayuzu.neodb.data
 
 import day.vitayuzu.neodb.data.schema.AuthClientIdentify
+import day.vitayuzu.neodb.data.schema.MarkInSchema
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.data.schema.PaginatedPostList
+import day.vitayuzu.neodb.data.schema.ResultSchema
 import day.vitayuzu.neodb.data.schema.TrendingItemSchema
 import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.data.schema.detail.DetailSchema
@@ -12,6 +14,7 @@ import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.IoDispatcher
 import day.vitayuzu.neodb.util.ShelfType
 import day.vitayuzu.neodb.util.WEBSITE
+import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.Field
 import de.jensklingenberg.ktorfit.http.FormUrlEncoded
 import de.jensklingenberg.ktorfit.http.GET
@@ -69,6 +72,13 @@ class RemoteSource @Inject constructor(
     suspend fun fetchSelfAccountInfo(): UserSchema = withContext(dispatcher) {
         api.fetchSelfAccountInfo()
     }
+
+    suspend fun postMark(
+        uuid: String,
+        data: MarkInSchema,
+    ): ResultSchema = withContext(dispatcher) {
+        api.postMark(uuid, data)
+    }
 }
 
 /**
@@ -113,4 +123,10 @@ interface NeoDbApi {
 
     @GET("me")
     suspend fun fetchSelfAccountInfo(): UserSchema
+
+    @POST("me/shelf/item/{uuid}")
+    suspend fun postMark(
+        @Path("uuid") uuid: String,
+        @Body data: MarkInSchema,
+    ): ResultSchema
 }

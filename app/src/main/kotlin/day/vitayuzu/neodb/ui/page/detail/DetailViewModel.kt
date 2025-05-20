@@ -7,6 +7,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import day.vitayuzu.neodb.data.Repository
+import day.vitayuzu.neodb.data.schema.MarkInSchema
 import day.vitayuzu.neodb.data.schema.detail.AlbumSchema
 import day.vitayuzu.neodb.data.schema.detail.EditionSchema
 import day.vitayuzu.neodb.data.schema.detail.GameSchema
@@ -51,7 +52,7 @@ class DetailViewModel @AssistedInject constructor(
 
     private fun refreshPosts() {
         viewModelScope.launch {
-            _postUiState.update { it.copy(isLoading = true) }
+            _postUiState.update { it.copy(isLoading = true, postList = emptyList()) }
             repo.fetchItemPosts(uuid).collect { paginatedPostList ->
                 paginatedPostList.data.forEach { schema ->
                     _postUiState.update {
@@ -81,6 +82,12 @@ class DetailViewModel @AssistedInject constructor(
                 }
                 _detailUiState.update { DetailUiState.Success(detail) }
             }
+        }
+    }
+
+    fun postMark(data: MarkInSchema) {
+        viewModelScope.launch {
+            repo.postMark(uuid, data).collect { refreshPosts() }
         }
     }
 }
