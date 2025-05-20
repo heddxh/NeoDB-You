@@ -50,7 +50,7 @@ class DetailViewModel @AssistedInject constructor(
         refreshPosts()
     }
 
-    private fun refreshPosts() {
+    fun refreshPosts() {
         viewModelScope.launch {
             _postUiState.update { it.copy(isLoading = true, postList = emptyList()) }
             repo.fetchItemPosts(uuid).collect { paginatedPostList ->

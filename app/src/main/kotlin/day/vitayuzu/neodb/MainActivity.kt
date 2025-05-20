@@ -8,6 +8,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -179,7 +181,7 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
     ) {
         MainNavi(
             navController = navController,
-            modifier = Modifier.padding(it),
+            insetsPaddingValues = it,
             showComposeModal = showComposeModal,
             onDismissComposeModal = { showComposeModal = false },
         )
@@ -193,6 +195,7 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
 @Composable
 private fun MainNavi(
     navController: NavHostController,
+    insetsPaddingValues: PaddingValues,
     modifier: Modifier = Modifier,
     showComposeModal: Boolean = false,
     onDismissComposeModal: () -> Unit = {},
@@ -209,8 +212,11 @@ private fun MainNavi(
 //        popEnterTransition = { EnterTransition.None },
         modifier = modifier,
     ) {
+        val mainScreenModifier =
+            Modifier.padding(insetsPaddingValues).consumeWindowInsets(insetsPaddingValues)
         composable<Home> {
             HomeScreen(
+                modifier = mainScreenModifier,
                 onClickEntry = { type, uuid ->
                     navController.navigate(Navi.Detail(type, uuid))
                 },
@@ -218,13 +224,14 @@ private fun MainNavi(
         }
         composable<Library> {
             LibraryPage(
+                modifier = mainScreenModifier,
                 onClickEntry = { type, uuid ->
                     navController.navigate(Navi.Detail(type, uuid))
                 },
             )
         }
         composable<Settings> {
-            SettingsPage()
+            SettingsPage(modifier = mainScreenModifier)
         }
         composable<Navi.Detail> {
             val detailEntry: Navi.Detail = it.toRoute()
