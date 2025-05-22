@@ -1,12 +1,16 @@
 package day.vitayuzu.neodb.data
 
 import android.util.Log
+import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
 import de.jensklingenberg.ktorfit.Ktorfit
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEmpty
+import kotlinx.coroutines.flow.update
 import org.publicvalue.multiplatform.oidc.OpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.ktor.clearTokens
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,7 +21,24 @@ class AuthRepository @Inject constructor(
     private val ktorfit: Ktorfit,
 ) {
 
-    val isLogin = AtomicBoolean(false) // Cache in memory, initialized in [MainActivity]
+    private val _accountStatus = MutableStateFlow(AccountStatus())
+    val accountStatus = _accountStatus.asStateFlow()
+
+    suspend fun updateAccountStatus() {
+        Log.d("AuthRepository", "Updating account status...")
+        val token = getAccessToken()
+        if (token == null) {
+            _accountStatus.update { AccountStatus() }
+        } else {
+            fetchSelfAccountInfo
+                .onEmpty {
+                    _accountStatus.update { AccountStatus() }
+                    revoke() // clean storage
+                }.collect { userSchema ->
+                    _accountStatus.update { AccountStatus(true, userSchema) }
+                }
+        }
+    }
 
     suspend fun registerAppIfNeeded(): Result<OpenIdConnectClient> {
         val clientId = preferenceSource.getAuthClientId()
@@ -57,7 +78,6 @@ class AuthRepository @Inject constructor(
             return preferenceSource.getAccessToken()
         } catch (e: Exception) {
             Log.e("AuthRepository", "Failed to get access token", e)
-            isLogin.set(false)
             return null
         }
     }
@@ -69,8 +89,9 @@ class AuthRepository @Inject constructor(
         try {
             preferenceSource.storeAccessToken(token)
             ktorfit.httpClient.clearTokens()
-            isLogin.set(true)
+            updateAccountStatus()
         } catch (e: Exception) {
+            revoke() // clean storage
             Log.e("AuthRepository", "Failed to store access token", e)
         }
     }
@@ -82,15 +103,16 @@ class AuthRepository @Inject constructor(
         try {
             preferenceSource.deleteAllAuthData()
             ktorfit.httpClient.clearTokens()
-            isLogin.set(false)
+            _accountStatus.update { AccountStatus() }
+            Log.d("AuthRepository", "Revoked all auth data")
         } catch (e: Exception) {
             Log.e("AuthRepository", "Failed to delete all auth data", e)
         }
     }
 
-    fun fetchSelfAccountInfo() = flow {
+    private val fetchSelfAccountInfo = flow {
         emit(remoteSource.fetchSelfAccountInfo())
-    }.log("Fetch self account")
+    }.log("Fetch self account", tag = "AuthRepository")
 
     private companion object {
         val AuthRegisterException: Exception = Exception("Failed to register app")
@@ -118,3 +140,8 @@ class AuthRepository @Inject constructor(
         }
     }
 }
+
+data class AccountStatus(
+    val isLogin: Boolean = false,
+    val account: UserSchema? = null,
+)

@@ -106,13 +106,16 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
 /**
  * Helper function to log the request for a flow.
  */
-fun <T> Flow<T>.log(msg: String) = this
+fun <T> Flow<T>.log(
+    msg: String,
+    tag: String = "Repository",
+) = this
     .onStart {
-        Log.d("Repository", "Start fetching $msg")
+        Log.d(tag, "Start fetching $msg")
     }.onCompletion {
-        Log.d("Repository", "End fetching $msg")
+        Log.d(tag, "End fetching $msg")
     }.catch {
-        Log.e("Repository", "Error fetching $msg: $it")
+        Log.e(tag, "Error fetching $msg: $it")
     }
 
 fun Flow<ResultSchema>.validate() = this.filter { it.message == "OK" }

@@ -1,7 +1,6 @@
 package day.vitayuzu.neodb
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,9 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -56,7 +52,6 @@ import day.vitayuzu.neodb.util.Navi.Companion.mainScreens
 import day.vitayuzu.neodb.util.Navi.Home
 import day.vitayuzu.neodb.util.Navi.Library
 import day.vitayuzu.neodb.util.Navi.Settings
-import kotlinx.coroutines.launch
 import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 import javax.inject.Inject
 
@@ -77,17 +72,6 @@ class MainActivity : ComponentActivity() {
                 .Builder(this)
                 .crossfade(true)
                 .build()
-        }
-
-        // Check if logged in(access token exists)
-        // TODO: check if access token is valid somewhere else
-        lifecycleScope.launch {
-            if (authRepository.getAccessToken() != null) {
-                Log.d("MainActivity", "Have logged in")
-                authRepository.isLogin.set(true)
-            } else {
-                Log.d("MainActivity", "No logged in")
-            }
         }
 
         enableEdgeToEdge()

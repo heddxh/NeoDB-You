@@ -27,9 +27,8 @@ class SettingsViewModel @Inject constructor(private val repo: AuthRepository) : 
 
     private fun refresh() {
         viewModelScope.launch {
-            val isLogin = repo.isLogin.get()
-            if (isLogin) {
-                repo.fetchSelfAccountInfo().collect { schema ->
+            repo.accountStatus.collect { (isLogin, schema) ->
+                if (isLogin && schema != null) {
                     _uiState.update {
                         it.copy(
                             isLogin = true,
@@ -39,9 +38,9 @@ class SettingsViewModel @Inject constructor(private val repo: AuthRepository) : 
                             fediAccount = schema.getFediAccount(),
                         )
                     }
+                } else {
+                    _uiState.update { it.copy(isLogin = false) }
                 }
-            } else {
-                _uiState.update { it.copy(isLogin = false) }
             }
         }
     }
@@ -65,7 +64,7 @@ class SettingsViewModel @Inject constructor(private val repo: AuthRepository) : 
     }
 
     fun logout() {
-        if (!repo.isLogin.get()) {
+        if (!repo.accountStatus.value.isLogin) {
             Log.d("SettingsViewModel", "Already logged out, do nothing")
         }
         viewModelScope.launch {
