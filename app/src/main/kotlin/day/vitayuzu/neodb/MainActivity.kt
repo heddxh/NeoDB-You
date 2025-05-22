@@ -30,7 +30,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -104,7 +105,10 @@ class MainActivity : ComponentActivity() {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MainScaffold(modifier: Modifier = Modifier) {
+private fun MainScaffold(
+    modifier: Modifier = Modifier,
+    viewModel: MainActivityViewModel = viewModel(),
+) {
     val navController = rememberNavController()
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentMainScreen = mainScreens.find { screen ->
@@ -113,8 +117,7 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
         } ?: false
     }
 
-    // FIXME: better way to pass this state
-    var showComposeModal by remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
@@ -142,7 +145,7 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
             ) {
                 FloatingActionButton(
                     modifier = Modifier.animateEnterExit(),
-                    onClick = { showComposeModal = true },
+                    onClick = viewModel::dismissComposeModal,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -182,8 +185,8 @@ private fun MainScaffold(modifier: Modifier = Modifier) {
         MainNavi(
             navController = navController,
             insetsPaddingValues = it,
-            showComposeModal = showComposeModal,
-            onDismissComposeModal = { showComposeModal = false },
+            showComposeModal = uiState.isShowComposeModal,
+            onDismissComposeModal = viewModel::dismissComposeModal,
         )
     }
 }
