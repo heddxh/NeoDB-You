@@ -28,6 +28,10 @@ class MainActivityViewModel @Inject constructor(private val repo: AuthRepository
     fun dismissComposeModal() {
         _uiState.update { it.copy(isShowComposeModal = false) }
     }
+
+    fun showComposeModal() {
+        _uiState.update { it.copy(isShowComposeModal = true) }
+    }
 }
 
 data class MainActivityUiState(val isShowComposeModal: Boolean = false)

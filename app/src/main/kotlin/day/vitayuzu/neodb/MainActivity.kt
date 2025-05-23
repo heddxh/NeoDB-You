@@ -129,7 +129,7 @@ private fun MainScaffold(
             ) {
                 FloatingActionButton(
                     modifier = Modifier.animateEnterExit(),
-                    onClick = viewModel::dismissComposeModal,
+                    onClick = viewModel::showComposeModal,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
