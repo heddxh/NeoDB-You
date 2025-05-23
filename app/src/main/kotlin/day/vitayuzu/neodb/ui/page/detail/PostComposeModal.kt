@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.data.schema.MarkInSchema
 import day.vitayuzu.neodb.ui.component.StarsWithScores
 import day.vitayuzu.neodb.util.ShelfType
@@ -81,7 +82,7 @@ private fun ComposeModalContent(
             value = composeContent,
             onValueChange = { composeContent = it },
             minLines = 5,
-            label = { Text("Content") },
+            label = { Text(stringResource(R.string.textfield_review)) },
         )
         Row(
             modifier = Modifier.fillMaxWidth(),

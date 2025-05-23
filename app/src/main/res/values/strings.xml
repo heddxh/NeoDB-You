@@ -20,5 +20,6 @@
     <string name="shelf_displayname_dropped">抛弃</string>
 
     <string name="detail_field_description">简介</string>
+    <string name="textfield_review">评论</string>
 
 </resources>
