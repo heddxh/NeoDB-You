@@ -45,6 +45,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -53,6 +54,7 @@ import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.component.StarsWithScores
 import day.vitayuzu.neodb.ui.model.Detail
 import day.vitayuzu.neodb.ui.model.Post
+import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.toDateString
 import kotlinx.datetime.Clock
@@ -296,14 +298,19 @@ private fun PostCard(
                 // TODO: render markdown content in posts
                 // TODO: collapsed/expand post
                 // TODO: show user status, like playing or played, etc
-                // FIXME: display name too long
                 Text(
                     text = username,
                     style = MaterialTheme.typography.titleSmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
                 )
-                if (rating != null) StarsWithScores(rating = rating.toFloat(), showScores = false)
+                if (rating != null) {
+                    StarsWithScores(
+                        rating = rating.toFloat(),
+                        showScores = false,
+                    )
+                }
             }
             Text(
                 text = content,
@@ -347,5 +354,15 @@ private fun DatePickerModal(
         },
     ) {
         DatePicker(state = datePickerState, showModeToggle = false)
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewShowAllInfoModal() {
+    NeoDBYouTheme {
+        Surface {
+            ShowAllInfoModalContent(des = "aaaabbbb")
+        }
     }
 }
