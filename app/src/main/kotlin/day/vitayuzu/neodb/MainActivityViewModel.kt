@@ -10,22 +10,24 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel scoped to [MainActivity], responsible for authentication and scaffold level UI state.
+ */
 @HiltViewModel
-class MainActivityViewModel @Inject constructor(private val authRepo: AuthRepository) :
-    ViewModel() {
+class MainActivityViewModel @Inject constructor(private val repo: AuthRepository) : ViewModel() {
 
-        private val _uiState = MutableStateFlow(MainActivityUiState())
-        val uiState = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(MainActivityUiState())
+    val uiState = _uiState.asStateFlow()
 
-        init {
-            viewModelScope.launch {
-                authRepo.updateAccountStatus()
-            }
-        }
-
-        fun dismissComposeModal() {
-            _uiState.update { it.copy(isShowComposeModal = false) }
+    init {
+        viewModelScope.launch {
+            repo.updateAccountStatus()
         }
     }
+
+    fun dismissComposeModal() {
+        _uiState.update { it.copy(isShowComposeModal = false) }
+    }
+}
 
 data class MainActivityUiState(val isShowComposeModal: Boolean = false)
