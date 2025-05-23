@@ -3,6 +3,7 @@ package day.vitayuzu.neodb.ui.page.detail
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,15 +18,20 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,7 +42,6 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,8 +54,9 @@ import day.vitayuzu.neodb.ui.component.StarsWithScores
 import day.vitayuzu.neodb.ui.model.Detail
 import day.vitayuzu.neodb.ui.model.Post
 import day.vitayuzu.neodb.util.EntryType
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import day.vitayuzu.neodb.util.toDateString
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,45 +72,63 @@ fun DetailPage(
     val detailUiState by viewModel.detailUiState.collectAsStateWithLifecycle()
     val postUiState by viewModel.postUiState.collectAsStateWithLifecycle()
 
+    var isShowDatePicker by remember { mutableStateOf(false) }
+    val currentTimeLong = Clock.System.now().toEpochMilliseconds()
+    var postDate by remember { mutableLongStateOf(currentTimeLong) }
+
     Surface(modifier = modifier.fillMaxSize()) {
-        PullToRefreshBox(
-            isRefreshing = (detailUiState is DetailUiState.Loading || postUiState.isLoading),
-            onRefresh = viewModel::refreshPosts,
-        ) {
-            when (val state = detailUiState) { // Store in a temporary variable to enable smart cast
-                is DetailUiState.Success -> {
-                    var showDesModal by remember { mutableStateOf(false) }
-                    // Background
-                    AsyncImage(
-                        model = state.detail.coverUrl,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        alpha = 0.2f,
-                        modifier = Modifier.fillMaxSize().blur(12.dp),
-                    )
-                    // Content
-                    DetailContent(
-                        data = state.detail,
-                        postList = postUiState.postList,
-                        onClick = { showDesModal = true },
-                    )
-                    // Modal to show all detailed info
-                    if (showComposeModal) {
-                        PostComposeModal(
-                            onDismiss = onDismissComposeModal,
-                            onSend = {
-                                viewModel.postMark(it)
-                                onDismissComposeModal()
-                            },
+        Box {
+            if (isShowDatePicker) {
+                DatePickerModal(
+                    onConfirm = { postDate = it ?: currentTimeLong },
+                    onDismiss = { isShowDatePicker = false },
+                )
+            }
+            PullToRefreshBox(
+                isRefreshing = (detailUiState is DetailUiState.Loading || postUiState.isLoading),
+                onRefresh = viewModel::refreshPosts,
+                modifier = Modifier.align(Alignment.TopCenter),
+            ) {
+                when (
+                    val state =
+                        detailUiState
+                ) { // Store in a temporary variable to enable smart cast
+                    is DetailUiState.Success -> {
+                        var showDesModal by remember { mutableStateOf(false) }
+                        // Background
+                        AsyncImage(
+                            model = state.detail.coverUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            alpha = 0.2f,
+                            modifier = Modifier.fillMaxSize().blur(12.dp),
                         )
-                    } else if (showDesModal) {
-                        ModalBottomSheet(onDismissRequest = { showDesModal = false }) {
-                            ShowAllInfoModalContent(des = state.detail.des ?: "")
+                        // Content
+                        DetailContent(
+                            data = state.detail,
+                            postList = postUiState.postList,
+                            onClick = { showDesModal = true },
+                        )
+                        // Modal to show all detailed info
+                        if (showComposeModal) {
+                            PostComposeModal(
+                                postDate = Instant.fromEpochMilliseconds(postDate),
+                                onDismiss = onDismissComposeModal,
+                                onSend = {
+                                    viewModel.postMark(it)
+                                    onDismissComposeModal()
+                                },
+                                onShowDatePicker = { isShowDatePicker = true },
+                            )
+                        } else if (showDesModal) {
+                            ModalBottomSheet(onDismissRequest = { showDesModal = false }) {
+                                ShowAllInfoModalContent(des = state.detail.des ?: "")
+                            }
                         }
                     }
-                }
 
-                else -> {}
+                    else -> {}
+                }
             }
         }
     }
@@ -117,7 +141,6 @@ private fun DetailContent(
     postList: List<Post> = emptyList(),
     onClick: () -> Unit = {},
 ) {
-    val density = LocalDensity.current
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -154,10 +177,7 @@ private fun DetailContent(
                 username = it.username,
                 content = it.content,
                 rating = it.rating,
-                date = it.date
-                    .toLocalDateTime(TimeZone.currentSystemDefault())
-                    .date
-                    .toString(),
+                date = it.date.toDateString(),
             )
             HorizontalDivider(thickness = 0.2.dp)
         }
@@ -297,5 +317,35 @@ private fun PostCard(
                 modifier = Modifier.alpha(.5f).align(Alignment.End),
             )
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DatePickerModal(
+    date: Instant = Clock.System.now(),
+    onConfirm: (Long?) -> Unit = {},
+    onDismiss: () -> Unit = {},
+) {
+    val datePickerState =
+        rememberDatePickerState(initialSelectedDateMillis = date.toEpochMilliseconds())
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onConfirm(datePickerState.selectedDateMillis)
+                onDismiss()
+            }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        },
+    ) {
+        DatePicker(state = datePickerState, showModeToggle = false)
     }
 }

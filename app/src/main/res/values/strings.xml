@@ -21,5 +21,10 @@
 
     <string name="detail_field_description">简介</string>
     <string name="textfield_review">评论</string>
+    <string name="textfield_postdate">指定日期</string>
+    <string name="toggle_postToFedi">转发到联邦宇宙</string>
+    <string name="visibility_displayname_public">公开</string>
+    <string name="visibility_displayname_unlisted">不列出</string>
+    <string name="visibility_displayname_followers">仅关注者</string>
 
 </resources>

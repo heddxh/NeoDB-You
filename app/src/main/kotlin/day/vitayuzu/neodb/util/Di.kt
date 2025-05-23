@@ -32,7 +32,9 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.appendIfNameAndValueAbsent
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 import javax.inject.Qualifier
@@ -80,6 +82,18 @@ object DispatcherModule {
     @Singleton
     @IoDispatcher
     fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
+}
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ExternalScope
+
+@Module
+@InstallIn(SingletonComponent::class)
+object CoroutineScopeModule {
+    @Provides @Singleton @ExternalScope
+    fun provideExternalScope(): CoroutineScope =
+        CoroutineScope(SupervisorJob() + Dispatchers.Default)
 }
 
 @Module
