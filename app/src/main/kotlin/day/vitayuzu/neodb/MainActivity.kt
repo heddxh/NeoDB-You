@@ -111,7 +111,7 @@ private fun MainScaffold(
     Scaffold(
         modifier = modifier,
         topBar = {
-            // FIXME: weired behavior
+            // FIXME: weired animation
             val scope = rememberCoroutineScope()
             val searchBarState = rememberSearchBarState(SearchBarValue.Collapsed)
             SearchModal(state = searchBarState, onSearch = viewModel::search)

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -25,6 +26,7 @@ import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
@@ -49,8 +51,6 @@ fun SearchModal(
     state: SearchBarState = rememberSearchBarState(SearchBarValue.Expanded),
     onSearch: (String) -> Flow<List<Entry>> = { flowOf() },
 ) {
-    val resultList = remember { mutableStateSetOf<Entry>() }
-
     val textFieldState = rememberTextFieldState()
 
     val inputField = @Composable {
@@ -66,19 +66,6 @@ fun SearchModal(
                 )
             },
         )
-    }
-
-    // Perform search request
-    LaunchedEffect(onSearch) {
-        snapshotFlow { textFieldState.text }
-            .debounce(500)
-            .filterNot { it.isEmpty() }
-            .collectLatest { query ->
-                resultList.clear()
-                onSearch(query.toString()).collect {
-                    resultList.addAll(it)
-                }
-            }
     }
 
     AnimatedVisibility(
@@ -98,6 +85,27 @@ fun SearchModal(
         modifier = modifier,
         inputField = inputField,
     ) {
+        val resultList = remember { mutableStateSetOf<Entry>() }
+
+        // Perform search request
+        LaunchedEffect(onSearch) {
+            snapshotFlow { textFieldState.text }
+                .debounce(500)
+                .filterNot { it.isEmpty() }
+                .collectLatest { query ->
+                    resultList.clear()
+                    onSearch(query.toString()).collect {
+                        resultList.addAll(it)
+                    }
+                }
+        }
+        // Clear input field when collapsed
+        DisposableEffect(resultList) {
+            onDispose {
+                textFieldState.clearText()
+            }
+        }
+
         LazyColumn {
             if (resultList.isEmpty()) {
                 item {
