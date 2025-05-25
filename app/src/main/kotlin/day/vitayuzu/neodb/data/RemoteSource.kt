@@ -5,6 +5,7 @@ import day.vitayuzu.neodb.data.schema.MarkInSchema
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.data.schema.PaginatedPostList
 import day.vitayuzu.neodb.data.schema.ResultSchema
+import day.vitayuzu.neodb.data.schema.SearchResult
 import day.vitayuzu.neodb.data.schema.TrendingItemSchema
 import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.data.schema.detail.DetailSchema
@@ -79,6 +80,14 @@ class RemoteSource @Inject constructor(
     ): ResultSchema = withContext(dispatcher) {
         api.postMark(uuid, data)
     }
+
+    suspend fun searchWithKeywords(
+        keywords: String,
+        category: EntryType?,
+        page: Int,
+    ): SearchResult = withContext(dispatcher) {
+        api.searchWithKeywords(keywords, category, page)
+    }
 }
 
 /**
@@ -129,4 +138,11 @@ interface NeoDbApi {
         @Path("uuid") uuid: String,
         @Body data: MarkInSchema,
     ): ResultSchema
+
+    @GET("catalog/search")
+    suspend fun searchWithKeywords(
+        @Query("query") keywords: String,
+        @Query("category") category: EntryType?,
+        @Query("page") page: Int,
+    ): SearchResult
 }

@@ -6,6 +6,7 @@ import day.vitayuzu.neodb.data.schema.MarkInSchema
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.data.schema.PaginatedPostList
 import day.vitayuzu.neodb.data.schema.ResultSchema
+import day.vitayuzu.neodb.data.schema.SearchResult
 import day.vitayuzu.neodb.data.schema.TrendingItemSchema
 import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.util.EntryType
@@ -38,6 +39,8 @@ interface Repository {
         uuid: String,
         data: MarkInSchema,
     ): Flow<ResultSchema>
+
+    fun searchWithKeyword(keywords: String): Flow<SearchResult>
 }
 
 class RealRepository @Inject constructor(private val remoteSource: RemoteSource) : Repository {
@@ -101,6 +104,10 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
     ) = flow {
         emit(remoteSource.postMark(uuid, data))
     }.validate().log("post mark in $uuid")
+
+    override fun searchWithKeyword(keywords: String) = pagedRequest {
+        remoteSource.searchWithKeywords(keywords, null, it)
+    }.log("search with keyword $keywords")
 }
 
 /**

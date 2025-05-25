@@ -14,17 +14,23 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.model.Mark
+import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.EntryType
 
 @Composable
@@ -47,12 +53,15 @@ fun EntryMarkCard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.height(160.dp).padding(8.dp),
         ) {
-            RemoteImage(
-                imageUrl = entry.coverUrl,
+            AsyncImage(
+                model = entry.coverUrl,
                 contentDescription = "Cover image of ${entry.title}",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.width(114.dp),
                 alignment = Alignment.CenterStart,
+                placeholder = painterResource(R.drawable.image_placeholder),
+                fallback = painterResource(R.drawable.image_placeholder),
+                error = painterResource(R.drawable.image_placeholder),
             )
 
             Column(
@@ -153,6 +162,19 @@ fun UserMark(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewEntryMarkCard() {
+    NeoDBYouTheme {
+        Surface {
+            EntryMarkCard(
+                entry = Entry.TEST,
+                mark = null,
+            )
         }
     }
 }

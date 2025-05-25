@@ -33,6 +33,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -54,10 +55,8 @@ dependencies {
     // androidTestImplementation(composeBom)
     debugImplementation(composeBom)
     implementation(libs.androidx.material3)
-
-    // Compose preview
-    implementation(libs.androidx.ui.tooling.preview)
-    debugImplementation(libs.androidx.ui.tooling)
+    implementation(libs.androidx.material.icon.core)
+    implementation(libs.androidx.ui.tooling)
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)

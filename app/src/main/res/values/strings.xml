@@ -26,5 +26,6 @@
     <string name="visibility_displayname_public">公开</string>
     <string name="visibility_displayname_unlisted">不列出</string>
     <string name="visibility_displayname_followers">仅关注者</string>
+    <string name="textfield_search">搜索名称或支持的外部链接……</string>
 
 </resources>
