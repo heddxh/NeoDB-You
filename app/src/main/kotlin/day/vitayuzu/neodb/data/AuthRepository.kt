@@ -33,7 +33,6 @@ class AuthRepository @Inject constructor(
             fetchSelfAccountInfo
                 .onEmpty {
                     _accountStatus.update { AccountStatus() }
-                    revoke() // clean storage
                 }.collect { userSchema ->
                     _accountStatus.update { AccountStatus(true, userSchema) }
                 }

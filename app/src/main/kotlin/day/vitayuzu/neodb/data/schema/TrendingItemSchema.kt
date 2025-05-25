@@ -11,7 +11,7 @@ data class TrendingItemSchema(
     @SerialName("api_url") val apiUrl: String = "",
     val brief: String = "",
     val category: String = "",
-    @SerialName("cover_image_url") val coverImageUrl: String = "",
+    @SerialName("cover_image_url") val coverImageUrl: String?,
     val description: String = "",
     @SerialName("display_title") val displayTitle: String = "",
     @SerialName("external_resources") val externalResources: List<ExternalResource> = listOf(),
