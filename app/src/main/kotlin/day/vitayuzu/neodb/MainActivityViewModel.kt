@@ -7,8 +7,10 @@ import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.Repository
 import day.vitayuzu.neodb.ui.model.Entry
 import jakarta.inject.Inject
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -30,13 +32,10 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    suspend fun search(keywords: String): List<Entry> {
-        val resultList = mutableListOf<Entry>()
-        neoRepository.searchWithKeyword(keywords).collect { searchResult ->
-            resultList.addAll(searchResult.data.map { Entry(it) })
+    fun search(keywords: String): Flow<List<Entry>> =
+        neoRepository.searchWithKeyword(keywords).map { searchResult ->
+            searchResult.data.map { Entry(it) }
         }
-        return resultList
-    }
 
     fun dismissComposeModal() {
         _uiState.update { it.copy(isShowComposeModal = false) }

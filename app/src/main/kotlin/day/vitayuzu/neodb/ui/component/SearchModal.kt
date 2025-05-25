@@ -36,16 +36,18 @@ import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.flowOf
 
 @OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun SearchModal(
     modifier: Modifier = Modifier,
     state: SearchBarState = rememberSearchBarState(SearchBarValue.Expanded),
-    onSearch: suspend (String) -> List<Entry> = { emptyList() },
+    onSearch: (String) -> Flow<List<Entry>> = { flowOf() },
 ) {
     val resultList = remember { mutableStateSetOf<Entry>() }
 
@@ -71,9 +73,11 @@ fun SearchModal(
         snapshotFlow { textFieldState.text }
             .debounce(500)
             .filterNot { it.isEmpty() }
-            .collectLatest {
+            .collectLatest { query ->
                 resultList.clear()
-                resultList.addAll(onSearch(it.toString()))
+                onSearch(query.toString()).collect {
+                    resultList.addAll(it)
+                }
             }
     }
 
@@ -113,8 +117,6 @@ fun SearchModal(
 @Composable
 private fun PreviewSearchModal() {
     NeoDBYouTheme {
-        SearchModal {
-            listOf(Entry.TEST)
-        }
+        SearchModal()
     }
 }
