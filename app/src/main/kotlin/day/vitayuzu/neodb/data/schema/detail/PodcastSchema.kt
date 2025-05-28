@@ -27,8 +27,8 @@ data class PodcastSchema(
     @SerialName("rating_distribution") override val ratingDistribution: List<Int>?,
     override val tags: List<String>?,
     // Specific fields
-    val genre: List<String>,
-    val host: List<String>,
-    val language: List<String>,
+    val genre: List<String> = emptyList(),
+    val host: List<String> = emptyList(),
+    val language: List<String> = emptyList(),
     @SerialName("official_site") val officialSite: String?,
 ) : DetailSchema

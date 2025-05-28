@@ -29,9 +29,9 @@ data class EditionSchema(
     // Specific fields
     val subtitle: String?,
     @SerialName("orig_title") val origTitle: String?,
-    val author: List<String>,
-    val translator: List<String>,
-    val language: List<String>,
+    val author: List<String> = emptyList(),
+    val translator: List<String> = emptyList(),
+    val language: List<String> = emptyList(),
     @SerialName("pub_house") val pubHouse: String?,
     @SerialName("pub_year") val pubYear: Int?,
     @SerialName("pub_month") val pubMonth: Int?,

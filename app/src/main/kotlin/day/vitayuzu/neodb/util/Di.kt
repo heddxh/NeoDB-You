@@ -119,6 +119,7 @@ object NetworkModule {
                         Json {
                             ignoreUnknownKeys = true
                             isLenient = true // Allow unquoted string
+                            explicitNulls = false // Allow missing nullable fields
                         },
                     )
                 }

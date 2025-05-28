@@ -27,9 +27,9 @@ data class AlbumSchema(
     @SerialName("rating_distribution") override val ratingDistribution: List<Int>?,
     override val tags: List<String>?,
     // Specific fields
-    val genre: List<String>,
-    val artist: List<String>,
-    val company: List<String>,
+    val genre: List<String> = emptyList(),
+    val artist: List<String> = emptyList(),
+    val company: List<String> = emptyList(),
     val duration: Int?,
     @SerialName("release_date") val releaseDate: String?, // Keep as String, parse later if needed
     @SerialName("track_list") val trackList: String?,
