@@ -13,6 +13,7 @@ import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapMerge
@@ -48,9 +49,11 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
     // Concurrently fetch all shelves
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun fetchMyAllShelf(): Flow<PagedMarkSchema> =
-        flowOf(*ShelfType.entries.toTypedArray()).flatMapMerge {
-            fetchMyShelfByShelfType(it)
-        }
+        flowOf(*ShelfType.entries.toTypedArray())
+            .cancellable()
+            .flatMapMerge {
+                fetchMyShelfByShelfType(it)
+            }
 
     // Concurrently fetch all trending, return a map of type to trending
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -63,11 +66,13 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
             EntryType.game,
             EntryType.podcast,
         )
-        return flowOf(*typeInTrending.toTypedArray()).flatMapMerge { type ->
-            fetchTrendingByEntryType(type).map {
-                mapOf(type to it)
+        return flowOf(*typeInTrending.toTypedArray())
+            .cancellable()
+            .flatMapMerge { type ->
+                fetchTrendingByEntryType(type).map {
+                    mapOf(type to it)
+                }
             }
-        }
     }
 
     private fun fetchTrendingByEntryType(type: EntryType): Flow<List<TrendingItemSchema>> = flow {
