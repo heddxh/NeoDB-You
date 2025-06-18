@@ -6,6 +6,12 @@ plugins {
     alias(libs.plugins.ktorfit)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.google.hilt.android)
+    require(
+        // Ensure KSP version is compatible with Kotlin version
+        libs.versions.ksp
+            .get()
+            .startsWith(libs.versions.kotlin.get()),
+    )
 }
 
 android {
