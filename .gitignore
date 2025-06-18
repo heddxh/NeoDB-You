@@ -130,3 +130,5 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+/.run/Check OpenAPI Change.run.xml
+/checkapi.sh
