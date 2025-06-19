@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.PaddingValues
@@ -29,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -46,16 +48,21 @@ import coil3.request.crossfade
 import dagger.hilt.android.AndroidEntryPoint
 import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.ui.component.SearchModal
+import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
 import day.vitayuzu.neodb.ui.page.settings.SettingsPage
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
+import day.vitayuzu.neodb.util.EntryType
+import day.vitayuzu.neodb.util.MainScreen
 import day.vitayuzu.neodb.util.Navi
 import day.vitayuzu.neodb.util.Navi.Companion.mainScreens
 import day.vitayuzu.neodb.util.Navi.Home
 import day.vitayuzu.neodb.util.Navi.Library
 import day.vitayuzu.neodb.util.Navi.Settings
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 import javax.inject.Inject
@@ -111,28 +118,8 @@ private fun MainScaffold(
     Scaffold(
         modifier = modifier,
         topBar = {
-            // FIXME: weired animation
-            val scope = rememberCoroutineScope()
-            val searchBarState = rememberSearchBarState(SearchBarValue.Collapsed)
-            SearchModal(state = searchBarState, onSearch = viewModel::search)
-            if (currentMainScreen != null) {
-                TopAppBar(
-                    title = { Text(stringResource(currentMainScreen.name)) },
-                    actions = {
-                        when (currentMainScreen.route) {
-                            Home, Library -> IconButton(
-                                onClick = { scope.launch { searchBarState.animateToExpanded() } },
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = null,
-                                )
-                            }
-
-                            else -> {}
-                        }
-                    },
-                )
+            MainTopBar(currentMainScreen, viewModel::search) { type, uuid ->
+                navController.navigate(Navi.Detail(type, uuid))
             }
         },
         floatingActionButton = {
@@ -184,6 +171,50 @@ private fun MainScaffold(
             showComposeModal = uiState.isShowComposeModal,
             onDismissComposeModal = viewModel::dismissComposeModal,
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MainTopBar(
+    currentMainScreen: MainScreen<out Navi>?,
+    onSearch: (String) -> Flow<List<Entry>> = { flowOf() },
+    onClickEntry: (EntryType, String) -> Unit = { _, _ -> },
+) {
+    val scope = rememberCoroutineScope()
+    if (currentMainScreen != null) {
+        val searchBarState = rememberSearchBarState(SearchBarValue.Collapsed)
+        Crossfade(searchBarState.currentValue) {
+            if (it == SearchBarValue.Expanded) {
+                SearchModal(
+                    state = searchBarState,
+                    onSearch = onSearch,
+                    onClickEntry = onClickEntry,
+                )
+            } else {
+                TopAppBar(
+                    modifier = Modifier.padding(top = 8.dp), // TopSearchBar has an extra padding
+                    title = { Text(stringResource(currentMainScreen.name)) },
+                    actions = {
+                        when (currentMainScreen.route) {
+                            // Show search button
+                            Home, Library -> IconButton(
+                                onClick = {
+                                    scope.launch { searchBarState.animateToExpanded() }
+                                },
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null,
+                                )
+                            }
+
+                            else -> {}
+                        }
+                    },
+                )
+            }
+        }
     }
 }
 
