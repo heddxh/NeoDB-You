@@ -43,6 +43,7 @@ import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 fun SettingsPage(
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
+    onLogin: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -68,7 +69,7 @@ fun SettingsPage(
             Box(modifier = Modifier.fillMaxSize()) {
                 Button(
                     modifier = Modifier.align(Alignment.Center),
-                    onClick = viewModel::login,
+                    onClick = onLogin,
                 ) { Text("Log in") }
             }
         }

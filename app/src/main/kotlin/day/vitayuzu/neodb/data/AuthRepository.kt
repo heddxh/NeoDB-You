@@ -1,6 +1,7 @@
 package day.vitayuzu.neodb.data
 
 import android.util.Log
+import day.vitayuzu.neodb.data.schema.InstanceSchema
 import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
 import de.jensklingenberg.ktorfit.Ktorfit
@@ -23,6 +24,13 @@ class AuthRepository @Inject constructor(
 
     private val _accountStatus = MutableStateFlow(AccountStatus())
     val accountStatus = _accountStatus.asStateFlow()
+
+    suspend fun validateInstanceUrl(instanceUrl: String): Result<InstanceSchema> = try {
+        val instanceInfo = remoteSource.fetchInstanceInfo(instanceUrl)
+        Result.success(instanceInfo)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 
     suspend fun updateAccountStatus() {
         Log.d("AuthRepository", "Updating account status...")

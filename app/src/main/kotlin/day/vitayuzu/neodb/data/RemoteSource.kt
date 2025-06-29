@@ -1,6 +1,7 @@
 package day.vitayuzu.neodb.data
 
 import day.vitayuzu.neodb.data.schema.AuthClientIdentify
+import day.vitayuzu.neodb.data.schema.InstanceSchema
 import day.vitayuzu.neodb.data.schema.MarkInSchema
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.data.schema.PaginatedPostList
@@ -22,6 +23,10 @@ import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
+import de.jensklingenberg.ktorfit.http.ReqBuilder
+import de.jensklingenberg.ktorfit.http.Url
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.http.set
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -30,6 +35,28 @@ class RemoteSource @Inject constructor(
     private val api: NeoDbApi,
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
 ) {
+    // =====================================< Auth Start >================================
+
+    /**
+     * Fetch instance info from given url, ignore current instance address.
+     */
+    suspend fun fetchInstanceInfo(instanceUrl: String): InstanceSchema = withContext(dispatcher) {
+        api.fetchInstanceInfo(instanceUrl) {
+            url.set("https", instanceUrl.toNormalizedUrl(), path = "api/v1/instance")
+        }
+    }
+
+    suspend fun registerOauthAPP(): Result<AuthClientIdentify> = withContext(dispatcher) {
+        try {
+            val result = api.registerOauthAPP()
+            Result.success(result)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // ===========================================< Auth END >============================
+
     suspend fun fetchMyShelf(
         type: ShelfType,
         page: Int = 1,
@@ -61,15 +88,6 @@ class RemoteSource @Inject constructor(
         api.fetchItemPosts(uuid, type, page)
     }
 
-    suspend fun registerOauthAPP(): Result<AuthClientIdentify> = withContext(dispatcher) {
-        try {
-            val result = api.registerOauthAPP()
-            Result.success(result)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
     suspend fun fetchSelfAccountInfo(): UserSchema = withContext(dispatcher) {
         api.fetchSelfAccountInfo()
     }
@@ -88,6 +106,17 @@ class RemoteSource @Inject constructor(
     ): SearchResult = withContext(dispatcher) {
         api.searchWithKeywords(keywords, category, page)
     }
+
+    private companion object {
+        val schemeRegex by lazy { Regex("^https?://") }
+        val trailingSlashRegex by lazy { Regex("/$") }
+
+        /**
+         * Remove scheme and trailing slash from url string.
+         */
+        fun String.toNormalizedUrl(): String =
+            this.replaceFirst(schemeRegex, "").replaceFirst(trailingSlashRegex, "")
+    }
 }
 
 /**
@@ -97,7 +126,13 @@ class RemoteSource @Inject constructor(
  * Note: should not be private since Ktorfit need to generate the implementation(extend it).
  */
 interface NeoDbApi {
-    // Auth
+    // =====================================< Auth Start >================================
+    @GET
+    suspend fun fetchInstanceInfo(
+        @Url instanceUrl: String,
+        @ReqBuilder ext: HttpRequestBuilder.() -> Unit,
+    ): InstanceSchema
+
     @POST("v1/apps")
     @FormUrlEncoded
     suspend fun registerOauthAPP(
@@ -105,6 +140,8 @@ interface NeoDbApi {
         @Field("redirect_uris") redirectUris: String = AUTH_CALLBACK,
         @Field("website") website: String = WEBSITE,
     ): AuthClientIdentify
+
+    // ===========================================< Auth END >============================
 
     @GET("me/shelf/{type}")
     suspend fun fetchMyShelf(

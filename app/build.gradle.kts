@@ -97,4 +97,6 @@ dependencies {
     implementation("io.github.kalinjul.kotlin.multiplatform:oidc-appsupport:9.9.9-LOCAL")
     implementation("io.github.kalinjul.kotlin.multiplatform:oidc-ktor:9.9.9-LOCAL")
     implementation(libs.androidx.browser)
+
+    implementation(libs.shimmer)
 }

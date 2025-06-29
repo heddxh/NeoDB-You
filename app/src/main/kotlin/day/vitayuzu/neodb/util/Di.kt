@@ -108,7 +108,7 @@ object NetworkModule {
     @Provides
     fun provideHttpClient(preferenceSource: LocalPreferenceSource): Ktorfit = ktorfit {
         Log.d("RemoteSource", "Initializing Ktorfit client...")
-        baseUrl(BASEURL)
+        baseUrl(API_BASE_URL)
         httpClient(
             HttpClient {
                 install(DefaultRequest) {
