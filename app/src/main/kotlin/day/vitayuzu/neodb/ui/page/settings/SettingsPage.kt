@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,7 +48,11 @@ fun SettingsPage(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val ctx = LocalContext.current
+    LaunchedEffect(true) {
+        viewModel.refresh()
+    }
+
+    val context = LocalContext.current
 
     Surface(modifier = modifier.fillMaxSize()) {
         if (uiState.isLogin) {
@@ -60,7 +65,7 @@ fun SettingsPage(
             ) {
                 try {
                     val intent = CustomTabsIntent.Builder().build() // TODO: warmup
-                    intent.launchUrl(ctx, uiState.url.toUri())
+                    intent.launchUrl(context, uiState.url.toUri())
                 } catch (e: Exception) {
                     Log.e("SettingsPage", "Failed to open ${uiState.url}", e)
                 }

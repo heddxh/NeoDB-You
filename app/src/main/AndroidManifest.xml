@@ -25,11 +25,22 @@
             </intent-filter>
         </activity>
 
-        <!-- Workaround to make firefox redirect to this activity properly -->
         <activity
-            android:name="org.publicvalue.multiplatform.oidc.appsupport.HandleRedirectActivity"
-            android:launchMode="singleTask"
-            tools:replace="android:launchMode" />
+            android:name=".OauthActivity"
+            android:exported="true"
+            android:launchMode="singleInstance"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="auth"
+                    android:scheme="${applicationId}" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

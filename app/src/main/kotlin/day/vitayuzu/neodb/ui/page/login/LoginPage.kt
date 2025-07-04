@@ -2,8 +2,10 @@ package day.vitayuzu.neodb.ui.page.login
 
 import android.util.Log
 import android.util.Patterns
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -38,27 +41,34 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.valentinilk.shimmer.shimmer
 import day.vitayuzu.neodb.R
+import day.vitayuzu.neodb.util.AUTH_CALLBACK
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 
 @OptIn(FlowPreview::class)
 @Composable
 fun LoginPage(
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
+    onLoginSuccess: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    if (uiState.isLogin) onLoginSuccess()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -103,11 +113,35 @@ fun LoginPage(
             if (uiState.isFetchingInstanceInfo) {
                 ShimmerInstanceCard()
             } else {
+                val scope = rememberCoroutineScope()
+                val context = LocalContext.current
                 InstanceCard(
                     instanceUrl = uiState.url,
                     name = uiState.name,
                     version = uiState.version,
                     peopleCount = uiState.peopleCount,
+                    modifier = Modifier.clickable {
+                        scope.launch {
+                            with(viewModel.getClientIdentity()) {
+                                if (this == null) {
+                                    Log.e("LoginPage", "Failed to get client id")
+                                    return@launch
+                                }
+                                val clientId = this.first
+                                val intent = CustomTabsIntent.Builder().build()
+                                val url = "https://${uiState.url}/oauth/authorize"
+                                    .toUri()
+                                    .buildUpon()
+                                    .appendQueryParameter("response_type", "code")
+                                    .appendQueryParameter("client_id", clientId)
+                                    .appendQueryParameter("redirect_uri", AUTH_CALLBACK)
+                                    // NOTE: Fuck it should no be "+" or it will be encoded to %2B
+                                    .appendQueryParameter("scope", "read write")
+                                    .build()
+                                intent.launchUrl(context, url)
+                            }
+                        }
+                    },
                 )
             }
         }

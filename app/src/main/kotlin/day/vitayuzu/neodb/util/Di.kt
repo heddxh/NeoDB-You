@@ -20,13 +20,12 @@ import day.vitayuzu.neodb.data.createNeoDbApi
 import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.ktorfit
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.ANDROID
-import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
@@ -36,7 +35,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
-import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -49,14 +47,6 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindRealRepository(impl: RealRepository): Repository
-}
-
-@Module
-@InstallIn(SingletonComponent::class)
-object AuthModule {
-    @Singleton
-    @Provides
-    fun providerAuthFlowFactory() = AndroidCodeAuthFlowFactory(useWebView = false)
 }
 
 @Module
@@ -107,11 +97,14 @@ object NetworkModule {
     @Singleton
     @Provides
     fun provideHttpClient(preferenceSource: LocalPreferenceSource): Ktorfit = ktorfit {
-        Log.d("RemoteSource", "Initializing Ktorfit client...")
-        baseUrl(API_BASE_URL)
         httpClient(
             HttpClient {
-                install(DefaultRequest) {
+                baseUrl("https://$BASE_URL/api/") // using https://neodb.social/api as default
+                install(Logging) {
+                    logger = Logger.ANDROID
+//                    level = LogLevel.NONE
+                }
+                defaultRequest {
                     headers.appendIfNameAndValueAbsent("Content-Type", "application/json")
                 }
                 install(ContentNegotiation) {
@@ -123,14 +116,10 @@ object NetworkModule {
                         },
                     )
                 }
-                install(Logging) {
-                    logger = Logger.ANDROID
-                    level = LogLevel.NONE
-                }
                 install(Auth) {
                     bearer {
                         loadTokens {
-                            val token = preferenceSource.getAccessToken()
+                            val token = preferenceSource.get(LocalPreferenceSource.ACCESS_TOKEN)
                             if (token != null) {
                                 // No expire time, no need to refresh
                                 BearerTokens(token, null)

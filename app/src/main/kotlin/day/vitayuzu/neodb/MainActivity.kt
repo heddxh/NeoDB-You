@@ -46,7 +46,6 @@ import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.request.crossfade
 import dagger.hilt.android.AndroidEntryPoint
-import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.ui.component.SearchModal
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
@@ -65,21 +64,12 @@ import day.vitayuzu.neodb.util.Navi.Settings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    // Auth/Oauth2 factory
-    @Inject lateinit var codeAuthFlowFactory: AndroidCodeAuthFlowFactory
-
-    @Inject lateinit var authRepository: AuthRepository
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        codeAuthFlowFactory.registerActivity(this)
         SingletonImageLoader.setSafe {
             ImageLoader
                 .Builder(this)
@@ -100,7 +90,6 @@ class MainActivity : ComponentActivity() {
  * Main scaffold for the app.
  * It contains the bottom navigation bar, top appbar and the main content(screens).
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainScaffold(
     modifier: Modifier = Modifier,
@@ -277,6 +266,8 @@ private fun MainNavi(
             )
         }
 
-        composable<Navi.Login> { LoginPage(modifier = mainScreenModifier) }
+        composable<Navi.Login> {
+            LoginPage(modifier = mainScreenModifier) { navController.navigateUp() }
+        }
     }
 }

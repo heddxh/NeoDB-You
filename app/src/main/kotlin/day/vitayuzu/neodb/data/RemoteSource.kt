@@ -7,6 +7,7 @@ import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.data.schema.PaginatedPostList
 import day.vitayuzu.neodb.data.schema.ResultSchema
 import day.vitayuzu.neodb.data.schema.SearchResult
+import day.vitayuzu.neodb.data.schema.TokenSchema
 import day.vitayuzu.neodb.data.schema.TrendingItemSchema
 import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.data.schema.detail.DetailSchema
@@ -39,19 +40,29 @@ class RemoteSource @Inject constructor(
 
     /**
      * Fetch instance info from given url, ignore current instance address.
+     * @param instanceUrl Normalized instance url, without scheme and trailing slash.
      */
     suspend fun fetchInstanceInfo(instanceUrl: String): InstanceSchema = withContext(dispatcher) {
         api.fetchInstanceInfo(instanceUrl) {
-            url.set("https", instanceUrl.toNormalizedUrl(), path = "api/v1/instance")
+            url.set("https", instanceUrl, path = "api/v1/instance")
         }
     }
 
-    suspend fun registerOauthAPP(): Result<AuthClientIdentify> = withContext(dispatcher) {
-        try {
-            val result = api.registerOauthAPP()
-            Result.success(result)
-        } catch (e: Exception) {
-            Result.failure(e)
+    suspend fun registerOauthAPP(instanceUrl: String): AuthClientIdentify =
+        withContext(dispatcher) {
+            api.registerOauthAPP {
+                url.set("https", instanceUrl, path = "api/v1/apps")
+            }
+        }
+
+    suspend fun exchangeAccessToken(
+        instanceUrl: String,
+        clientId: String,
+        clientSecret: String,
+        code: String,
+    ) = withContext(dispatcher) {
+        api.exchangeAccessToken(clientId, clientSecret, code) {
+            url.set("https", instanceUrl, path = "oauth/token")
         }
     }
 
@@ -106,17 +117,6 @@ class RemoteSource @Inject constructor(
     ): SearchResult = withContext(dispatcher) {
         api.searchWithKeywords(keywords, category, page)
     }
-
-    private companion object {
-        val schemeRegex by lazy { Regex("^https?://") }
-        val trailingSlashRegex by lazy { Regex("/$") }
-
-        /**
-         * Remove scheme and trailing slash from url string.
-         */
-        fun String.toNormalizedUrl(): String =
-            this.replaceFirst(schemeRegex, "").replaceFirst(trailingSlashRegex, "")
-    }
 }
 
 /**
@@ -124,6 +124,7 @@ class RemoteSource @Inject constructor(
  *
  * It is the main api interface for the app.
  * Note: should not be private since Ktorfit need to generate the implementation(extend it).
+ * TODO: add trailing slash for all endpoints.
  */
 interface NeoDbApi {
     // =====================================< Auth Start >================================
@@ -139,7 +140,19 @@ interface NeoDbApi {
         @Field("client_name") clientName: String = APP_NAME,
         @Field("redirect_uris") redirectUris: String = AUTH_CALLBACK,
         @Field("website") website: String = WEBSITE,
+        @ReqBuilder ext: HttpRequestBuilder.() -> Unit,
     ): AuthClientIdentify
+
+    @POST("oauth/token")
+    @FormUrlEncoded
+    suspend fun exchangeAccessToken(
+        @Field("client_id") clientId: String,
+        @Field("client_secret") clientSecret: String,
+        @Field("code") code: String,
+        @Field("redirect_uri") redirectUri: String = AUTH_CALLBACK,
+        @Field("grant_type") grantType: String = "authorization_code",
+        @ReqBuilder ext: HttpRequestBuilder.() -> Unit = {},
+    ): TokenSchema
 
     // ===========================================< Auth END >============================
 

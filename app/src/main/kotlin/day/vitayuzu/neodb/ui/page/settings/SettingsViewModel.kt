@@ -10,22 +10,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(private val repo: AuthRepository) : ViewModel() {
 
-    @Inject lateinit var authFlowFactory: AndroidCodeAuthFlowFactory
-
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState = _uiState.asStateFlow()
 
-    init {
-        refresh()
-    }
-
-    private fun refresh() {
+    fun refresh() {
         viewModelScope.launch {
             repo.accountStatus.collect { (isLogin, schema) ->
                 if (isLogin && schema != null) {
@@ -45,37 +38,25 @@ class SettingsViewModel @Inject constructor(private val repo: AuthRepository) : 
         }
     }
 
-    fun login() {
-        viewModelScope.launch {
-            // Clean persistence credential
-            repo.revoke()
-
-            val client = repo.registerAppIfNeeded().getOrThrow()
-            val flow = authFlowFactory.createAuthFlow(client)
-            try {
-                val tokens = flow.getAccessToken()
-                repo.storeAccessToken(tokens.access_token)
-                _uiState.update { it.copy(isLogin = true) }
-                refresh() // fetch user info
-            } catch (e: Exception) {
-                Log.e("SettingsViewModel", "Failed to login", e)
-            }
-        }
-    }
-
     fun logout() {
         if (!repo.accountStatus.value.isLogin) {
             Log.d("SettingsViewModel", "Already logged out, do nothing")
         }
         viewModelScope.launch {
-            val client = repo.registerAppIfNeeded().getOrThrow()
-            val code = client.revokeToken(repo.getAccessToken().orEmpty())
-            if (code.value == 200) {
-                repo.revoke()
-                _uiState.update { it.copy(isLogin = false) }
-                Log.d("SettingsViewModel", "Logout successfully")
+            // TODO: send revoke request
+            repo.revoke()
+            _uiState.update { it.copy(isLogin = false) }
+            Log.d("SettingsViewModel", "Logout successfully")
+        }
+    }
+
+    private companion object {
+        fun UserSchema.getFediAccount(): String? {
+            val rawAddress = this.externalAccounts.find { it.platform == "mastodon" }?.handle
+            return if (rawAddress == null) {
+                null
             } else {
-                Log.d("SettingsViewModel", "Logout failed: $code")
+                "@$rawAddress"
             }
         }
     }
@@ -88,12 +69,3 @@ data class SettingsUiState(
     val username: String = "",
     val fediAccount: String? = null,
 )
-
-fun UserSchema.getFediAccount(): String? {
-    val rawAddress = this.externalAccounts.find { it.platform == "mastodon" }?.handle
-    return if (rawAddress == null) {
-        null
-    } else {
-        "@$rawAddress"
-    }
-}
