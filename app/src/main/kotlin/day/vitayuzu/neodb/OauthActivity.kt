@@ -19,20 +19,21 @@ import day.vitayuzu.neodb.util.AUTH_CALLBACK
 import kotlinx.coroutines.launch
 
 /**
- * Activity that starts the auth flow and receive oauth callback.
- * Since Firefox on Android implement app links incorrectly, we need to use this activity to
- * start custom tab instead of the main activity.
- * In detail, Firefox on Android won't finish it self when navigating to app links from custom tabs,
- * because of a missing intent flag.
- * As a workaround, we use `singleTask` for this activity.
- * When open a custom tab:
- * Task 1 -> MainActivity
- * Task 2 -> OauthActivity -> CustomTab
- * When user click the app link(a callback to our app):
- * Task 1 -> MainActivity
- * Task 2 -> OauthActivity(onNewIntent), CustomTab is destroyed.
- * Task 3 -> MainActivity <- we are here.
- * In the end we back to MainActivity.
+ * This Activity initiates the authentication flow and handles the OAuth callback.
+ *
+ * Due to an issue with how Firefox on Android handles app links (it doesn't correctly finish itself
+ * when navigating to app links from custom tabs due to a missing intent flag), this Activity is
+ * used to launch the custom tab instead of the [MainActivity].
+ *
+ * To address this, `singleTask` launch mode is used for this Activity.
+ * The task flow is as follows:
+ *
+ * When opening a custom tab for authentication:
+ * MainActivity -> OauthActivity -> CustomTab
+ *
+ * When the user clicks the app link (the OAuth callback to our app):
+ * MainActivity -> OauthActivity (call [onNewIntent]), and the CustomTab is destroyed.
+ * In the end we call [finish] to back to MainActivity.
  */
 @AndroidEntryPoint
 class OauthActivity : ComponentActivity() {
@@ -50,13 +51,17 @@ class OauthActivity : ComponentActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
+    // Handles the OAuth callback.
+    // Note: This callback is only invoked if an OauthActivity instance is already running.
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        Log.d("OauthActivity", "On New Intent")
         val url = intent.data
         if (url != null && url.toString().startsWith(AUTH_CALLBACK)) {
             val authCode = url.getQueryParameter("code")
             if (!authCode.isNullOrBlank()) {
                 lifecycleScope.launch {
+                    Log.d("OauthActivity", "Auth code received")
                     viewModel.handleAuthCode(authCode).join() // wait until finish
                     finish()
                 }
@@ -65,12 +70,5 @@ class OauthActivity : ComponentActivity() {
                 finish()
             }
         }
-    }
-
-    // Handle oauth call back.
-    override fun onNewIntent(intent: Intent) {
-        println("On New Intent")
-        super.onNewIntent(intent)
-        setIntent(intent)
     }
 }

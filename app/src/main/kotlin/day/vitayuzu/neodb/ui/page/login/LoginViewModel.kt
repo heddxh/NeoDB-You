@@ -42,19 +42,31 @@ class LoginViewModel @Inject constructor(private val authRepo: AuthRepository) :
             authRepo.registerClientIfNeeded(_uiState.value.url).getOrNull()
         }.await()
 
+    /**
+     * Called from [OauthActivity][day.vitayuzu.neodb.OauthActivity].
+     * Since `OauthActivity` creates a new instance of this ViewModel,
+     * the instance URL needs to be retrieved from the [AuthRepository] rather than the UI state.
+     */
     fun handleAuthCode(code: String) = viewModelScope.launch {
-        // Calling from OauthActivity, which create another instance of this viewmodel,
-        // so we need to get instance url from auth repo, instead of ui state.
         val instanceUrl = authRepo.instanceUrl
         if (instanceUrl == null) {
             Log.e("LoginViewModel", "No instance url found")
             return@launch
         }
+        _uiState.update { it.copy(isExchangingAccessToken = true) }
         authRepo.registerClientIfNeeded(instanceUrl).onSuccess { (clientId, clientSecret) ->
             authRepo
                 .exchangeAccessToken(clientId, clientSecret, code)
-                .collect { _uiState.update { it.copy(isLogin = true) } }
+                .collect { result ->
+                    if (result) {
+                        Log.d("LoginViewModel", "Successfully exchanged access token")
+                        _uiState.update { it.copy(isLogin = true) }
+                    } else {
+                        Log.e("LoginViewModel", "Failed to exchange access token")
+                    }
+                }
         }
+        _uiState.update { it.copy(isExchangingAccessToken = false) }
     }
 
     private companion object {
@@ -75,5 +87,6 @@ data class LoginUiState(
     val name: String = "",
     val version: String = "",
     val peopleCount: Int = 0,
+    val isExchangingAccessToken: Boolean = false,
     val isLogin: Boolean = false,
 )

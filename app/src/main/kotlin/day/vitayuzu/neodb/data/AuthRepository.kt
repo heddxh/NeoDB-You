@@ -15,6 +15,7 @@ import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import io.ktor.client.plugins.plugin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
@@ -75,8 +76,8 @@ class AuthRepository @Inject constructor(
 
     /**
      * Register app if not already registered.
-     * If successful, store client id, secret, instance url in local storage.
-     * @return Client id and secret if successfully registered.
+     * If successful, store client id, secret, instance url in [LocalPreferenceSource].
+     * @return `Pair<ClientId, ClientSecret>` if successfully registered.
      */
     suspend fun registerClientIfNeeded(instanceUrl: String): Result<Pair<String, String>> {
         val clientId = preferenceSource.get(CLIENT_ID)
@@ -127,8 +128,8 @@ class AuthRepository @Inject constructor(
         ktorfit.httpClient.clearToken()
 
         updateAccountStatus()
-        emit(token)
-    }.log("Exchange access token", tag = "AuthRepository")
+        emit(true)
+    }.log("Exchange access token", tag = "AuthRepository").catch { emit(false) }
 
     /**
      * Remove all auth data from local storage.
@@ -146,7 +147,7 @@ class AuthRepository @Inject constructor(
 
     /**
      * Manually clear ktor cached tokens, see: https://youtrack.jetbrains.com/issue/KTOR-4759
-     * WorkAround: https://github.com/kalinjul/kotlin-multiplatform-oidc/blob/95769c578224ccf2da99087c47f2ecbf39bcb1e4/oidc-ktor/src/commonMain/kotlin/org/publicvalue/multiplatform/oidc/ktor/HttpClient%2BclearTokens.kt
+     * Workaround found here: https://github.com/kalinjul/kotlin-multiplatform-oidc/blob/95769c578224ccf2da99087c47f2ecbf39bcb1e4/oidc-ktor/src/commonMain/kotlin/org/publicvalue/multiplatform/oidc/ktor/HttpClient%2BclearTokens.kt
      */
     private fun HttpClient.clearToken() {
         authProvider<BearerAuthProvider>()?.clearToken()
