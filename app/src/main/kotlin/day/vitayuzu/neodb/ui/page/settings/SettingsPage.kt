@@ -1,5 +1,6 @@
 package day.vitayuzu.neodb.ui.page.settings
 
+import android.content.Intent
 import android.util.Log
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.background
@@ -37,6 +38,7 @@ import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import day.vitayuzu.neodb.OauthActivity
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 
@@ -44,7 +46,6 @@ import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 fun SettingsPage(
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
-    onLogin: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -74,7 +75,9 @@ fun SettingsPage(
             Box(modifier = Modifier.fillMaxSize()) {
                 Button(
                     modifier = Modifier.align(Alignment.Center),
-                    onClick = onLogin,
+                    onClick = {
+                        context.startActivity(Intent(context, OauthActivity::class.java))
+                    },
                 ) { Text("Log in") }
             }
         }

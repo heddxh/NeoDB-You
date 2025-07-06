@@ -51,7 +51,6 @@ import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
-import day.vitayuzu.neodb.ui.page.login.LoginPage
 import day.vitayuzu.neodb.ui.page.settings.SettingsPage
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.EntryType
@@ -251,10 +250,7 @@ private fun MainNavi(
             )
         }
         composable<Settings> {
-            SettingsPage(
-                modifier = mainScreenModifier,
-                onLogin = { navController.navigate(Navi.Login) },
-            )
+            SettingsPage(modifier = mainScreenModifier)
         }
         composable<Navi.Detail> {
             val detailEntry: Navi.Detail = it.toRoute()
@@ -264,10 +260,6 @@ private fun MainNavi(
                 showComposeModal = showComposeModal,
                 onDismissComposeModal = onDismissComposeModal,
             )
-        }
-
-        composable<Navi.Login> {
-            LoginPage(modifier = mainScreenModifier) { navController.navigateUp() }
         }
     }
 }

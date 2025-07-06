@@ -119,6 +119,8 @@ object NetworkModule {
                 install(Auth) {
                     bearer {
                         loadTokens {
+                            // Will be cached until process die, use clearToken() to refresh.
+                            // See: AuthRepository.kt
                             val token = preferenceSource.get(LocalPreferenceSource.ACCESS_TOKEN)
                             if (token != null) {
                                 // No expire time, no need to refresh
