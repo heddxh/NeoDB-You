@@ -8,7 +8,10 @@ import day.vitayuzu.neodb.data.LocalPreferenceSource.Companion.INSTANCE_URL
 import day.vitayuzu.neodb.data.schema.InstanceSchema
 import day.vitayuzu.neodb.data.schema.UserSchema
 import de.jensklingenberg.ktorfit.Ktorfit
+import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpSend
+import io.ktor.client.plugins.auth.authProvider
+import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import io.ktor.client.plugins.plugin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -121,8 +124,8 @@ class AuthRepository @Inject constructor(
         val token =
             remoteSource.exchangeAccessToken(instanceUrl, clientId, clientSecret, code).accessToken
         preferenceSource.store(ACCESS_TOKEN, token)
+        ktorfit.httpClient.clearToken()
 
-        println(preferenceSource.instanceUrl)
         updateAccountStatus()
         emit(token)
     }.log("Exchange access token", tag = "AuthRepository")
@@ -133,11 +136,20 @@ class AuthRepository @Inject constructor(
     suspend fun revoke() {
         try {
             preferenceSource.deleteAllAuthData()
+            ktorfit.httpClient.clearToken()
             _accountStatus.update { AccountStatus() }
             Log.d("AuthRepository", "Revoked all auth data")
         } catch (e: Exception) {
             Log.e("AuthRepository", "Failed to delete all auth data", e)
         }
+    }
+
+    /**
+     * Manually clear ktor cached tokens, see: https://youtrack.jetbrains.com/issue/KTOR-4759
+     * WorkAround: https://github.com/kalinjul/kotlin-multiplatform-oidc/blob/95769c578224ccf2da99087c47f2ecbf39bcb1e4/oidc-ktor/src/commonMain/kotlin/org/publicvalue/multiplatform/oidc/ktor/HttpClient%2BclearTokens.kt
+     */
+    private fun HttpClient.clearToken() {
+        authProvider<BearerAuthProvider>()?.clearToken()
     }
 }
 
