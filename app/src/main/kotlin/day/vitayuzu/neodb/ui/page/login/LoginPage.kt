@@ -1,8 +1,8 @@
 package day.vitayuzu.neodb.ui.page.login
 
+import android.content.Context
 import android.util.Log
 import android.util.Patterns
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,11 +19,19 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.OutputTransformation
+import androidx.compose.foundation.text.input.TextFieldBuffer
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.insert
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -42,8 +50,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -52,7 +63,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.valentinilk.shimmer.shimmer
 import day.vitayuzu.neodb.R
-import day.vitayuzu.neodb.util.AUTH_CALLBACK
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -75,36 +85,68 @@ fun LoginPage(
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         modifier = modifier.padding(horizontal = 16.dp).fillMaxSize(),
     ) {
-        var instanceUrl by remember { mutableStateOf("") }
+        val textFieldState = rememberTextFieldState()
+        var isInputting by remember { mutableStateOf(false) }
 
         LaunchedEffect(true) {
-            snapshotFlow { instanceUrl }
+            snapshotFlow { textFieldState.text }
                 .filter { Patterns.WEB_URL.matcher(it).matches() }
                 .debounce(500)
                 .collectLatest {
                     Log.d("LoginPage", "instanceUrl: $it")
-                    viewModel.fetchInstanceInfo(it)
+                    viewModel.fetchInstanceInfo(it.toString())
                 }
         }
 
         // TODO: Logo and welcome words here.
 
-        var isInputting by remember { mutableStateOf(false) }
-
-        OutlinedTextField(
-            value = instanceUrl,
-            onValueChange = { instanceUrl = it },
-            label = { Text(stringResource(R.string.textfield_instanceUrl)) },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.internet_outline),
-                    contentDescription = "Input instance address",
-                )
-            },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Uri),
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth().onFocusChanged { isInputting = it.isFocused },
-        )
+        val focus = LocalFocusManager.current
+        val context = LocalContext.current
+        val scope = rememberCoroutineScope()
+        if (!uiState.isExchangingAccessToken) {
+            OutlinedTextField(
+                state = textFieldState,
+                lineLimits = TextFieldLineLimits.SingleLine,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrectEnabled = false,
+                    keyboardType = KeyboardType.Uri,
+                    imeAction = ImeAction.Go,
+                ),
+                onKeyboardAction = { default ->
+                    if (uiState.url.isNotEmpty()) {
+                        scope.launch {
+                            launchAuthTab(context, uiState.url, viewModel)
+                        }
+                    }
+                    default()
+                },
+                outputTransformation = UrlOutputTransformation(),
+                label = { Text(stringResource(R.string.textfield_instanceUrl)) },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.internet_outline),
+                        contentDescription = "Input instance address",
+                    )
+                },
+                trailingIcon = {
+                    IconButton(onClick = {
+                        textFieldState.clearText()
+                        focus.clearFocus()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Clear",
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged {
+                        isInputting = it.isFocused
+                    },
+            )
+        }
 
         AnimatedVisibility(
             visible = isInputting,
@@ -113,37 +155,56 @@ fun LoginPage(
             if (uiState.isFetchingInstanceInfo) {
                 ShimmerInstanceCard()
             } else {
-                val scope = rememberCoroutineScope()
-                val context = LocalContext.current
                 InstanceCard(
                     instanceUrl = uiState.url,
                     name = uiState.name,
                     version = uiState.version,
                     peopleCount = uiState.peopleCount,
-                    modifier = Modifier.clickable {
-                        scope.launch {
-                            with(viewModel.getClientIdentity()) {
-                                if (this == null) {
-                                    Log.e("LoginPage", "Failed to get client id")
-                                    return@launch
-                                }
-                                val clientId = this.first
-                                val intent = CustomTabsIntent.Builder().build()
-                                val url = "https://${uiState.url}/oauth/authorize"
-                                    .toUri()
-                                    .buildUpon()
-                                    .appendQueryParameter("response_type", "code")
-                                    .appendQueryParameter("client_id", clientId)
-                                    .appendQueryParameter("redirect_uri", AUTH_CALLBACK)
-                                    // NOTE: Fuck it should no be "+" or it will be encoded to %2B
-                                    .appendQueryParameter("scope", "read write")
-                                    .build()
-                                intent.launchUrl(context, url)
-                            }
-                        }
-                    },
+                    isShimmering = uiState.isExchangingAccessToken,
+                    modifier = Modifier
+                        .clickable {
+                            scope.launch { launchAuthTab(context, uiState.url, viewModel) }
+                        },
                 )
             }
+        }
+    }
+}
+
+private suspend fun launchAuthTab(
+    context: Context,
+    instanceUrl: String,
+    viewModel: LoginViewModel,
+) {
+    with(viewModel.getClientIdentity()) {
+        if (this == null) {
+            Log.e("LoginPage", "Failed to get client id")
+            return
+        }
+        val clientId = this.first
+        val intent = androidx.browser.customtabs.CustomTabsIntent
+            .Builder()
+            .build()
+        val url = "https://$instanceUrl/oauth/authorize"
+            .toUri()
+            .buildUpon()
+            .appendQueryParameter("response_type", "code")
+            .appendQueryParameter("client_id", clientId)
+            .appendQueryParameter("redirect_uri", day.vitayuzu.neodb.util.AUTH_CALLBACK)
+            // NOTE: Fuck it should no be "+" or it will be encoded to %2B
+            .appendQueryParameter("scope", "read write")
+            .build()
+        intent.launchUrl(context, url)
+    }
+}
+
+/**
+ * Auto append url scheme(https://) if it is missing.
+ */
+private class UrlOutputTransformation : OutputTransformation {
+    override fun TextFieldBuffer.transformOutput() {
+        if (length > 0 && !originalText.startsWith("http")) {
+            insert(0, "https://")
         }
     }
 }
@@ -155,8 +216,12 @@ private fun InstanceCard(
     version: String,
     peopleCount: Int,
     modifier: Modifier = Modifier,
+    isShimmering: Boolean = false, // show shimmer when handling oauth callback.
 ) {
-    Card(shape = MaterialTheme.shapes.small, modifier = modifier) {
+    Card(
+        shape = MaterialTheme.shapes.small,
+        modifier = modifier.then(if (isShimmering) Modifier.shimmer() else Modifier),
+    ) {
         Text(name, Modifier.padding(8.dp))
         Text(
             instanceUrl,
@@ -218,7 +283,7 @@ fun ShimmerInstanceCard(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun PreviewInstanceCard() {
-    InstanceCard("neodb.social", "NeoDB", "neodb/0.11.7.3", 22135, Modifier.fillMaxWidth())
+    InstanceCard("neodb.social", "NeoDB", "neodb/0.11.7.3", 22135, Modifier.fillMaxWidth(), true)
 }
 
 @Preview
