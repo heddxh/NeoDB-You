@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.util.Patterns
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -99,7 +100,7 @@ fun LoginPage(
                 }
         }
 
-        // TODO: Logo and welcome words here.
+        WelcomeWords(Modifier.fillMaxWidth())
 
         val focus = LocalFocusManager.current
         val context = LocalContext.current
@@ -216,6 +217,25 @@ private class UrlOutputTransformation : OutputTransformation {
 }
 
 @Composable
+fun WelcomeWords(modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        // TODO: Logo
+        Image(
+            painterResource(R.drawable.ic_launcher_foreground),
+            null,
+        )
+        Text(
+            stringResource(R.string.welcome_firstline),
+            style = MaterialTheme.typography.displaySmall,
+        )
+        Text(
+            stringResource(R.string.welcome_secondline),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+    }
+}
+
+@Composable
 private fun InstanceCard(
     instanceUrl: String,
     name: String,
@@ -284,6 +304,12 @@ fun ShimmerInstanceCard(modifier: Modifier = Modifier) {
             )
         }
     }
+}
+
+@Preview
+@Composable
+private fun PreviewWelcomeWords() {
+    WelcomeWords()
 }
 
 @PreviewLightDark
