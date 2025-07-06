@@ -28,8 +28,7 @@
         <activity
             android:name=".OauthActivity"
             android:exported="true"
-            android:launchMode="singleInstance"
-            android:noHistory="true">
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
