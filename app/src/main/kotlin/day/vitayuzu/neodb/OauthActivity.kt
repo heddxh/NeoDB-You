@@ -16,6 +16,8 @@ import day.vitayuzu.neodb.ui.page.login.LoginPage
 import day.vitayuzu.neodb.ui.page.login.LoginViewModel
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 
 /**
@@ -45,9 +47,20 @@ class OauthActivity : ComponentActivity() {
         setContent {
             NeoDBYouTheme {
                 Scaffold {
-                    LoginPage(modifier = Modifier.padding(it), viewModel = viewModel) {}
+                    LoginPage(modifier = Modifier.padding(it), viewModel = viewModel)
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // When user cancel the login process by clicking back button or close custom tab,
+        // re-show the input field.
+        if (viewModel.uiState.value.url
+                .isNotEmpty()
+        ) {
+            viewModel.reShowTextField()
         }
     }
 
@@ -62,8 +75,12 @@ class OauthActivity : ComponentActivity() {
             if (!authCode.isNullOrBlank()) {
                 lifecycleScope.launch {
                     Log.d("OauthActivity", "Auth code received")
-                    viewModel.handleAuthCode(authCode).join() // wait until finish
-                    finish()
+                    viewModel
+                        .handleAuthCode(authCode)
+                        .onCompletion {
+                            // Finish when successfully exchanged access token.
+                            if (it == null) finish()
+                        }.collect()
                 }
             } else {
                 Log.d("OauthActivity", "Can't get auth code")

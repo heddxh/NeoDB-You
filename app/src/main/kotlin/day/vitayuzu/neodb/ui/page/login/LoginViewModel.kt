@@ -5,9 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import day.vitayuzu.neodb.data.AuthRepository
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -36,37 +37,40 @@ class LoginViewModel @Inject constructor(private val authRepo: AuthRepository) :
         }
     }
 
-    // FIXME
-    suspend fun getClientIdentity() = viewModelScope
-        .async {
-            authRepo.registerClientIfNeeded(_uiState.value.url).getOrNull()
-        }.await()
-
     /**
-     * Called from [OauthActivity][day.vitayuzu.neodb.OauthActivity].
-     * Since `OauthActivity` creates a new instance of this ViewModel,
-     * the instance URL needs to be retrieved from the [AuthRepository] rather than the UI state.
+     * Register client and return client id as flow.
      */
-    fun handleAuthCode(code: String) = viewModelScope.launch {
-        val instanceUrl = authRepo.instanceUrl
-        if (instanceUrl == null) {
-            Log.e("LoginViewModel", "No instance url found")
-            return@launch
+    fun getClientId() = flow {
+        _uiState.update { it.copy(isPreparingOauth = true, isShowTextField = false) }
+        authRepo.registerClientIfNeeded(uiState.value.url).onSuccess {
+            kotlinx.coroutines.delay(3000)
+            emit(it.first)
         }
-        _uiState.update { it.copy(isExchangingAccessToken = true) }
+    }.onCompletion { _uiState.update { it.copy(isPreparingOauth = false) } }
+
+    fun handleAuthCode(code: String) = flow<Unit> {
+        // Called from [OauthActivity][day.vitayuzu.neodb.OauthActivity].
+        // Since `OauthActivity` creates a new instance of this ViewModel,
+        // the instance URL needs to be retrieved from the [AuthRepository] rather than the UI state.
+        val instanceUrl = authRepo.instanceUrl ?: throw Exception("No instance url found")
+        _uiState.update { it.copy(isExchangingAccessToken = true, isShowTextField = false) }
         authRepo.registerClientIfNeeded(instanceUrl).onSuccess { (clientId, clientSecret) ->
             authRepo
                 .exchangeAccessToken(clientId, clientSecret, code)
                 .collect { result ->
                     if (result) {
                         Log.d("LoginViewModel", "Successfully exchanged access token")
-                        _uiState.update { it.copy(isLogin = true) }
                     } else {
-                        Log.e("LoginViewModel", "Failed to exchange access token")
+                        throw Exception("No instance url found")
                     }
                 }
         }
+    }.onCompletion {
         _uiState.update { it.copy(isExchangingAccessToken = false) }
+    }
+
+    fun reShowTextField() {
+        _uiState.update { it.copy(isShowTextField = true) }
     }
 
     private companion object {
@@ -82,11 +86,12 @@ class LoginViewModel @Inject constructor(private val authRepo: AuthRepository) :
 }
 
 data class LoginUiState(
+    val isShowTextField: Boolean = true,
     val isFetchingInstanceInfo: Boolean = true,
     val url: String = "", // Normalized instance url
     val name: String = "",
     val version: String = "",
     val peopleCount: Int = 0,
+    val isPreparingOauth: Boolean = false,
     val isExchangingAccessToken: Boolean = false,
-    val isLogin: Boolean = false,
 )

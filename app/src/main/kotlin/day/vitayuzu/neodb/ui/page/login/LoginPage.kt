@@ -57,16 +57,20 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.valentinilk.shimmer.shimmer
 import day.vitayuzu.neodb.R
+import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 @OptIn(FlowPreview::class)
@@ -74,11 +78,8 @@ import kotlinx.coroutines.launch
 fun LoginPage(
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
-    onLoginSuccess: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    if (uiState.isLogin) onLoginSuccess()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -103,7 +104,7 @@ fun LoginPage(
         val focus = LocalFocusManager.current
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
-        if (!uiState.isExchangingAccessToken) {
+        AnimatedVisibility(uiState.isShowTextField) {
             OutlinedTextField(
                 state = textFieldState,
                 lineLimits = TextFieldLineLimits.SingleLine,
@@ -116,7 +117,7 @@ fun LoginPage(
                 onKeyboardAction = { default ->
                     if (uiState.url.isNotEmpty()) {
                         scope.launch {
-                            launchAuthTab(context, uiState.url, viewModel)
+                            launchAuthTab(context, uiState.url, viewModel::getClientId)
                         }
                     }
                     default()
@@ -148,8 +149,9 @@ fun LoginPage(
             )
         }
 
+        // Show when textfield is hidden or focus on input.
         AnimatedVisibility(
-            visible = isInputting,
+            visible = isInputting || !uiState.isShowTextField,
             modifier = Modifier.fillMaxWidth().padding(WindowInsets.ime.asPaddingValues()),
         ) {
             if (uiState.isFetchingInstanceInfo) {
@@ -160,10 +162,16 @@ fun LoginPage(
                     name = uiState.name,
                     version = uiState.version,
                     peopleCount = uiState.peopleCount,
-                    isShimmering = uiState.isExchangingAccessToken,
+                    isShimmering = uiState.isExchangingAccessToken || uiState.isPreparingOauth,
                     modifier = Modifier
                         .clickable {
-                            scope.launch { launchAuthTab(context, uiState.url, viewModel) }
+                            scope.launch {
+                                launchAuthTab(
+                                    context,
+                                    uiState.url,
+                                    viewModel::getClientId,
+                                )
+                            }
                         },
                 )
             }
@@ -174,28 +182,26 @@ fun LoginPage(
 private suspend fun launchAuthTab(
     context: Context,
     instanceUrl: String,
-    viewModel: LoginViewModel,
+    getClientId: () -> Flow<String>,
 ) {
-    with(viewModel.getClientIdentity()) {
-        if (this == null) {
-            Log.e("LoginPage", "Failed to get client id")
-            return
-        }
-        val clientId = this.first
-        val intent = androidx.browser.customtabs.CustomTabsIntent
-            .Builder()
-            .build()
-        val url = "https://$instanceUrl/oauth/authorize"
-            .toUri()
-            .buildUpon()
-            .appendQueryParameter("response_type", "code")
-            .appendQueryParameter("client_id", clientId)
-            .appendQueryParameter("redirect_uri", day.vitayuzu.neodb.util.AUTH_CALLBACK)
-            // NOTE: Fuck it should no be "+" or it will be encoded to %2B
-            .appendQueryParameter("scope", "read write")
-            .build()
-        intent.launchUrl(context, url)
+    val clientId = getClientId().firstOrNull()
+    if (clientId == null) {
+        Log.e("LoginPage", "Failed to get client id")
+        return
     }
+    val intent = androidx.browser.customtabs.CustomTabsIntent
+        .Builder()
+        .build()
+    val url = "https://$instanceUrl/oauth/authorize"
+        .toUri()
+        .buildUpon()
+        .appendQueryParameter("response_type", "code")
+        .appendQueryParameter("client_id", clientId)
+        .appendQueryParameter("redirect_uri", day.vitayuzu.neodb.util.AUTH_CALLBACK)
+        // NOTE: Fuck it should no be "+" or it will be encoded to %2B
+        .appendQueryParameter("scope", "read write")
+        .build()
+    intent.launchUrl(context, url)
 }
 
 /**
@@ -280,10 +286,19 @@ fun ShimmerInstanceCard(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun PreviewInstanceCard() {
-    InstanceCard("neodb.social", "NeoDB", "neodb/0.11.7.3", 22135, Modifier.fillMaxWidth(), true)
+    NeoDBYouTheme {
+        InstanceCard(
+            "neodb.social",
+            "NeoDB",
+            "neodb/0.11.7.3",
+            22135,
+            Modifier.fillMaxWidth(),
+            true,
+        )
+    }
 }
 
 @Preview
