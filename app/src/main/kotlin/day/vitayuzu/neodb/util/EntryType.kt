@@ -1,10 +1,12 @@
 package day.vitayuzu.neodb.util
 
+import androidx.annotation.Keep
 import day.vitayuzu.neodb.R
 import kotlinx.serialization.Serializable
 
 @Suppress("ktlint:standard:enum-entry-name-case", "EnumEntryName")
 @Serializable
+@Keep // Maybe removed by R8
 enum class EntryType {
     book,
     movie,
