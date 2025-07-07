@@ -1,3 +1,10 @@
+import com.android.build.api.dsl.SigningConfig
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import java.io.FileInputStream
+import java.util.Properties
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -14,7 +21,86 @@ plugins {
     )
 }
 
+kotlin {
+    compilerOptions {
+        jvmToolchain(17)
+        languageVersion = KotlinVersion.KOTLIN_2_2
+        apiVersion = KotlinVersion.KOTLIN_2_2
+        progressiveMode = true
+    }
+}
+
+// Sign config
+val isGithubActions = System.getenv("GITHUB_ACTIONS").toBoolean()
+
+private fun getEnv(key: String): String? = System.getenv(key)?.takeIf { it.isNotBlank() }
+
+@OptIn(ExperimentalEncodingApi::class)
+private fun configureSigning(signingConfigs: NamedDomainObjectContainer<out SigningConfig>) {
+    if (isGithubActions) {
+        // Read from env
+        val keyBase64 = getEnv("SIGN_KEY_BASE64")
+        val keyPassword = getEnv("SIGN_KEY_PWD")
+        val keyAlias = getEnv("SIGN_KEY_ALIAS")
+
+        if (keyBase64 != null && keyPassword != null && keyAlias != null) {
+            val buildDir = layout.buildDirectory.asFile
+                .get()
+                .also { it.mkdirs() }
+            val tmpFile = File.createTempFile("sign-", ".ks", buildDir)
+            try {
+                tmpFile.writeBytes(Base64.decode(keyBase64))
+                tmpFile.deleteOnExit()
+                signingConfigs.create("release") {
+                    storeFile = tmpFile
+                    storePassword = keyPassword
+                    this.keyAlias = keyAlias
+                    this.keyPassword = keyPassword
+                }
+            } catch (e: Exception) {
+                println(
+                    "Error decoding or writing keystore file: ${e.localizedMessage ?: e.stackTraceToString()}",
+                )
+                tmpFile.delete()
+            }
+        } else {
+            println(
+                "Missing one or more signing env (SIGN_KEY_BASE64, SIGN_KEY_PWD, SIGN_KEY_ALIAS)",
+            )
+        }
+    } else {
+        // Read from file
+        val keystorePropertiesFile = rootProject.file("keystore.properties")
+        if (keystorePropertiesFile.exists()) {
+            val keystoreProperties =
+                Properties().apply { load(FileInputStream(keystorePropertiesFile)) }
+            val keyAlias = keystoreProperties.getProperty("keyAlias")
+            val keyPassword = keystoreProperties.getProperty("keyPassword")
+            val storeFile = keystoreProperties.getProperty("storeFile")
+            val storePassword = keystoreProperties.getProperty("storePassword")
+
+            if (keyAlias != null &&
+                keyPassword != null &&
+                storeFile != null &&
+                storePassword != null
+            ) {
+                signingConfigs.create("release") {
+                    this.keyAlias = keyAlias
+                    this.keyPassword = keyPassword
+                    this.storeFile = file(storeFile)
+                    this.storePassword = storePassword
+                }
+            } else {
+                println("One or more properties are missing in keystore.properties.")
+            }
+        } else {
+            println("keystore.properties file not found for local build.")
+        }
+    }
+}
+
 android {
+    signingConfigs { configureSigning(this) }
     namespace = "day.vitayuzu.neodb"
     compileSdk = 35
 
@@ -36,16 +122,21 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfigs.findByName("release")?.let {
+                signingConfig = it
+            }
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+
+    splits {
+        abi {
+            isEnable = true
+            isUniversalApk = true
+            reset()
+            include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+        }
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+
     buildFeatures {
         compose = true
     }
