@@ -52,6 +52,9 @@ android {
 }
 
 dependencies {
+    // Android
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.slf4j.android)
     // Jetpack Compose
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
@@ -60,35 +63,31 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icon.core)
     implementation(libs.androidx.ui.tooling)
-
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.ktorfit.lib)
+    // UI Lib
+    implementation(libs.shimmer)
+    // Kotlin
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.datetime)
+    // Hilt
+    implementation(libs.google.hilt.android)
+    ksp(libs.google.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+    // Http client
+    implementation(libs.ktorfit.lib)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.client.logging)
-    implementation(libs.slf4j.android)
-
+    // Coil
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
-
-    implementation(libs.kotlinx.datetime)
-
     // Oauth2
     implementation(libs.datastore.preferences)
     implementation(libs.ktor.client.auth)
     implementation(libs.androidx.browser)
-
-    implementation(libs.google.hilt.android)
-    ksp(libs.google.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
-
+    // Test
     testImplementation(libs.junit4)
-
-    implementation(libs.shimmer)
 }
