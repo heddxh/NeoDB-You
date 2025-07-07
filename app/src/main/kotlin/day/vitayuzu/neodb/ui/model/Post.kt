@@ -3,8 +3,10 @@ package day.vitayuzu.neodb.ui.model
 import day.vitayuzu.neodb.data.schema.CommentRelatedItem
 import day.vitayuzu.neodb.data.schema.PostSchema
 import day.vitayuzu.neodb.data.schema.RatingRelatedItem
-import kotlinx.datetime.Instant
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
+@OptIn(ExperimentalTime::class)
 data class Post(
     val avatar: String?,
     val username: String,

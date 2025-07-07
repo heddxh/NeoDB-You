@@ -11,11 +11,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.todayIn
 import java.util.GregorianCalendar
 import javax.inject.Inject
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 // FIXME: May move filtering to UI(LibraryPage)
 // FIXME: make refreshDisplayedMarks() and generateHeatMap() pure functions and only call in refresh()
@@ -93,6 +95,7 @@ class LibraryViewModel @Inject constructor(private val repo: Repository) : ViewM
         refreshDisplayedMarks()
     }
 
+    @OptIn(ExperimentalTime::class)
     private fun generateHeatMap() {
         val heatMapDaysByWeek = marks
             .filter {
@@ -104,8 +107,8 @@ class LibraryViewModel @Inject constructor(private val repo: Repository) : ViewM
                 // FIXME: Locale and time zone
                 GregorianCalendar(
                     mark.date.year,
-                    mark.date.monthNumber - 1, // GregorianCalendar month is 0-based
-                    mark.date.dayOfMonth,
+                    mark.date.month.number - 1, // GregorianCalendar month is 0-based
+                    mark.date.day,
                 ).get(GregorianCalendar.WEEK_OF_YEAR)
             }.mapValues { (weekIndex, marks) ->
                 // Construct a week

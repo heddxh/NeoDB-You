@@ -2,10 +2,11 @@ package day.vitayuzu.neodb.ui.model
 
 import day.vitayuzu.neodb.data.schema.MarkScheme
 import day.vitayuzu.neodb.util.ShelfType
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 /**
  * Mark represents a user mark for an entry.
@@ -21,7 +22,7 @@ data class Mark(
     val rating: Int?,
     val comment: String?,
 ) {
-    constructor(scheme: MarkScheme) : this(
+    @OptIn(ExperimentalTime::class) constructor(scheme: MarkScheme) : this(
         entry = Entry(scheme.entrySchema),
         shelfType = ShelfType.valueOf(scheme.shelfType),
         date =

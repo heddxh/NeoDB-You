@@ -54,10 +54,11 @@ import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.ShelfType
 import day.vitayuzu.neodb.util.Visibility
 import day.vitayuzu.neodb.util.toDateString
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun PostComposeModal(
     postDate: Instant,
@@ -82,7 +83,7 @@ fun PostComposeModal(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 private fun ComposeModalContent(
     postDate: Instant,
@@ -268,6 +269,7 @@ private fun MoreSettingsContent(
     }
 }
 
+@OptIn(ExperimentalTime::class)
 @Preview
 @Composable
 private fun PreviewComposeModal() {

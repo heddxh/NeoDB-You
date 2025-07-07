@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.ExperimentalTime
 
 @HiltViewModel(assistedFactory = DetailViewModel.Factory::class)
 class DetailViewModel @AssistedInject constructor(
@@ -50,6 +51,7 @@ class DetailViewModel @AssistedInject constructor(
         refreshPosts()
     }
 
+    @OptIn(ExperimentalTime::class)
     fun refreshPosts() {
         viewModelScope.launch {
             _postUiState.update { it.copy(isLoading = true, postList = emptyList()) }

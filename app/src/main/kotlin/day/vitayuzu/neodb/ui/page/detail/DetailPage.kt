@@ -57,10 +57,11 @@ import day.vitayuzu.neodb.ui.model.Post
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.toDateString
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun DetailPage(
     type: EntryType,
@@ -136,6 +137,7 @@ fun DetailPage(
     }
 }
 
+@OptIn(ExperimentalTime::class)
 @Composable
 private fun DetailContent(
     data: Detail,
@@ -327,7 +329,7 @@ private fun PostCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 private fun DatePickerModal(
     date: Instant = Clock.System.now(),
