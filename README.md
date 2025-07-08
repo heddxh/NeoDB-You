@@ -4,9 +4,11 @@ You can check the progress on [this thread](https://ibasho.vitayuzu.day/@yuzu/st
 
 ## Launch Checklist
 
-- [ ] GitHub Actions for linting and building
-- [ ] R8 Proguard
-- [ ] Signing
+- [x] GitHub Actions for building
+- [ ] Github Actions for linting PR
+- [x] R8 Proguard
+- [x] Signing
 - [ ] Markdown paring for reviews
 - [ ] Allow editing existing reviews
 - [ ] Fix heatmap
+- [ ] Reformat whole codebase(maybe another formatter)
