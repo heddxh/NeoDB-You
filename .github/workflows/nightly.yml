@@ -22,6 +22,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build release
+        env:
+          SIGN_KEY_BASE64: ${{ secrets.SIGN_KEY_BASE64 }}
+          SIGN_KEY_PWD: ${{ secrets.SIGN_KEY_PWD }}
+          SIGN_KEY_ALIAS: ${{ secrets.SIGN_KEY_ALIAS }}
         run: ./gradlew assembleRelease
 
       - name: Upload APK
