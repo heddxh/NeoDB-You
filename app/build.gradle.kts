@@ -27,6 +27,7 @@ kotlin {
         languageVersion = KotlinVersion.KOTLIN_2_2
         apiVersion = KotlinVersion.KOTLIN_2_2
         progressiveMode = true
+        freeCompilerArgs.add("-Xannotation-default-target=param-property")
     }
 }
 
@@ -115,19 +116,24 @@ android {
             signingConfigs.findByName("release")?.let {
                 signingConfig = it
             }
+            splits {
+                abi {
+                    isEnable = true
+                    isUniversalApk = true
+                    reset()
+                    include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+                }
+            }
         }
         debug {
             applicationIdSuffix = ".debug"
         }
     }
 
-    splits {
-        abi {
-            isEnable = true
-            isUniversalApk = true
-            reset()
-            include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
-        }
+    packaging {
+        // Already stripped library
+        jniLibs.keepDebugSymbols.add("**/libandroidx.graphics.path.so")
+        jniLibs.keepDebugSymbols.add("**/libdatastore_shared_counter.so")
     }
 
     buildFeatures {
