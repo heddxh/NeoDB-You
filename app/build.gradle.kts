@@ -23,7 +23,7 @@ plugins {
 
 kotlin {
     compilerOptions {
-        jvmToolchain(17)
+        jvmToolchain(21)
         languageVersion = KotlinVersion.KOTLIN_2_2
         apiVersion = KotlinVersion.KOTLIN_2_2
         progressiveMode = true

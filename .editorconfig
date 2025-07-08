@@ -9,8 +9,9 @@ insert_final_newline = true
 max_line_length = 100
 tab_width = 4
 
-[*.json]
+[{*.json,*.yml}]
 indent_size = 2
+tab_width = 2
 
 [{*.kt,*.kts}]
 ij_kotlin_code_style_defaults = KOTLIN_OFFICIAL
