@@ -55,19 +55,25 @@ class OauthActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // When user cancel the login process by clicking back button or close custom tab,
-        // re-show the input field.
-        if (viewModel.uiState.value.url
-                .isNotEmpty()
+        // When user cancel the login process by clicking back button or closing custom tab,
+        // that is, before oauth callback with new intent, re-show the input field.
+        if (intent.data?.toString()?.startsWith(AUTH_CALLBACK) == true ||
+            viewModel.uiState.value.isPreparingOauth
         ) {
-            viewModel.reShowTextField()
+            return
         }
+        Log.d("OauthActivity", "Resume without oauth callback, show textfield")
+        viewModel.reShowTextField()
     }
 
-    // Handles the OAuth callback.
-    // Note: This callback is only invoked if an OauthActivity instance is already running.
+    /**
+     * Handles the OAuth callback.
+     *
+     * Note: This callback is only invoked if an [OauthActivity] instance is already running.
+     */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         Log.d("OauthActivity", "On New Intent")
         val url = intent.data
         if (url != null && url.toString().startsWith(AUTH_CALLBACK)) {
@@ -79,6 +85,7 @@ class OauthActivity : ComponentActivity() {
                         .handleAuthCode(authCode)
                         .onCompletion {
                             // Finish when successfully exchanged access token.
+                            // If failed, remain at this activity.
                             if (it == null) finish()
                         }.collect()
                 }

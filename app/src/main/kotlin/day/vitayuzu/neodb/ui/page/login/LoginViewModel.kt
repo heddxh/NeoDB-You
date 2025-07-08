@@ -43,15 +43,14 @@ class LoginViewModel @Inject constructor(private val authRepo: AuthRepository) :
     fun getClientId() = flow {
         _uiState.update { it.copy(isPreparingOauth = true, isShowTextField = false) }
         authRepo.registerClientIfNeeded(uiState.value.url).onSuccess {
-            kotlinx.coroutines.delay(3000)
             emit(it.first)
         }
     }.onCompletion { _uiState.update { it.copy(isPreparingOauth = false) } }
 
     fun handleAuthCode(code: String) = flow<Unit> {
-        // Called from [OauthActivity][day.vitayuzu.neodb.OauthActivity].
+        // Called from OauthActivity.
         // Since `OauthActivity` creates a new instance of this ViewModel,
-        // the instance URL needs to be retrieved from the [AuthRepository] rather than the UI state.
+        // the instance URL needs to be retrieved from the AuthRepository rather than the UI state.
         val instanceUrl = authRepo.instanceUrl ?: throw Exception("No instance url found")
         _uiState.update { it.copy(isExchangingAccessToken = true, isShowTextField = false) }
         authRepo.registerClientIfNeeded(instanceUrl).onSuccess { (clientId, clientSecret) ->

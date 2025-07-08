@@ -3,6 +3,7 @@ package day.vitayuzu.neodb.ui.page.login
 import android.content.Context
 import android.util.Log
 import android.util.Patterns
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -66,6 +67,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.valentinilk.shimmer.shimmer
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
+import day.vitayuzu.neodb.util.AUTH_CALLBACK
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
@@ -190,15 +192,13 @@ private suspend fun launchAuthTab(
         Log.e("LoginPage", "Failed to get client id")
         return
     }
-    val intent = androidx.browser.customtabs.CustomTabsIntent
-        .Builder()
-        .build()
+    val intent = CustomTabsIntent.Builder().build()
     val url = "https://$instanceUrl/oauth/authorize"
         .toUri()
         .buildUpon()
         .appendQueryParameter("response_type", "code")
         .appendQueryParameter("client_id", clientId)
-        .appendQueryParameter("redirect_uri", day.vitayuzu.neodb.util.AUTH_CALLBACK)
+        .appendQueryParameter("redirect_uri", AUTH_CALLBACK)
         // NOTE: Fuck it should no be "+" or it will be encoded to %2B
         .appendQueryParameter("scope", "read write")
         .build()
