@@ -116,6 +116,9 @@ android {
                 signingConfig = it
             }
         }
+        debug {
+            applicationIdSuffix = ".debug"
+        }
     }
 
     splits {
