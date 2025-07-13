@@ -31,10 +31,10 @@ import kotlinx.coroutines.launch
  * The task flow is as follows:
  *
  * When opening a custom tab for authentication:
- * MainActivity -> OauthActivity -> CustomTab
+ * `MainActivity -> OauthActivity -> CustomTab`
  *
  * When the user clicks the app link (the OAuth callback to our app):
- * MainActivity -> OauthActivity (call [onNewIntent]), and the CustomTab is destroyed.
+ * `MainActivity -> OauthActivity` (call [onNewIntent]), and the CustomTab is destroyed.
  * In the end we call [finish] to back to MainActivity.
  */
 @AndroidEntryPoint

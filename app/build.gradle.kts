@@ -96,11 +96,14 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "day.vitayuzu.neodb"
+        applicationId = android.namespace!!
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        manifestPlaceholders["auth"] = android.namespace!!
+        manifestPlaceholders["app_name"] = "NeoDB You"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -127,13 +130,19 @@ android {
         }
         debug {
             applicationIdSuffix = ".debug"
+            manifestPlaceholders["app_name"] = "NeoDB You Debug"
         }
     }
 
     packaging {
-        // Already stripped library
-        jniLibs.keepDebugSymbols.add("**/libandroidx.graphics.path.so")
-        jniLibs.keepDebugSymbols.add("**/libdatastore_shared_counter.so")
+        // https://issuetracker.google.com/issues/356109544
+        jniLibs.keepDebugSymbols +=
+            "**/libandroidx.graphics.path.so" +
+            "**/libdatastore_shared_counter.so"
+        // https://github.com/Kotlin/kotlinx.coroutines?tab=readme-ov-file#avoiding-including-the-debug-infrastructure-in-the-resulting-apk
+        // https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-debug/README.md#debug-agent-and-android
+        // https://youtrack.jetbrains.com/issue/IDEA-335195
+        resources.excludes += "DebugProbesKt.bin"
     }
 
     buildFeatures {
@@ -145,6 +154,7 @@ dependencies {
     // Android
     implementation(libs.androidx.core.ktx)
     implementation(libs.slf4j.android)
+    implementation(libs.kotlinx.coroutines.android)
     // Jetpack Compose
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
