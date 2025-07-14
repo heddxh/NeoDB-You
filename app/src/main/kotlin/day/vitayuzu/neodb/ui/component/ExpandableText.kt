@@ -3,12 +3,15 @@ package day.vitayuzu.neodb.ui.component
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.TextLayoutResult
@@ -44,6 +48,8 @@ import androidx.compose.ui.unit.dp
 fun ExpandableText(
     text: String,
     modifier: Modifier = Modifier,
+    minLines: Int = 1,
+    animationSpec: AnimationSpec<Int>? = null,
     color: Color = Color.Unspecified,
     autoSize: TextAutoSize? = null,
     fontSize: TextUnit = TextUnit.Unspecified,
@@ -57,10 +63,8 @@ fun ExpandableText(
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
     maxLines: Int = Int.MAX_VALUE,
-    minLines: Int = 1,
     onTextLayout: ((TextLayoutResult) -> Unit)? = null,
     style: TextStyle = LocalTextStyle.current,
-    animationSpec: AnimationSpec<Int>? = null,
 ) {
     BoxWithConstraints(modifier = modifier) {
         val textMeasurer = rememberTextMeasurer()
@@ -88,48 +92,48 @@ fun ExpandableText(
             animateIntAsState(targetHeight, animationSpec = it)
         } ?: animateIntAsState(targetHeight)
 
-        Text(
-            text = text,
-            color = color,
-            autoSize = autoSize,
-            fontSize = fontSize,
-            fontStyle = fontStyle,
-            fontWeight = fontWeight,
-            fontFamily = fontFamily,
-            letterSpacing = letterSpacing,
-            textDecoration = textDecoration,
-            textAlign = textAlign,
-            lineHeight = lineHeight,
-            overflow = overflow,
-            softWrap = softWrap,
-            maxLines = Int.MAX_VALUE, // Constrain text height by Modifier.height
-            minLines = minLines,
-            style = style,
-            onTextLayout = onTextLayout,
+        Box(
             modifier = Modifier
-                // Deferred state reading to layout phase.
-                .layout { measurable, constraints ->
-                    val placeable =
-                        measurable.measure(constraints.copy(maxHeight = animatedHeight))
-                    layout(placeable.width, animatedHeight) {
-                        placeable.placeRelative(0, 0)
-                    }
-                }.clickable(enabled = state !is ExpandableTextState.None) {
-                    state = when (state) {
-                        ExpandableTextState.Expanded -> {
-                            targetHeight = collapsedHeightMeasuredSize
-                            ExpandableTextState.Collapsed
-                        }
-
-                        ExpandableTextState.Collapsed -> {
-                            targetHeight = expandedHeightMeasuredSize
-                            ExpandableTextState.Expanded
-                        }
-
-                        else -> ExpandableTextState.None
+                .clip(MaterialTheme.shapes.extraSmall)
+                .clickable(enabled = state !is ExpandableTextState.None) {
+                    if (state is ExpandableTextState.Expanded) {
+                        state = ExpandableTextState.Collapsed
+                        targetHeight = collapsedHeightMeasuredSize
+                    } else if (state is ExpandableTextState.Collapsed) {
+                        state = ExpandableTextState.Expanded
+                        targetHeight = expandedHeightMeasuredSize
                     }
                 },
-        )
+        ) {
+            Text(
+                text = text,
+                color = color,
+                autoSize = autoSize,
+                fontSize = fontSize,
+                fontStyle = fontStyle,
+                fontWeight = fontWeight,
+                fontFamily = fontFamily,
+                letterSpacing = letterSpacing,
+                textDecoration = textDecoration,
+                textAlign = textAlign,
+                lineHeight = lineHeight,
+                overflow = overflow,
+                softWrap = softWrap,
+                maxLines = Int.MAX_VALUE, // Constrain text height by Modifier.height
+                minLines = minLines,
+                style = style,
+                onTextLayout = onTextLayout,
+                modifier = Modifier
+                    .padding(2.dp)
+                    // Deferred state reading to layout phase.
+                    .layout { measurable, constraints ->
+                        val placeable = measurable.measure(constraints)
+                        layout(placeable.width, animatedHeight) {
+                            placeable.placeRelative(0, 0)
+                        }
+                    },
+            )
+        }
     }
 }
 
