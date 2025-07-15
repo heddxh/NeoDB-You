@@ -1,28 +1,36 @@
 package day.vitayuzu.neodb.ui.component
 
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -35,6 +43,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import day.vitayuzu.neodb.R
 
 /**
  * A wrapper version of [Text] composable that can be expanded to show more text.
@@ -76,8 +85,6 @@ fun ExpandableText(
             textMeasurer.measure(text, style, constraints = this.constraints, maxLines = maxLines)
         }.size.height
 
-        var targetHeight by remember { mutableIntStateOf(collapsedHeightMeasuredSize) }
-
         var state by remember {
             mutableStateOf(
                 if (expandedHeightMeasuredSize > collapsedHeightMeasuredSize) {
@@ -88,23 +95,37 @@ fun ExpandableText(
             )
         }
 
+        var targetHeight by remember { mutableIntStateOf(collapsedHeightMeasuredSize) }
+        var targetRotation by remember { mutableFloatStateOf(0f) }
+
+        LaunchedEffect(state) {
+            if (state is ExpandableTextState.Expanded) {
+                targetHeight = expandedHeightMeasuredSize
+                targetRotation = 180f
+            } else if (state is ExpandableTextState.Collapsed) {
+                targetHeight = collapsedHeightMeasuredSize
+                targetRotation = 0f
+            }
+        }
+
         val animatedHeight by animationSpec?.let {
             animateIntAsState(targetHeight, animationSpec = it)
         } ?: animateIntAsState(targetHeight)
 
-        Box(
+        val animatedRotation by animateFloatAsState(targetRotation)
+
+        Column(
             modifier = Modifier
                 .clip(MaterialTheme.shapes.extraSmall)
                 .clickable(enabled = state !is ExpandableTextState.None) {
                     if (state is ExpandableTextState.Expanded) {
                         state = ExpandableTextState.Collapsed
-                        targetHeight = collapsedHeightMeasuredSize
                     } else if (state is ExpandableTextState.Collapsed) {
                         state = ExpandableTextState.Expanded
-                        targetHeight = expandedHeightMeasuredSize
                     }
                 },
         ) {
+            // Main text.
             Text(
                 text = text,
                 color = color,
@@ -133,6 +154,34 @@ fun ExpandableText(
                         }
                     },
             )
+            // "Show More" indicator.
+            if (state !is ExpandableTextState.None) {
+                val baseModifier = Modifier
+                    .height(16.dp)
+                    .fillMaxWidth()
+                val backgroundModifier = Modifier.background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.background,
+                        ),
+                    ),
+                )
+                Icon(
+                    painterResource(R.drawable.expand_indicator_vector),
+                    contentDescription = "Show more",
+                    modifier = baseModifier
+                        .then(
+                            if (state is ExpandableTextState.Collapsed) {
+                                backgroundModifier
+                            } else {
+                                Modifier
+                            },
+                        ).graphicsLayer {
+                            rotationZ = animatedRotation
+                        }, // Do not rotate background
+                )
+            }
         }
     }
 }
@@ -148,11 +197,9 @@ private sealed interface ExpandableTextState {
 @Preview
 @Composable
 private fun PreviewExpandableText() {
-    Column(modifier = Modifier.width(100.dp).height(200.dp)) {
-        ExpandableText("foo")
+    Column(modifier = Modifier.size(100.dp)) {
         ExpandableText(
-            "foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo",
-            overflow = TextOverflow.Ellipsis,
+            "fooooooooooooooooooooooooooooooooooooooooooooooooo",
             maxLines = 1,
         )
     }

@@ -45,12 +45,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import day.vitayuzu.neodb.R
+import day.vitayuzu.neodb.ui.component.ExpandableText
 import day.vitayuzu.neodb.ui.component.StarsWithScores
 import day.vitayuzu.neodb.ui.model.Detail
 import day.vitayuzu.neodb.ui.model.Post
@@ -246,10 +247,7 @@ private fun DetailHeadingItem(
 }
 
 @Composable
-private fun ShowAllInfoModalContent(
-    modifier: Modifier = Modifier,
-    des: String = "",
-) {
+private fun ShowAllInfoModalContent(modifier: Modifier = Modifier, des: String = "") {
     // TODO: complete the modal, and refine the UI
     LazyColumn(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         item {
@@ -314,10 +312,10 @@ private fun PostCard(
                     )
                 }
             }
-            Text(
+            ExpandableText(
                 text = content,
                 style = MaterialTheme.typography.bodySmall,
-                maxLines = 4,
+                maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
@@ -359,12 +357,20 @@ private fun DatePickerModal(
     }
 }
 
-@Preview
+@Suppress("ktlint:standard:max-line-length")
+@PreviewLightDark
 @Composable
-private fun PreviewShowAllInfoModal() {
+private fun PostCardPreview() {
     NeoDBYouTheme {
         Surface {
-            ShowAllInfoModalContent(des = "aaaabbbb")
+            PostCard(
+                avatarUrl = null,
+                username = "John Doe",
+                content = "This is a sample post content. It can be a long text that needs to be truncated.This is a sample post content. It can be a long text that needs to be truncated.This is a sample post content. It can be a long text that needs to be truncated.",
+                rating = 4,
+                date = "2023-10-27",
+                modifier = Modifier.padding(16.dp),
+            )
         }
     }
 }
