@@ -59,6 +59,7 @@ fun ExpandableText(
     modifier: Modifier = Modifier,
     minLines: Int = 1,
     animationSpec: AnimationSpec<Int>? = null,
+    overlayColor: Color = MaterialTheme.colorScheme.background,
     color: Color = Color.Unspecified,
     autoSize: TextAutoSize? = null,
     fontSize: TextUnit = TextUnit.Unspecified,
@@ -161,10 +162,7 @@ fun ExpandableText(
                     .fillMaxWidth()
                 val backgroundModifier = Modifier.background(
                     Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            MaterialTheme.colorScheme.background,
-                        ),
+                        colors = listOf(Color.Transparent, overlayColor),
                     ),
                 )
                 Icon(
