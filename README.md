@@ -7,7 +7,7 @@ You can check the progress on [this thread](https://ibasho.vitayuzu.day/@yuzu/st
 - [x] GitHub Actions for building
 - [x] R8 Proguard
 - [x] Signing
-- [ ] Properly showing reviews
+- [x] Properly showing reviews
 - [ ] Allow editing existing reviews
 - [ ] Fix heatmap
 - [ ] Reformat whole codebase(maybe another formatter)

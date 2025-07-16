@@ -30,5 +30,6 @@
     <string name="textfield_instanceUrl">实例域名</string>
     <string name="welcome_firstline">欢迎！</string>
     <string name="welcome_secondline">请输入你的NeoDB实例地址以登录</string>
+    <string name="detail_show_all_reviews">查看所有评论</string>
 
 </resources>

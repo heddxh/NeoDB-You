@@ -8,18 +8,12 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import day.vitayuzu.neodb.data.Repository
 import day.vitayuzu.neodb.data.schema.MarkInSchema
-import day.vitayuzu.neodb.data.schema.detail.AlbumSchema
-import day.vitayuzu.neodb.data.schema.detail.EditionSchema
-import day.vitayuzu.neodb.data.schema.detail.GameSchema
-import day.vitayuzu.neodb.data.schema.detail.MovieSchema
-import day.vitayuzu.neodb.data.schema.detail.PerformanceSchema
-import day.vitayuzu.neodb.data.schema.detail.PodcastSchema
-import day.vitayuzu.neodb.data.schema.detail.TVSeasonSchema
-import day.vitayuzu.neodb.data.schema.detail.TVShowSchema
 import day.vitayuzu.neodb.ui.model.Detail
 import day.vitayuzu.neodb.ui.model.Post
 import day.vitayuzu.neodb.ui.model.toDetail
 import day.vitayuzu.neodb.util.EntryType
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -35,55 +29,57 @@ class DetailViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(
-            type: EntryType,
-            uuid: String,
-        ): DetailViewModel
+        fun create(type: EntryType, uuid: String): DetailViewModel
     }
 
-    private val _detailUiState = MutableStateFlow<DetailUiState>(DetailUiState.Loading)
-    val detailUiState = _detailUiState.asStateFlow()
-    private val _postUiState = MutableStateFlow(PostUiState())
-    val postUiState = _postUiState.asStateFlow()
+    private val _uiState = MutableStateFlow<DetailUiState>(DetailUiState())
+    val uiState = _uiState.asStateFlow()
+
+    // Keep reference to the job loading reviews to able to cancel it when refreshing again.
+    private var loadingReviewsJob: Job? = null
 
     init {
         refreshDetail()
         refreshPosts()
     }
 
-    @OptIn(ExperimentalTime::class)
-    fun refreshPosts() {
+    private fun refreshDetail() {
         viewModelScope.launch {
-            _postUiState.update { it.copy(isLoading = true, postList = emptyList()) }
-            repo.fetchItemPosts(uuid).collect { paginatedPostList ->
-                paginatedPostList.data.forEach { schema ->
-                    _postUiState.update {
-                        it.copy(
-                            postList = (it.postList + Post(schema)).sortedByDescending { it.date },
-                        )
-                    }
-                }
+            repo.fetchDetail(type, uuid).collect { detailSchema ->
+                _uiState.update { it.copy(detailSchema.toDetail()) }
             }
-            _postUiState.update { it.copy(isLoading = false) }
         }
     }
 
-    private fun refreshDetail() {
-        viewModelScope.launch {
-            _detailUiState.update { DetailUiState.Loading }
-            repo.fetchDetail(type, uuid).collect {
-                val detail = when (it) {
-                    is EditionSchema -> it.toDetail()
-                    is GameSchema -> it.toDetail()
-                    is MovieSchema -> it.toDetail()
-                    is TVShowSchema -> it.toDetail()
-                    is TVSeasonSchema -> it.toDetail()
-                    is AlbumSchema -> it.toDetail()
-                    is PodcastSchema -> it.toDetail()
-                    is PerformanceSchema -> it.toDetail()
-                }
-                _detailUiState.update { DetailUiState.Success(detail) }
+    @OptIn(ExperimentalTime::class)
+    fun refreshPosts(limit: Int = 5) {
+        // Reset ui state
+        _uiState.update {
+            it.copy(
+                isLoadingPost = true,
+                postList = emptyList(),
+                hasMorePost = false,
+            )
+        }
+        loadingReviewsJob = viewModelScope.launch {
+            // Cancel previous job
+            if (loadingReviewsJob?.isActive == true) {
+                loadingReviewsJob?.cancelAndJoin()
             }
+
+            repo
+                .fetchItemPosts(uuid)
+                ./*buffer().*/collect { postList ->
+                    _uiState.update { ui ->
+                        val newPostList = ui.postList + postList.data.map { Post(it) }
+                        ui.copy(postList = newPostList/*.sortedByDescending { it.date }*/)
+                    }
+                    if (uiState.value.postList.size > limit) {
+                        _uiState.update { it.copy(hasMorePost = true) }
+                        return@collect
+                    }
+                }
+            _uiState.update { it.copy(isLoadingPost = false) }
         }
     }
 
@@ -94,16 +90,9 @@ class DetailViewModel @AssistedInject constructor(
     }
 }
 
-sealed interface DetailUiState {
-    data object Loading : DetailUiState
-
-    data class Success(
-        val detail: Detail,
-        val reviewList: List<Post> = emptyList(),
-    ) : DetailUiState
-}
-
-data class PostUiState(
-    val isLoading: Boolean = false,
+data class DetailUiState(
+    val detail: Detail? = null,
+    val isLoadingPost: Boolean = false,
+    val hasMorePost: Boolean = false,
     val postList: List<Post> = emptyList(),
 )

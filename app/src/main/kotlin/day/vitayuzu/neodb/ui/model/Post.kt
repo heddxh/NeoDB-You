@@ -20,7 +20,7 @@ data class Post(
         rating = schema.extNeoDB.relatedWith.find { it is RatingRelatedItem }?.let {
             (it as RatingRelatedItem).value
         },
-        date = Instant.parse(schema.editedAt ?: schema.createdAt), // TODO: find a way to display edit date
+        date = Instant.parse(schema.createdAt), // TODO: find a way to display edit date
         content = schema.extNeoDB.relatedWith.find { it is CommentRelatedItem }?.let {
             (it as CommentRelatedItem).content
         } ?: "",

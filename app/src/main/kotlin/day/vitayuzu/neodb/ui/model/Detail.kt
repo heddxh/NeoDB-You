@@ -1,6 +1,7 @@
 package day.vitayuzu.neodb.ui.model
 
 import day.vitayuzu.neodb.data.schema.detail.AlbumSchema
+import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.data.schema.detail.EditionSchema
 import day.vitayuzu.neodb.data.schema.detail.GameSchema
 import day.vitayuzu.neodb.data.schema.detail.MovieSchema
@@ -19,128 +20,77 @@ data class Detail(
     val des: String?,
 )
 
-private fun MutableSet<String>.addNotNull(element: Any?) {
-    element?.let { this += it.toString() }
-}
-
-fun EditionSchema.toDetail() = Detail(
-    type = this.category,
-    title = this.title,
-    coverUrl = this.coverImageUrl,
-    rating = this.rating,
-    des = this.description,
-    info = buildSet {
-        addAll(this@toDetail.author)
-        addAll(this@toDetail.translator)
-        addNotNull(this@toDetail.pubHouse)
-        addNotNull(this@toDetail.pubYear)
-        addNotNull(this@toDetail.imprint)
-        addNotNull(this@toDetail.series)
-    }.filter { it.isNotBlank() }.joinToString(separator = " / "),
-)
-
-fun GameSchema.toDetail() = Detail(
-    type = this.category,
-    title = this.title,
-    coverUrl = this.coverImageUrl,
-    rating = this.rating,
-    des = this.description,
-    info = buildSet {
-        addAll(this@toDetail.developer)
-        addAll(this@toDetail.genre)
-        // Take up to 5 platforms
-        addAll(this@toDetail.platform.take(5))
-        addNotNull(this@toDetail.releaseDate)
-        addNotNull(this@toDetail.releaseDate)
-    }.filter { it.isNotBlank() }.joinToString(separator = " / "),
-)
-
-fun MovieSchema.toDetail() = Detail(
-    type = this.category,
-    title = this.title,
-    coverUrl = this.coverImageUrl,
-    rating = this.rating,
-    des = this.description,
-    info = buildSet {
-        // Take up to 5 people
-        addAll((this@toDetail.playwright + this@toDetail.actor + this@toDetail.director).take(5))
-        addAll(this@toDetail.genre)
-        addAll(this@toDetail.area)
-        addNotNull(this@toDetail.year)
-        addNotNull(this@toDetail.duration)
-    }.filter { it.isNotBlank() }.joinToString(separator = " / "),
-)
-
-fun TVShowSchema.toDetail() = Detail(
-    type = this.category,
-    title = this.title,
-    coverUrl = this.coverImageUrl,
-    rating = this.rating, // FIXME: May not have this field
-    des = this.description,
-    info = buildSet {
-        // Take up to 5 people
-        addAll((this@toDetail.playwright + this@toDetail.actor + this@toDetail.director).take(5))
-        addAll(this@toDetail.genre)
-        addAll(this@toDetail.area)
-        addNotNull(this@toDetail.year)
-    }.filter { it.isNotBlank() }.joinToString(separator = " / "),
-)
-
-fun TVSeasonSchema.toDetail() = Detail(
-    type = this.category,
-    title = this.title,
-    coverUrl = this.coverImageUrl,
-    rating = this.rating,
-    des = this.description,
-    info = buildSet {
-        // Take up to 5 people
-        addAll((this@toDetail.playwright + this@toDetail.actor + this@toDetail.director).take(5))
-        addAll(this@toDetail.genre)
-        addAll(this@toDetail.area)
-        addNotNull(this@toDetail.year)
-    }.filter { it.isNotBlank() }.joinToString(separator = " / "),
-)
-
-fun AlbumSchema.toDetail() = Detail(
-    type = this.category,
-    title = this.title,
-    coverUrl = this.coverImageUrl,
-    rating = this.rating,
-    des = this.description,
-    info = buildSet {
-        // Take up to 5 people
-        addAll(this@toDetail.artist.take(5))
-        addAll(this@toDetail.genre)
-        addAll(this@toDetail.company)
-        addNotNull(this@toDetail.releaseDate)
-    }.filter { it.isNotBlank() }.joinToString(separator = " / "),
-)
-
-fun PodcastSchema.toDetail() = Detail(
-    type = this.category,
-    title = this.title,
-    coverUrl = this.coverImageUrl,
-    rating = this.rating,
-    des = this.description,
-    info = buildSet {
-        addAll(this@toDetail.genre)
-        addAll(this@toDetail.host)
-    }.filter { it.isNotBlank() }.joinToString(separator = " / "),
-)
-
-fun PerformanceSchema.toDetail() = Detail(
-    type = this.category,
-    title = this.title,
-    coverUrl = this.coverImageUrl,
-    rating = this.rating,
-    des = this.description,
-    info = buildSet {
-        addAll(this@toDetail.genre)
-        addNotNull(this@toDetail.director.first())
-        addNotNull(this@toDetail.playwright.first())
-        // Take up to 5 people
-        this@toDetail.actor.take(5).forEach {
-            add(it.name)
+fun DetailSchema.toDetail(): Detail {
+    val infoParts = when (this) {
+        is EditionSchema -> buildList {
+            addAll(author)
+            addAll(translator)
+            pubHouse?.let { add(it) }
+            pubYear?.let { add(it.toString()) }
+            imprint?.let { add(it) }
+            series?.let { add(it) }
         }
-    }.filter { it.isNotBlank() }.joinToString(separator = " / "),
-)
+
+        is GameSchema -> buildList {
+            addAll(developer)
+            addAll(genre)
+            addAll(platform.take(5)) // Take up to 5 platforms
+            releaseDate?.let { add(it) }
+        }
+
+        is MovieSchema -> buildList {
+            // Take up to 5 people
+            addAll((playwright + actor + director).take(5))
+            addAll(genre)
+            addAll(area)
+            year?.let { add(it.toString()) }
+            duration?.let { add(it) }
+        }
+
+        is TVShowSchema -> buildList {
+            // Take up to 5 people
+            addAll((playwright + actor + director).take(5))
+            addAll(genre)
+            addAll(area)
+            year?.let { add(it.toString()) }
+        }
+
+        is TVSeasonSchema -> buildList {
+            // Take up to 5 people
+            addAll((playwright + actor + director).take(5))
+            addAll(genre)
+            addAll(area)
+            year?.let { add(it.toString()) }
+        }
+
+        is AlbumSchema -> buildList {
+            // Take up to 5 people
+            addAll(artist.take(5))
+            addAll(genre)
+            addAll(company)
+            releaseDate?.let { add(it) }
+        }
+
+        is PodcastSchema -> buildList {
+            addAll(genre)
+            addAll(host)
+        }
+
+        is PerformanceSchema -> buildList {
+            addAll(genre)
+            director.firstOrNull()?.let { add(it) }
+            playwright.firstOrNull()?.let { add(it) }
+            // Take up to 5 people
+            actor.take(5).forEach { add(it.name) }
+        }
+    }
+
+    return Detail(
+        type = this.category,
+        title = this.title,
+        coverUrl = this.coverImageUrl,
+        rating = this.rating,
+        des = this.description,
+        info = infoParts.filter { it.isNotBlank() }.joinToString(separator = " / "),
+    )
+}

@@ -1,5 +1,7 @@
 package day.vitayuzu.neodb.ui.page.detail
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,14 +14,18 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -27,7 +33,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -45,6 +50,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -73,65 +79,65 @@ fun DetailPage(
     viewModel: DetailViewModel =
         hiltViewModel<DetailViewModel, DetailViewModel.Factory> { it.create(type, uuid) },
 ) {
-    val detailUiState by viewModel.detailUiState.collectAsStateWithLifecycle()
-    val postUiState by viewModel.postUiState.collectAsStateWithLifecycle()
-
-    var isShowDatePicker by remember { mutableStateOf(false) }
-    val currentTimeLong = Clock.System.now().toEpochMilliseconds()
-    var postDate by remember { mutableLongStateOf(currentTimeLong) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Surface(modifier = modifier.fillMaxSize()) {
         Box {
-            if (isShowDatePicker) {
+            // Date Picker
+            var isShowDatePicker by remember { mutableStateOf(false) }
+            val currentTimeLong = Clock.System.now().toEpochMilliseconds()
+            var postDate by remember { mutableLongStateOf(currentTimeLong) }
+
+            AnimatedVisibility(isShowDatePicker) {
                 DatePickerModal(
                     onConfirm = { postDate = it ?: currentTimeLong },
                     onDismiss = { isShowDatePicker = false },
                 )
             }
-            PullToRefreshBox(
-                isRefreshing = (detailUiState is DetailUiState.Loading || postUiState.isLoading),
-                onRefresh = viewModel::refreshPosts,
-                modifier = Modifier.align(Alignment.TopCenter),
-            ) {
-                when (
-                    val state =
-                        detailUiState
-                ) { // Store in a temporary variable to enable smart cast
-                    is DetailUiState.Success -> {
-                        var showDesModal by remember { mutableStateOf(false) }
-                        // Background
-                        AsyncImage(
-                            model = state.detail.coverUrl,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            alpha = 0.2f,
-                            modifier = Modifier.fillMaxSize().blur(12.dp),
-                        )
-                        // Content
-                        DetailContent(
-                            data = state.detail,
-                            postList = postUiState.postList,
-                            onClick = { showDesModal = true },
-                        )
-                        // Modal to show all detailed info
-                        if (showComposeModal) {
-                            PostComposeModal(
-                                postDate = Instant.fromEpochMilliseconds(postDate),
-                                onDismiss = onDismissComposeModal,
-                                onSend = {
-                                    viewModel.postMark(it)
-                                    onDismissComposeModal()
-                                },
-                                onShowDatePicker = { isShowDatePicker = true },
-                            )
-                        } else if (showDesModal) {
-                            ModalBottomSheet(onDismissRequest = { showDesModal = false }) {
-                                ShowAllInfoModalContent(des = state.detail.des ?: "")
-                            }
-                        }
-                    }
 
-                    else -> {}
+            // Main UI with background image.
+            AnimatedVisibility(uiState.detail != null, enter = fadeIn()) {
+                val detail = uiState.detail!!
+                var showDesModal by remember { mutableStateOf(false) }
+                // Background
+                AsyncImage(
+                    model = detail.coverUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    alpha = 0.2f,
+                    modifier = Modifier.fillMaxSize().blur(12.dp),
+                )
+
+                // Content
+                var isShowAllReviews by remember { mutableStateOf(false) }
+                DetailContent(
+                    data = detail,
+                    postList = uiState.postList.take(if (isShowAllReviews) Int.MAX_VALUE else 5),
+                    onClick = { showDesModal = true },
+                    hasMore = uiState.hasMorePost && !uiState.isLoadingPost,
+                    showMore = {
+                        isShowAllReviews = true
+                        viewModel.refreshPosts(Int.MAX_VALUE)
+                    },
+                )
+
+                // Modal
+                // FIXME: move FAB logic here instead of in MainActivity.
+                if (showComposeModal) { // Compose modal
+                    PostComposeModal(
+                        postDate = Instant.fromEpochMilliseconds(postDate),
+                        onDismiss = onDismissComposeModal,
+                        onSend = {
+                            viewModel.postMark(it)
+                            onDismissComposeModal()
+                        },
+                        onShowDatePicker = { isShowDatePicker = true },
+                    )
+                } else if (showDesModal) { // Modal showing all detailed info.
+                    // TODO: show other field.
+                    ModalBottomSheet(onDismissRequest = { showDesModal = false }) {
+                        ShowAllInfoModalContent(des = detail.des ?: "")
+                    }
                 }
             }
         }
@@ -145,6 +151,8 @@ private fun DetailContent(
     modifier: Modifier = Modifier,
     postList: List<Post> = emptyList(),
     onClick: () -> Unit = {},
+    hasMore: Boolean = false,
+    showMore: () -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier
@@ -185,6 +193,18 @@ private fun DetailContent(
                 date = it.date.toDateString(),
             )
             HorizontalDivider(thickness = 0.2.dp)
+        }
+
+        // See all reviews
+        item {
+            AnimatedVisibility(hasMore, enter = fadeIn()) {
+                ElevatedButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(WindowInsets.navigationBars.asPaddingValues()),
+                    onClick = showMore,
+                ) { Text(stringResource(R.string.detail_show_all_reviews)) }
+            }
         }
     }
 }
@@ -295,8 +315,6 @@ private fun PostCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                // TODO: render markdown content in posts
-                // TODO: collapsed/expand post
                 // TODO: show user status, like playing or played, etc
                 Text(
                     text = username,
@@ -312,12 +330,15 @@ private fun PostCard(
                     )
                 }
             }
-            ExpandableText(
-                text = content,
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Card(shape = MaterialTheme.shapes.extraSmall) {
+                ExpandableText(
+                    text = content,
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    overlayColor = CardDefaults.cardColors().containerColor,
+                )
+            }
             Text(
                 text = date,
                 style = MaterialTheme.typography.bodySmall,
@@ -354,6 +375,42 @@ private fun DatePickerModal(
         },
     ) {
         DatePicker(state = datePickerState, showModeToggle = false)
+    }
+}
+
+@Suppress("ktlint:standard:max-line-length")
+@OptIn(ExperimentalTime::class)
+@Preview
+@Composable
+private fun DetailContentPreview() {
+    val data = Detail(
+        type = EntryType.movie,
+        title = "The Shawshank Redemption",
+        coverUrl = null,
+        rating = 4.8f,
+        info = "Drama / Crime",
+        des = "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
+    )
+    val postList = listOf(
+        Post(
+            avatar = "https://example.com/avatar1.jpg",
+            username = "User1",
+            content = "Great movie!",
+            rating = 5,
+            date = Instant.parse("2023-10-27T12:00:00Z"),
+        ),
+        Post(
+            avatar = "https://example.com/avatar2.jpg",
+            username = "User2",
+            content = "A classic.",
+            rating = 4,
+            date = Instant.parse("2024-10-27T12:00:00Z"),
+        ),
+    )
+    NeoDBYouTheme {
+        Surface {
+            DetailContent(data = data, postList = postList, hasMore = true)
+        }
     }
 }
 
