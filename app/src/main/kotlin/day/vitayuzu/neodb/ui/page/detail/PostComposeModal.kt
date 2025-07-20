@@ -8,11 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Settings
@@ -78,7 +75,7 @@ fun PostComposeModal(
             postDate = postDate,
             onSend = onSend,
             onShowDatePicker = onShowDatePicker,
-            modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()),
+            modifier = Modifier.safeContentPadding(),
         )
     }
 }
@@ -98,7 +95,7 @@ private fun ComposeModalContent(
 
     Box(modifier = modifier) {
         Column(
-            modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {

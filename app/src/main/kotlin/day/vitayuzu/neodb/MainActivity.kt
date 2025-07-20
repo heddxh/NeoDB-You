@@ -231,6 +231,7 @@ private fun MainNavi(
 //        popEnterTransition = { EnterTransition.None },
         modifier = modifier,
     ) {
+        // Apply and consume window insets padding from scaffold.
         val mainScreenModifier =
             Modifier.padding(insetsPaddingValues).consumeWindowInsets(insetsPaddingValues)
         composable<Home> {
