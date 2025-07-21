@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.placeCursorAtEnd
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Settings
@@ -32,6 +35,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -96,7 +100,7 @@ private fun ComposeModalContent(
     val shelfTypes = ShelfType.entries
     var selectedShelfTypeIndex by remember { mutableIntStateOf(2) }
 
-    var composeContent by remember { mutableStateOf("") }
+    val commentState = rememberTextFieldState()
     var ratingSliderValue by remember { mutableFloatStateOf(0f) }
 
     var isShowMoreSettings by remember { mutableStateOf(false) }
@@ -104,10 +108,15 @@ private fun ComposeModalContent(
     var postVisibility by remember { mutableStateOf(Visibility.Public) }
 
     // Backfill original data for edit existing mark.
-    if (originMark != null) {
-        selectedShelfTypeIndex = originMark.shelfType.ordinal
-        composeContent = originMark.comment.toString()
-        ratingSliderValue = originMark.rating?.toFloat() ?: 0f
+    LaunchedEffect(originMark) {
+        if (originMark != null) {
+            selectedShelfTypeIndex = originMark.shelfType.ordinal
+            commentState.edit {
+                replace(0, length, originMark.comment.toString())
+                placeCursorAtEnd()
+            }
+            ratingSliderValue = originMark.rating?.toFloat() ?: 0f
+        }
     }
 
     Box(modifier = modifier) {
@@ -129,10 +138,9 @@ private fun ComposeModalContent(
             }
             // Review content
             OutlinedTextField(
+                state = commentState,
+                lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 5),
                 modifier = Modifier.fillMaxWidth(),
-                value = composeContent,
-                onValueChange = { composeContent = it },
-                minLines = 5,
                 label = { Text(stringResource(R.string.textfield_review)) },
             )
             // More settings
@@ -191,7 +199,7 @@ private fun ComposeModalContent(
                             MarkInSchema(
                                 shelfType = shelfTypes[selectedShelfTypeIndex],
                                 visibility = postVisibility.ordinal,
-                                commentText = composeContent,
+                                commentText = commentState.text.toString(),
                                 ratingGrade = ratingSliderValue.toInt(),
                                 tags = emptyList(), // TODO: allow add tags
                                 createdTime = postDate.toString(),

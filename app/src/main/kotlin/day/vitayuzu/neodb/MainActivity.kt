@@ -27,11 +27,13 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -102,7 +104,7 @@ private fun MainScaffold(
         } ?: false
     }
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var showNewMarkModal by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier,
@@ -117,11 +119,11 @@ private fun MainScaffold(
             ) {
                 FloatingActionButton(
                     modifier = Modifier.animateEnterExit(),
-                    onClick = viewModel::showComposeModal,
+                    onClick = { showNewMarkModal = true },
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = null,
+                        contentDescription = "Add new mark for this entry",
                     )
                 }
             }
@@ -157,8 +159,8 @@ private fun MainScaffold(
         MainNavi(
             navController = navController,
             insetsPaddingValues = it,
-            showComposeModal = uiState.isShowComposeModal,
-            onDismissComposeModal = viewModel::dismissComposeModal,
+            showNewMarkModal = showNewMarkModal,
+            onModalDismiss = { showNewMarkModal = false },
         )
     }
 }
@@ -216,8 +218,8 @@ private fun MainNavi(
     navController: NavHostController,
     insetsPaddingValues: PaddingValues,
     modifier: Modifier = Modifier,
-    showComposeModal: Boolean = false,
-    onDismissComposeModal: () -> Unit = {},
+    showNewMarkModal: Boolean = false,
+    onModalDismiss: () -> Unit = {},
 ) {
     NavHost(
         navController = navController,
@@ -258,8 +260,8 @@ private fun MainNavi(
             DetailPage(
                 type = detailEntry.type,
                 uuid = detailEntry.uuid,
-                showComposeModal = showComposeModal,
-                onDismissComposeModal = onDismissComposeModal,
+                showNewMarkModal = showNewMarkModal,
+                onModalDismiss = onModalDismiss,
             )
         }
     }

@@ -8,10 +8,7 @@ import day.vitayuzu.neodb.data.Repository
 import day.vitayuzu.neodb.ui.model.Entry
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -23,9 +20,6 @@ class MainActivityViewModel @Inject constructor(
     private val neoRepository: Repository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(MainActivityUiState())
-    val uiState = _uiState.asStateFlow()
-
     init {
         viewModelScope.launch {
             authRepository.updateAccountStatus()
@@ -36,14 +30,4 @@ class MainActivityViewModel @Inject constructor(
         neoRepository.searchWithKeyword(keywords).map { searchResult ->
             searchResult.data.map { Entry(it) }
         }
-
-    fun dismissComposeModal() {
-        _uiState.update { it.copy(isShowComposeModal = false) }
-    }
-
-    fun showComposeModal() {
-        _uiState.update { it.copy(isShowComposeModal = true) }
-    }
 }
-
-data class MainActivityUiState(val isShowComposeModal: Boolean = false)

@@ -77,14 +77,14 @@ fun DetailPage(
     type: EntryType,
     uuid: String,
     modifier: Modifier = Modifier,
-    showComposeModal: Boolean = false,
-    onDismissComposeModal: () -> Unit = {},
     viewModel: DetailViewModel =
         hiltViewModel<DetailViewModel, DetailViewModel.Factory> { it.create(type, uuid) },
+    showNewMarkModal: Boolean = false,
+    onModalDismiss: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Surface(modifier = modifier.fillMaxSize()) {
+    Surface(modifier = modifier) {
         Box {
             // Date Picker
             var isShowDatePicker by remember { mutableStateOf(false) }
@@ -101,7 +101,6 @@ fun DetailPage(
             // Main UI with background image.
             AnimatedVisibility(uiState.detail != null, enter = fadeIn()) {
                 val detail = uiState.detail!!
-                var showDesModal by remember { mutableStateOf(false) }
                 // Background
                 AsyncImage(
                     model = detail.coverUrl,
@@ -112,14 +111,19 @@ fun DetailPage(
                 )
 
                 // Content
+                var modalState by remember(showNewMarkModal) {
+                    if (showNewMarkModal) {
+                        return@remember mutableStateOf(ModalState.NEW)
+                    }
+                    mutableStateOf(ModalState.CLOSED)
+                }
                 var isShowAllReviews by remember { mutableStateOf(false) }
-                var editUserMark by remember { mutableStateOf(false) }
                 DetailContent(
                     detail = detail,
                     mark = uiState.mark,
                     postList = uiState.postList.take(if (isShowAllReviews) Int.MAX_VALUE else 5),
-                    onClick = { showDesModal = true },
-                    onEditMark = { editUserMark = true },
+                    onClick = { modalState = ModalState.DES },
+                    onEditMark = { modalState = ModalState.EDIT },
                     hasMore = uiState.hasMorePost && !uiState.isLoadingPost,
                     showMore = {
                         isShowAllReviews = true
@@ -128,33 +132,37 @@ fun DetailPage(
                 )
 
                 // Modal
-                // FIXME: move FAB logic here instead of in MainActivity.
-                if (showComposeModal) { // Compose modal
-                    PostComposeModal(
+                when (modalState) {
+                    ModalState.NEW -> PostComposeModal(
                         postDate = Instant.fromEpochMilliseconds(postDate),
-                        onDismiss = onDismissComposeModal,
-                        onSend = {
-                            viewModel.postMark(it)
-                            onDismissComposeModal()
-                        },
+                        onSend = viewModel::postMark,
                         onShowDatePicker = { isShowDatePicker = true },
+                        onDismiss = {
+                            modalState = ModalState.CLOSED
+                            onModalDismiss()
+                        },
                     )
-                } else if (showDesModal) { // Modal showing all detailed info.
-                    // TODO: show other field.
-                    ModalBottomSheet(onDismissRequest = { showDesModal = false }) {
-                        ShowAllInfoModalContent(des = detail.des ?: "")
-                    }
-                } else if (editUserMark) {
-                    PostComposeModal(
+
+                    ModalState.EDIT -> PostComposeModal(
                         postDate = Instant.fromEpochMilliseconds(postDate),
                         originMark = uiState.mark,
-                        onDismiss = onDismissComposeModal,
-                        onSend = {
-                            viewModel.postMark(it)
-                            onDismissComposeModal()
-                        },
+                        onSend = viewModel::postMark,
                         onShowDatePicker = { isShowDatePicker = true },
+                        onDismiss = {
+                            modalState = ModalState.CLOSED
+                            onModalDismiss()
+                        },
                     )
+
+                    // TODO: show other field.
+                    ModalState.DES -> ModalBottomSheet(onDismissRequest = {
+                        modalState = ModalState.CLOSED
+                        onModalDismiss()
+                    }) {
+                        ShowAllInfoModalContent(des = detail.des ?: "")
+                    }
+
+                    ModalState.CLOSED -> {}
                 }
             }
         }
