@@ -55,6 +55,7 @@ data class Entry(
         uuid = schema.uuid,
     )
 
+    @Suppress("ktlint:standard:max-line-length")
     companion object {
         val TEST = Entry(
             title = "幽灵公主",
