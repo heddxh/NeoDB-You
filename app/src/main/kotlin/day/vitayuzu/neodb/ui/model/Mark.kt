@@ -1,6 +1,6 @@
 package day.vitayuzu.neodb.ui.model
 
-import day.vitayuzu.neodb.data.schema.MarkScheme
+import day.vitayuzu.neodb.data.schema.MarkSchema
 import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -22,7 +22,7 @@ data class Mark(
     val rating: Int?,
     val comment: String?,
 ) {
-    @OptIn(ExperimentalTime::class) constructor(scheme: MarkScheme) : this(
+    @OptIn(ExperimentalTime::class) constructor(scheme: MarkSchema) : this(
         entry = Entry(scheme.entrySchema),
         shelfType = ShelfType.valueOf(scheme.shelfType),
         date =

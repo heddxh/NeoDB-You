@@ -3,6 +3,7 @@ package day.vitayuzu.neodb.data
 import android.util.Log
 import day.vitayuzu.neodb.data.schema.HasPages
 import day.vitayuzu.neodb.data.schema.MarkInSchema
+import day.vitayuzu.neodb.data.schema.MarkSchema
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.data.schema.PaginatedPostList
 import day.vitayuzu.neodb.data.schema.ResultSchema
@@ -35,6 +36,8 @@ interface Repository {
     ): Flow<DetailSchema>
 
     fun fetchItemPosts(uuid: String): Flow<PaginatedPostList>
+
+    fun fetchItemUserMark(uuid: String): Flow<MarkSchema>
 
     fun postMark(
         uuid: String,
@@ -102,6 +105,10 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
             emit(request(page))
         }
     }
+
+    override fun fetchItemUserMark(uuid: String) = flow {
+        emit(remoteSource.fetchItemUserMark(uuid))
+    }.log("fetch user mark in $uuid")
 
     override fun postMark(
         uuid: String,

@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import day.vitayuzu.neodb.data.Repository
 import day.vitayuzu.neodb.data.schema.MarkInSchema
 import day.vitayuzu.neodb.ui.model.Detail
+import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.model.Post
 import day.vitayuzu.neodb.ui.model.toDetail
 import day.vitayuzu.neodb.util.EntryType
@@ -40,6 +41,7 @@ class DetailViewModel @AssistedInject constructor(
 
     init {
         refreshDetail()
+        refreshUserMark()
         refreshPosts()
     }
 
@@ -47,6 +49,14 @@ class DetailViewModel @AssistedInject constructor(
         viewModelScope.launch {
             repo.fetchDetail(type, uuid).collect { detailSchema ->
                 _uiState.update { it.copy(detailSchema.toDetail()) }
+            }
+        }
+    }
+
+    private fun refreshUserMark() {
+        viewModelScope.launch {
+            repo.fetchItemUserMark(uuid).collect { markSchema ->
+                _uiState.update { it.copy(mark = Mark(markSchema)) }
             }
         }
     }
@@ -92,6 +102,7 @@ class DetailViewModel @AssistedInject constructor(
 
 data class DetailUiState(
     val detail: Detail? = null,
+    val mark: Mark? = null,
     val isLoadingPost: Boolean = false,
     val hasMorePost: Boolean = false,
     val postList: List<Post> = emptyList(),

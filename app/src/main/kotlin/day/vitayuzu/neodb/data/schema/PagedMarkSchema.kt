@@ -5,13 +5,13 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PagedMarkSchema(
-    val data: List<MarkScheme>?,
+    val data: List<MarkSchema>?,
     val count: Int,
     override val pages: Int,
 ) : HasPages
 
 @Serializable
-data class MarkScheme(
+data class MarkSchema(
     @SerialName("created_time") val createdTime: String,
     @SerialName("comment_text") val commentText: String?,
     @SerialName("item") val entrySchema: EntrySchema,

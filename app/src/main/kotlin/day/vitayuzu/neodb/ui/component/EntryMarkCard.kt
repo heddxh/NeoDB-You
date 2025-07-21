@@ -5,15 +5,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -111,56 +108,7 @@ fun EntryMarkCard(
                     style = MaterialTheme.typography.bodySmall,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                if (mark != null) UserMark(mark)
-            }
-        }
-    }
-}
-
-@Composable
-fun UserMark(
-    mark: Mark,
-    modifier: Modifier = Modifier,
-) {
-    OutlinedCard(
-        shape = MaterialTheme.shapes.small,
-        modifier = modifier,
-    ) {
-        Column(
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start,
-            modifier = Modifier.padding(horizontal = 8.dp).padding(bottom = 8.dp),
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().paddingFromBaseline(top = 20.5.dp),
-            ) {
-                if (mark.rating != null) {
-                    RatingStars(
-                        mark.fullStars,
-                        mark.hasHalfStar,
-                    )
-                }
-                Row(verticalAlignment = Alignment.Top) {
-                    Text(
-                        mark.date.toString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.alignByBaseline(),
-                    )
-                    Text(
-                        stringResource(mark.shelfType.toR()),
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.alignByBaseline(),
-                    )
-                }
-            }
-            if (mark.comment != null) {
-                Text(
-                    text = mark.comment,
-                    style = MaterialTheme.typography.bodySmall,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                if (mark != null) UserMarkCard(mark)
             }
         }
     }

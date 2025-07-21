@@ -3,6 +3,7 @@ package day.vitayuzu.neodb.data
 import day.vitayuzu.neodb.data.schema.AuthClientIdentify
 import day.vitayuzu.neodb.data.schema.InstanceSchema
 import day.vitayuzu.neodb.data.schema.MarkInSchema
+import day.vitayuzu.neodb.data.schema.MarkSchema
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.data.schema.PaginatedPostList
 import day.vitayuzu.neodb.data.schema.ResultSchema
@@ -103,6 +104,10 @@ class RemoteSource @Inject constructor(
         api.fetchSelfAccountInfo()
     }
 
+    suspend fun fetchItemUserMark(uuid: String): MarkSchema = withContext(dispatcher) {
+        api.fetchItemUserMark(uuid)
+    }
+
     suspend fun postMark(
         uuid: String,
         data: MarkInSchema,
@@ -182,6 +187,11 @@ interface NeoDbApi {
 
     @GET("me")
     suspend fun fetchSelfAccountInfo(): UserSchema
+
+    @GET("me/shelf/item/{uuid}")
+    suspend fun fetchItemUserMark(
+        @Path("uuid") uuid: String,
+    ): MarkSchema
 
     @POST("me/shelf/item/{uuid}")
     suspend fun postMark(
