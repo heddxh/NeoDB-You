@@ -41,6 +41,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +58,7 @@ import day.vitayuzu.neodb.util.ShelfType
 import day.vitayuzu.neodb.util.Visibility
 import day.vitayuzu.neodb.util.toDateString
 import day.vitayuzu.neodb.util.toInstant
+import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -78,10 +80,17 @@ fun PostComposeModal(
         onDismissRequest = onDismiss,
         modifier = modifier,
     ) {
+        val scope = rememberCoroutineScope()
         ComposeModalContent(
             postDate = originMark?.date?.toInstant() ?: postDate,
             originMark = originMark,
-            onSend = onSend,
+            onSend = {
+                onSend(it)
+                scope.launch {
+                    sheetState.hide()
+                    onDismiss()
+                }
+            },
             onShowDatePicker = onShowDatePicker,
             modifier = Modifier.safeContentPadding(),
         )
@@ -112,7 +121,7 @@ private fun ComposeModalContent(
         if (originMark != null) {
             selectedShelfTypeIndex = originMark.shelfType.ordinal
             commentState.edit {
-                replace(0, length, originMark.comment.toString())
+                replace(0, length, originMark.comment.orEmpty())
                 placeCursorAtEnd()
             }
             ratingSliderValue = originMark.rating?.toFloat() ?: 0f

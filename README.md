@@ -8,5 +8,5 @@ You can check the progress on [this thread](https://ibasho.vitayuzu.day/@yuzu/st
 - [x] R8 Proguard
 - [x] Signing
 - [x] Properly showing reviews
-- [ ] Allow editing existing reviews
+- [x] Allow editing existing reviews
 - [ ] Reformat whole codebase(maybe another formatter)
