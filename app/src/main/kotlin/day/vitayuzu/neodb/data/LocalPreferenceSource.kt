@@ -53,10 +53,7 @@ class LocalPreferenceSource @Inject constructor(private val dataStore: DataStore
             emit(null)
         }.firstOrNull()
 
-    suspend fun store(
-        key: Preferences.Key<String>,
-        value: String,
-    ) {
+    suspend fun store(key: Preferences.Key<String>, value: String) {
         runCatching {
             dataStore.edit {
                 it[key] = value

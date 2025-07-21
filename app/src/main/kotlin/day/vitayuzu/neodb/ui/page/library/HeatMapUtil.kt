@@ -63,9 +63,7 @@ data class HeatMapDayData(
 sealed interface HeatMapBlockType {
     data object None : HeatMapBlockType
 
-    data class Single(
-        val kind: EntryType,
-    ) : HeatMapBlockType
+    data class Single(val kind: EntryType) : HeatMapBlockType
 
     data class Double(
         val kind1: EntryType,

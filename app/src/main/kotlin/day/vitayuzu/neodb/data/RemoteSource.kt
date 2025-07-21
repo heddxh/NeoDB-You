@@ -69,21 +69,16 @@ class RemoteSource @Inject constructor(
 
     // ===========================================< Auth END >============================
 
-    suspend fun fetchMyShelf(
-        type: ShelfType,
-        page: Int = 1,
-    ): PagedMarkSchema = withContext(dispatcher) {
-        api.fetchMyShelf(type, page)
-    }
+    suspend fun fetchMyShelf(type: ShelfType, page: Int = 1): PagedMarkSchema =
+        withContext(dispatcher) {
+            api.fetchMyShelf(type, page)
+        }
 
     suspend fun fetchTrending(type: EntryType): List<TrendingItemSchema> = withContext(dispatcher) {
         api.fetchTrending(type)
     }
 
-    suspend fun fetchDetail(
-        type: EntryType,
-        uuid: String,
-    ) = withContext(dispatcher) {
+    suspend fun fetchDetail(type: EntryType, uuid: String) = withContext(dispatcher) {
         val typeStringEndpoint = if (type == EntryType.music) {
             "album"
         } else {
@@ -108,10 +103,7 @@ class RemoteSource @Inject constructor(
         api.fetchItemUserMark(uuid)
     }
 
-    suspend fun postMark(
-        uuid: String,
-        data: MarkInSchema,
-    ): ResultSchema = withContext(dispatcher) {
+    suspend fun postMark(uuid: String, data: MarkInSchema): ResultSchema = withContext(dispatcher) {
         api.postMark(uuid, data)
     }
 

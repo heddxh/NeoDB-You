@@ -29,10 +29,7 @@ import day.vitayuzu.neodb.ui.theme.kindColors
 import day.vitayuzu.neodb.util.EntryType
 
 @Composable
-fun HeatMap(
-    weeks: List<HeatMapWeekUiState>,
-    modifier: Modifier = Modifier,
-) {
+fun HeatMap(weeks: List<HeatMapWeekUiState>, modifier: Modifier = Modifier) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
@@ -47,10 +44,7 @@ fun HeatMap(
 }
 
 @Composable
-fun HeatMapWeekColumn(
-    blocks: List<HeatMapDayData>,
-    modifier: Modifier = Modifier,
-) {
+fun HeatMapWeekColumn(blocks: List<HeatMapDayData>, modifier: Modifier = Modifier) {
     val blockModifier =
         Modifier
             .size(24.dp)
@@ -109,10 +103,7 @@ fun DefaultHeatMapBlock(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun SingleHeatMapBlock(
-    modifier: Modifier = Modifier,
-    kind: EntryType = EntryType.default,
-) {
+fun SingleHeatMapBlock(modifier: Modifier = Modifier, kind: EntryType = EntryType.default) {
     Box(
         modifier =
             modifier

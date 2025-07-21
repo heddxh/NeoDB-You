@@ -25,15 +25,15 @@ private val LightColorScheme =
         primary = Purple40,
         secondary = PurpleGrey40,
         tertiary = Pink40,
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-     */
+        /* Other default colors to override
+        background = Color(0xFFFFFBFE),
+        surface = Color(0xFFFFFBFE),
+        onPrimary = Color.White,
+        onSecondary = Color.White,
+        onTertiary = Color.White,
+        onBackground = Color(0xFF1C1B1F),
+        onSurface = Color(0xFF1C1B1F),
+         */
     )
 
 val ColorScheme.ratingColor: Color
@@ -41,17 +41,16 @@ val ColorScheme.ratingColor: Color
     get() = RatingColor
 
 @Composable
-fun ColorScheme.kindColors(kind: EntryType): Color =
-    when (kind) {
-        EntryType.book -> BookColor
-        EntryType.game -> GameColor
-        EntryType.movie -> MovieColor
-        EntryType.music -> MusicColor
-        EntryType.performance -> PerformanceColor
-        EntryType.tv -> TVColor
-        EntryType.podcast -> PodcastColor
-        EntryType.default -> OtherColor
-    }
+fun ColorScheme.kindColors(kind: EntryType): Color = when (kind) {
+    EntryType.book -> BookColor
+    EntryType.game -> GameColor
+    EntryType.movie -> MovieColor
+    EntryType.music -> MusicColor
+    EntryType.performance -> PerformanceColor
+    EntryType.tv -> TVColor
+    EntryType.podcast -> PodcastColor
+    EntryType.default -> OtherColor
+}
 
 @Composable
 fun NeoDBYouTheme(

@@ -47,6 +47,4 @@ data class EntrySchema(
 )
 
 @Serializable
-data class ExternalResourcesItem(
-    val url: String,
-)
+data class ExternalResourcesItem(val url: String)

@@ -10,3 +10,4 @@ You can check the progress on [this thread](https://ibasho.vitayuzu.day/@yuzu/st
 - [x] Properly showing reviews
 - [x] Allow editing existing reviews
 - [ ] Reformat whole codebase(maybe another formatter)
+- [x] Reformat whole codebase(maybe another formatter)

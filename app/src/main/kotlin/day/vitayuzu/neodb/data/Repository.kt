@@ -30,19 +30,13 @@ interface Repository {
 
     fun fetchTrending(): Flow<Map<EntryType, List<TrendingItemSchema>>>
 
-    fun fetchDetail(
-        type: EntryType,
-        uuid: String,
-    ): Flow<DetailSchema>
+    fun fetchDetail(type: EntryType, uuid: String): Flow<DetailSchema>
 
     fun fetchItemPosts(uuid: String): Flow<PaginatedPostList>
 
     fun fetchItemUserMark(uuid: String): Flow<MarkSchema>
 
-    fun postMark(
-        uuid: String,
-        data: MarkInSchema,
-    ): Flow<ResultSchema>
+    fun postMark(uuid: String, data: MarkInSchema): Flow<ResultSchema>
 
     fun searchWithKeyword(keywords: String): Flow<SearchResult>
 }
@@ -86,10 +80,7 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
         remoteSource.fetchMyShelf(shelfType, page)
     }.log(shelfType.toString())
 
-    override fun fetchDetail(
-        type: EntryType,
-        uuid: String,
-    ) = flow {
+    override fun fetchDetail(type: EntryType, uuid: String) = flow {
         emit(remoteSource.fetchDetail(type, uuid))
     }.log("$type $uuid")
 
@@ -110,10 +101,7 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
         emit(remoteSource.fetchItemUserMark(uuid))
     }.log("fetch user mark in $uuid")
 
-    override fun postMark(
-        uuid: String,
-        data: MarkInSchema,
-    ) = flow {
+    override fun postMark(uuid: String, data: MarkInSchema) = flow {
         emit(remoteSource.postMark(uuid, data))
     }.validate().log("post mark in $uuid")
 
@@ -125,10 +113,7 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
 /**
  * Helper function to log the request for a flow.
  */
-fun <T> Flow<T>.log(
-    msg: String,
-    tag: String = "Repository",
-) = this
+fun <T> Flow<T>.log(msg: String, tag: String = "Repository") = this
     .onStart {
         Log.d(tag, "Start fetching $msg")
     }.onCompletion {

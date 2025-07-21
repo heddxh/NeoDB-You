@@ -10,11 +10,10 @@ enum class ShelfType {
     dropped,
     ;
 
-    fun toR(): Int =
-        when (this) {
-            wishlist -> R.string.shelf_displayname_wishlist
-            progress -> R.string.shelf_displayname_progress
-            complete -> R.string.shelf_displayname_completed
-            dropped -> R.string.shelf_displayname_dropped
-        }
+    fun toR(): Int = when (this) {
+        wishlist -> R.string.shelf_displayname_wishlist
+        progress -> R.string.shelf_displayname_progress
+        complete -> R.string.shelf_displayname_completed
+        dropped -> R.string.shelf_displayname_dropped
+    }
 }

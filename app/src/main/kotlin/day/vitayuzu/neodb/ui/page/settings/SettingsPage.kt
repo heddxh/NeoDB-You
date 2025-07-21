@@ -43,10 +43,7 @@ import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 
 @Composable
-fun SettingsPage(
-    modifier: Modifier = Modifier,
-    viewModel: SettingsViewModel = hiltViewModel(),
-) {
+fun SettingsPage(modifier: Modifier = Modifier, viewModel: SettingsViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(true) {
