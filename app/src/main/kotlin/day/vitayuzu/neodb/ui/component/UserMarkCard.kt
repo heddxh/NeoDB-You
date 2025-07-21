@@ -17,14 +17,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
-import day.vitayuzu.neodb.util.ShelfType
-import kotlinx.datetime.LocalDate
 
 @Composable
-fun UserMarkCard(mark: Mark, modifier: Modifier = Modifier) {
+fun UserMarkCard(
+    mark: Mark,
+    modifier: Modifier = Modifier,
+    expandable: Boolean = true,
+) {
     OutlinedCard(
         shape = MaterialTheme.shapes.small,
         modifier = modifier,
@@ -59,11 +60,20 @@ fun UserMarkCard(mark: Mark, modifier: Modifier = Modifier) {
             }
             // Comment
             if (mark.comment != null) {
-                Text(
-                    text = mark.comment,
-                    style = MaterialTheme.typography.bodySmall,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                if (expandable) {
+                    ExpandableText(
+                        text = mark.comment,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 3,
+                    )
+                } else {
+                    Text(
+                        mark.comment,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }
@@ -72,16 +82,9 @@ fun UserMarkCard(mark: Mark, modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun UserMarkPreview() {
-    val mark = Mark(
-        entry = Entry.TEST,
-        shelfType = ShelfType.complete,
-        date = LocalDate(2023, 1, 1),
-        rating = 7,
-        comment = "This is a test comment.",
-    )
     NeoDBYouTheme {
         Surface {
-            UserMarkCard(mark = mark)
+            UserMarkCard(mark = Mark.TEST)
         }
     }
 }

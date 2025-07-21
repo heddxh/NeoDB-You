@@ -101,6 +101,7 @@ fun EntryMarkCard(
                     }
                 }
                 Spacer(modifier = Modifier.height(2.dp))
+                // Description
                 Text(
                     text = entry.des,
                     maxLines = 3,
@@ -108,7 +109,8 @@ fun EntryMarkCard(
                     style = MaterialTheme.typography.bodySmall,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                if (mark != null) UserMarkCard(mark)
+                // User mark card
+                if (mark != null) UserMarkCard(mark, expandable = false)
             }
         }
     }
@@ -121,7 +123,7 @@ private fun PreviewEntryMarkCard() {
         Surface {
             EntryMarkCard(
                 entry = Entry.TEST,
-                mark = null,
+                mark = Mark.TEST,
             )
         }
     }

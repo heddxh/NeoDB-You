@@ -61,14 +61,11 @@ import day.vitayuzu.neodb.ui.component.ExpandableText
 import day.vitayuzu.neodb.ui.component.StarsWithScores
 import day.vitayuzu.neodb.ui.component.UserMarkCard
 import day.vitayuzu.neodb.ui.model.Detail
-import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.model.Post
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.EntryType
-import day.vitayuzu.neodb.util.ShelfType
 import day.vitayuzu.neodb.util.toDateString
-import kotlinx.datetime.LocalDate
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -405,13 +402,6 @@ private fun DetailContentPreview() {
         info = "Drama / Crime",
         des = "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
     )
-    val mark = Mark(
-        entry = Entry.TEST,
-        shelfType = ShelfType.complete,
-        date = LocalDate(2023, 1, 1),
-        rating = 7,
-        comment = "This is a test comment.",
-    )
     val postList = listOf(
         Post(
             avatar = "https://example.com/avatar1.jpg",
@@ -430,7 +420,7 @@ private fun DetailContentPreview() {
     )
     NeoDBYouTheme {
         Surface {
-            DetailContent(detail = detail, mark = mark, postList = postList, hasMore = true)
+            DetailContent(detail = detail, mark = Mark.TEST, postList = postList, hasMore = true)
         }
     }
 }

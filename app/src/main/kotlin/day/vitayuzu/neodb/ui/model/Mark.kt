@@ -36,4 +36,16 @@ data class Mark(
 
     val fullStars = rating?.div(2) ?: 0
     val hasHalfStar = rating?.rem(2) == 1
+
+    @Suppress("ktlint:standard:max-line-length")
+    companion object {
+        val TEST = Mark(
+            entry = Entry.TEST,
+            shelfType = ShelfType.complete,
+            date = LocalDate(2023, 1, 1),
+            rating = 7,
+            comment =
+                "This is a test comment.\nThis is a test comment\nThis is a test comment\nThis is a test comment",
+        )
+    }
 }

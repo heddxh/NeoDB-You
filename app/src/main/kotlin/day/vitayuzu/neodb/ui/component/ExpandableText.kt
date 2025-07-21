@@ -57,7 +57,7 @@ import day.vitayuzu.neodb.R
 fun ExpandableText(
     text: String,
     modifier: Modifier = Modifier,
-    minLines: Int = 1,
+    maxLines: Int = Int.MAX_VALUE,
     animationSpec: AnimationSpec<Int>? = null,
     overlayColor: Color = MaterialTheme.colorScheme.background,
     color: Color = Color.Unspecified,
@@ -72,7 +72,7 @@ fun ExpandableText(
     lineHeight: TextUnit = TextUnit.Unspecified,
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
-    maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
     onTextLayout: ((TextLayoutResult) -> Unit)? = null,
     style: TextStyle = LocalTextStyle.current,
 ) {
