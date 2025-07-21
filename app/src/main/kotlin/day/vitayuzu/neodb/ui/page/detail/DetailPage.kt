@@ -389,7 +389,7 @@ private fun PostCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
+@OptIn(ExperimentalTime::class)
 @Composable
 private fun DatePickerModal(
     date: Instant = Clock.System.now(),
@@ -406,12 +406,12 @@ private fun DatePickerModal(
                 onConfirm(datePickerState.selectedDateMillis)
                 onDismiss()
             }) {
-                Text("OK")
+                Text(stringResource(R.string.common_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.common_cancel))
             }
         },
     ) {

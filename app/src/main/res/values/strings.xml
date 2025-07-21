@@ -31,5 +31,7 @@
     <string name="welcome_firstline">欢迎！</string>
     <string name="welcome_secondline">请输入你的NeoDB实例地址以登录</string>
     <string name="detail_show_all_reviews">查看所有评论</string>
+    <string name="common_ok">确认</string>
+    <string name="common_cancel">取消</string>
 
 </resources>

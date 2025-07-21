@@ -34,7 +34,7 @@ class DetailViewModel @AssistedInject constructor(
         fun create(type: EntryType, uuid: String): DetailViewModel
     }
 
-    private val _uiState = MutableStateFlow<DetailUiState>(DetailUiState())
+    private val _uiState = MutableStateFlow(DetailUiState())
     val uiState = _uiState.asStateFlow()
 
     // Keep reference to the job loading reviews to able to cancel it when refreshing again.
