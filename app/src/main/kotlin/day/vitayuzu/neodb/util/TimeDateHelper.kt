@@ -2,7 +2,9 @@
 
 package day.vitayuzu.neodb.util
 
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.periodUntil
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
@@ -15,6 +17,8 @@ import kotlin.time.Instant
 fun Long.toDateString() = Instant.fromEpochMilliseconds(this).toDateString()
 
 fun Instant.toDateString() = this.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
+
+fun LocalDate.toInstant() = this.atStartOfDayIn(TimeZone.currentSystemDefault())
 
 /**
  * Convert [Instant] to a human-readable string,

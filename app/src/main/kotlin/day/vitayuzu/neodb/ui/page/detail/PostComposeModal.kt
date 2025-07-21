@@ -47,10 +47,12 @@ import androidx.compose.ui.unit.dp
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.data.schema.MarkInSchema
 import day.vitayuzu.neodb.ui.component.StarsWithScores
+import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.ShelfType
 import day.vitayuzu.neodb.util.Visibility
 import day.vitayuzu.neodb.util.toDateString
+import day.vitayuzu.neodb.util.toInstant
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -60,6 +62,7 @@ import kotlin.time.Instant
 fun PostComposeModal(
     postDate: Instant,
     modifier: Modifier = Modifier,
+    originMark: Mark? = null,
     onDismiss: () -> Unit = {},
     onSend: (MarkInSchema) -> Unit = {},
     onShowDatePicker: () -> Unit = {},
@@ -72,7 +75,8 @@ fun PostComposeModal(
         modifier = modifier,
     ) {
         ComposeModalContent(
-            postDate = postDate,
+            postDate = originMark?.date?.toInstant() ?: postDate,
+            originMark = originMark,
             onSend = onSend,
             onShowDatePicker = onShowDatePicker,
             modifier = Modifier.safeContentPadding(),
@@ -85,6 +89,7 @@ fun PostComposeModal(
 private fun ComposeModalContent(
     postDate: Instant,
     modifier: Modifier = Modifier,
+    originMark: Mark? = null,
     onSend: (MarkInSchema) -> Unit = {},
     onShowDatePicker: () -> Unit = {},
 ) {
@@ -92,6 +97,18 @@ private fun ComposeModalContent(
     var selectedShelfTypeIndex by remember { mutableIntStateOf(2) }
 
     var composeContent by remember { mutableStateOf("") }
+    var ratingSliderValue by remember { mutableFloatStateOf(0f) }
+
+    var isShowMoreSettings by remember { mutableStateOf(false) }
+    var isPostToFedi by remember { mutableStateOf(false) }
+    var postVisibility by remember { mutableStateOf(Visibility.Public) }
+
+    // Backfill original data for edit existing mark.
+    if (originMark != null) {
+        selectedShelfTypeIndex = originMark.shelfType.ordinal
+        composeContent = originMark.comment.toString()
+        ratingSliderValue = originMark.rating?.toFloat() ?: 0f
+    }
 
     Box(modifier = modifier) {
         Column(
@@ -99,9 +116,6 @@ private fun ComposeModalContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            var isShowMoreSettings by remember { mutableStateOf(false) }
-            var isPostToFedi by remember { mutableStateOf(false) }
-            var postVisibility by remember { mutableStateOf(Visibility.Public) }
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                 shelfTypes.forEachIndexed { index, button ->
                     SegmentedButton(
@@ -136,7 +150,6 @@ private fun ComposeModalContent(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                var ratingSliderValue by remember { mutableFloatStateOf(0f) }
                 AnimatedVisibility(visible = selectedShelfTypeIndex != 0) {
                     Slider(
                         value = ratingSliderValue,
@@ -180,7 +193,7 @@ private fun ComposeModalContent(
                                 visibility = postVisibility.ordinal,
                                 commentText = composeContent,
                                 ratingGrade = ratingSliderValue.toInt(),
-                                tags = emptyList(), // TODO
+                                tags = emptyList(), // TODO: allow add tags
                                 createdTime = postDate.toString(),
                                 postToFediverse = isPostToFedi,
                             ),

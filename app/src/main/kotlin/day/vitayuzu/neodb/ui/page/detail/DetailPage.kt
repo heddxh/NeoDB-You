@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -112,11 +113,13 @@ fun DetailPage(
 
                 // Content
                 var isShowAllReviews by remember { mutableStateOf(false) }
+                var editUserMark by remember { mutableStateOf(false) }
                 DetailContent(
                     detail = detail,
                     mark = uiState.mark,
                     postList = uiState.postList.take(if (isShowAllReviews) Int.MAX_VALUE else 5),
                     onClick = { showDesModal = true },
+                    onEditMark = { editUserMark = true },
                     hasMore = uiState.hasMorePost && !uiState.isLoadingPost,
                     showMore = {
                         isShowAllReviews = true
@@ -141,6 +144,17 @@ fun DetailPage(
                     ModalBottomSheet(onDismissRequest = { showDesModal = false }) {
                         ShowAllInfoModalContent(des = detail.des ?: "")
                     }
+                } else if (editUserMark) {
+                    PostComposeModal(
+                        postDate = Instant.fromEpochMilliseconds(postDate),
+                        originMark = uiState.mark,
+                        onDismiss = onDismissComposeModal,
+                        onSend = {
+                            viewModel.postMark(it)
+                            onDismissComposeModal()
+                        },
+                        onShowDatePicker = { isShowDatePicker = true },
+                    )
                 }
             }
         }
@@ -155,6 +169,7 @@ private fun DetailContent(
     mark: Mark? = null,
     postList: List<Post> = emptyList(),
     onClick: () -> Unit = {},
+    onEditMark: () -> Unit = {},
     hasMore: Boolean = false,
     showMore: () -> Unit = {},
 ) {
@@ -186,7 +201,14 @@ private fun DetailContent(
         // User mark
         item {
             if (mark != null) {
-                UserMarkCard(mark)
+                UserMarkCard(
+                    mark,
+                    modifier = Modifier.combinedClickable(
+                        onClick = {},
+                        // Edit mark
+                        onLongClick = onEditMark,
+                    ),
+                )
             }
         }
 
