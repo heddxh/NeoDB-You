@@ -3,11 +3,7 @@
 A native Android app for [NeoDB](https://neodb.net/), crafted with Jetpack Compose and Material 3.
 
 ## Screenshots
-
-![home](docs/img/home.png)
-![library.png](docs/img/library.png)
-![settings.png](docs/img/settings.png)
-![detail.png](docs/img/detail.png)
+<img alt="home" height="500" src="docs/img/home.png"/><img alt="library.png" height="500" src="docs/img/library.png"/><img alt="settings.png" height="500" src="docs/img/settings.png"/><img alt="detail.png" height="500" src="docs/img/detail.png"/>
 
 ## Features
 
