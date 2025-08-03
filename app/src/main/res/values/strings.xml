@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">NeoDB You</string>
+    <string name="app_name" translatable="false">NeoDB You</string>
 
     <string name="home_title">首页</string>
     <string name="library_title">标记</string>

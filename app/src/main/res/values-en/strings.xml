@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_title">Home</string>
+    <string name="library_title">Library</string>
+    <string name="settings_title">Settings</string>
+    <string name="entry_displayname_book">Book</string>
+    <string name="entry_displayname_movie">Movie</string>
+    <string name="entry_displayname_tv">TV</string>
+    <string name="entry_displayname_music">Music</string>
+    <string name="entry_displayname_game">Game</string>
+    <string name="entry_displayname_podcast">Podcast</string>
+    <string name="entry_displayname_performance">Performance</string>
+    <string name="entry_displayname_other">Others</string>
+    <string name="shelf_displayname_wishlist">Wishlist</string>
+    <string name="shelf_displayname_progress">In-progress</string>
+    <string name="shelf_displayname_completed">Complete</string>
+    <string name="shelf_displayname_dropped">Dropped</string>
+    <string name="detail_field_description">Description</string>
+    <string name="textfield_review">Comment</string>
+    <string name="textfield_postdate">Specify post date</string>
+    <string name="toggle_postToFedi">Repost to Fediverse</string>
+    <string name="visibility_displayname_public">Public</string>
+    <string name="visibility_displayname_unlisted">Unlisted</string>
+    <string name="visibility_displayname_followers">Followers</string>
+    <string name="textfield_search">Search with keywords or supported external links…</string>
+    <string name="textfield_instanceUrl">Instance domain</string>
+    <string name="welcome_firstline">Welcome!</string>
+    <string name="welcome_secondline">Please input your instance domain of NeoDB to log in</string>
+    <string name="detail_show_all_reviews">See all comments</string>
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Cancel</string>
+</resources>
