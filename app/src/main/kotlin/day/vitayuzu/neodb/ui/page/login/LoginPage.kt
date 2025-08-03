@@ -124,6 +124,11 @@ fun LoginPage(modifier: Modifier = Modifier, viewModel: LoginViewModel = hiltVie
                 },
                 outputTransformation = UrlOutputTransformation(),
                 label = { Text(stringResource(R.string.textfield_instanceUrl)) },
+                supportingText = {
+                    Text(
+                        stringResource(R.string.textfield_instanceUrl_supportingText),
+                    )
+                },
                 leadingIcon = {
                     Icon(
                         painter = painterResource(R.drawable.internet_outline),
@@ -215,11 +220,11 @@ private class UrlOutputTransformation : OutputTransformation {
 
 @Composable
 fun WelcomeWords(modifier: Modifier = Modifier) {
-    Column(modifier = modifier) {
-        // TODO: Logo
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Image(
             painterResource(R.drawable.ic_launcher_foreground),
             null,
+            modifier = Modifier.fillMaxWidth().height(200.dp),
         )
         Text(
             stringResource(R.string.welcome_firstline),

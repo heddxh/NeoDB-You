@@ -33,5 +33,6 @@
     <string name="detail_show_all_reviews">查看所有评论</string>
     <string name="common_ok">确认</string>
     <string name="common_cancel">取消</string>
+    <string name="textfield_instanceUrl_supportingText">不知道输入什么？对于中文用户，通常是 neodb.social。</string>
 
 </resources>

@@ -12,7 +12,7 @@
     <string name="entry_displayname_performance">Performance</string>
     <string name="entry_displayname_other">Others</string>
     <string name="shelf_displayname_wishlist">Wishlist</string>
-    <string name="shelf_displayname_progress">In Progress</string>
+    <string name="shelf_displayname_progress">Progress</string>
     <string name="shelf_displayname_completed">Complete</string>
     <string name="shelf_displayname_dropped">Dropped</string>
     <string name="detail_field_description">Description</string>
@@ -29,4 +29,5 @@
     <string name="detail_show_all_reviews">See all comments</string>
     <string name="common_ok">OK</string>
     <string name="common_cancel">Cancel</string>
+    <string name="textfield_instanceUrl_supportingText">Don\'t know what to input? For English user, usually is eggplant.place.</string>
 </resources>
