@@ -177,3 +177,10 @@ library: [encrypted-datastore](https://github.com/osipxd/encrypted-datastore), i
 wait Google to achieve it officially.
 Here is the [bug report](https://issuetracker.google.com/issues/167697691), 792 votes without any
 response from Google.
+
+## Whole system muted when launch the android emulator on Linux
+
+Android emulator requests a too small latency and the current DAC can not satisfy it.
+Add `PULSE_LATENCY_MSEC=60` for android studio to workaround it.
+
+See: https://github.com/wwmm/easyeffects/issues/2406
