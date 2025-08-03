@@ -12,7 +12,7 @@
     <string name="entry_displayname_performance">Performance</string>
     <string name="entry_displayname_other">Others</string>
     <string name="shelf_displayname_wishlist">Wishlist</string>
-    <string name="shelf_displayname_progress">In-progress</string>
+    <string name="shelf_displayname_progress">In Progress</string>
     <string name="shelf_displayname_completed">Complete</string>
     <string name="shelf_displayname_dropped">Dropped</string>
     <string name="detail_field_description">Description</string>
