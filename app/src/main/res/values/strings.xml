@@ -31,6 +31,6 @@
     <string name="common_ok">OK</string>
     <string name="common_cancel">Cancel</string>
     <string name="textfield_instanceUrl_supportingText">Not sure what to enter? For English users, this is usually eggplant.place.</string>
-    <string name="settings_accountSetting">Account Settings</string>
-    <string name="settings_logOut">Log out</string>
+    <string name="settings_account_settings">Account Settings</string>
+    <string name="settings_account_logOut">Log out</string>
 </resources>

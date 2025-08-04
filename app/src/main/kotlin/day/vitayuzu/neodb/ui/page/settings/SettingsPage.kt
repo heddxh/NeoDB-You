@@ -133,7 +133,7 @@ private fun UserProfilePart(
             ) {
                 Icon(Icons.Default.AccountBox, null)
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text(stringResource(R.string.settings_accountSetting), softWrap = false)
+                Text(stringResource(R.string.settings_account_settings), softWrap = false)
             }
             // Log Out
             Button(
@@ -146,7 +146,7 @@ private fun UserProfilePart(
             ) {
                 Icon(Icons.AutoMirrored.Filled.ExitToApp, null)
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text(stringResource(R.string.settings_logOut), softWrap = false)
+                Text(stringResource(R.string.settings_account_logOut), softWrap = false)
             }
         }
     }
