@@ -14,13 +14,20 @@ A native Android app for [NeoDB](https://neodb.net/), crafted with Jetpack Compo
 - Compose and modify your own reviews.
 - Visualize your library with an heat map.
 
-## TODO
+## Checklist for version 1.0
 
 - [ ] Fetch external links when searching.
 - [ ] Revoke token when logout.
-- [ ] Mark history/Timeline for entries.
-- [ ] i18n(currently only chinese).
+- [ ] Show mark history/Timeline for entries.
+- [ ] Check update.
+- [ ] Show open source credits.
 - [ ] You tell me.
+
+## Localization
+
+[![Weblate](https://hosted.weblate.org/widget/neodb-you/multi-auto.svg)](https://hosted.weblate.org/engage/neodb-you/)
+
+Want to help translate the app to your language? For more details or to get started, visit our [Weblate page](https://hosted.weblate.org/engage/neodb-you/).
 
 ## Note
 
