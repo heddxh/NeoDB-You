@@ -3,7 +3,6 @@
     <string name="home_title">首页</string>
     <string name="library_title">标记</string>
     <string name="settings_title">设置</string>
-
     <string name="entry_displayname_book">书籍</string>
     <string name="entry_displayname_movie">电影</string>
     <string name="entry_displayname_tv">电视剧</string>
@@ -12,12 +11,10 @@
     <string name="entry_displayname_podcast">播客</string>
     <string name="entry_displayname_performance">表演</string>
     <string name="entry_displayname_other">其他</string>
-
     <string name="shelf_displayname_wishlist">愿望</string>
     <string name="shelf_displayname_progress">进行中</string>
     <string name="shelf_displayname_completed">已完成</string>
     <string name="shelf_displayname_dropped">抛弃</string>
-
     <string name="detail_field_description">简介</string>
     <string name="textfield_review">评论</string>
     <string name="textfield_postdate">指定日期</string>

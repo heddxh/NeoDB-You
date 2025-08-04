@@ -19,7 +19,7 @@
     <string name="detail_field_description">Description</string>
     <string name="textfield_review">Review</string>
     <string name="textfield_postdate">Set post date</string>
-    <string name="toggle_postToFedi">Post to Fediverse</string>
+    <string name="toggle_postToFedi">Cross-post to Fediverse</string>
     <string name="visibility_displayname_public">Public</string>
     <string name="visibility_displayname_unlisted">Unlisted</string>
     <string name="visibility_displayname_followers">Followers only</string>
