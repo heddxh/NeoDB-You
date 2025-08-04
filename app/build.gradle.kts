@@ -132,10 +132,6 @@ android {
             applicationIdSuffix = ".debug"
             manifestPlaceholders["app_name"] = "NeoDB You Debug"
         }
-
-        androidResources {
-            generateLocaleConfig = true
-        }
     }
 
     packaging {
@@ -151,6 +147,11 @@ android {
 
     buildFeatures {
         compose = true
+    }
+
+    androidResources {
+        @Suppress("UnstableApiUsage")
+        generateLocaleConfig = true
     }
 }
 

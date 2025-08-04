@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -99,7 +100,6 @@ private fun UserProfilePart(
             model = avatar,
             contentDescription = "Your avatar image",
             placeholder = painterResource(R.drawable.avatar_placeholder),
-            fallback = painterResource(R.drawable.avatar_placeholder),
             error = painterResource(R.drawable.avatar_placeholder),
             modifier = Modifier.clip(MaterialTheme.shapes.small),
         )
@@ -133,7 +133,7 @@ private fun UserProfilePart(
             ) {
                 Icon(Icons.Default.AccountBox, null)
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text("Account setting", softWrap = false)
+                Text(stringResource(R.string.settings_accountSetting), softWrap = false)
             }
             // Log Out
             Button(
@@ -146,7 +146,7 @@ private fun UserProfilePart(
             ) {
                 Icon(Icons.AutoMirrored.Filled.ExitToApp, null)
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text("Log out", softWrap = false)
+                Text(stringResource(R.string.settings_logOut), softWrap = false)
             }
         }
     }

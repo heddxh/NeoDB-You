@@ -1,38 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">NeoDB You</string>
-
-    <string name="home_title">首页</string>
-    <string name="library_title">标记</string>
-    <string name="settings_title">设置</string>
-
-    <string name="entry_displayname_book">书籍</string>
-    <string name="entry_displayname_movie">电影</string>
-    <string name="entry_displayname_tv">电视剧</string>
-    <string name="entry_displayname_music">音乐</string>
-    <string name="entry_displayname_game">游戏</string>
-    <string name="entry_displayname_podcast">播客</string>
-    <string name="entry_displayname_performance">表演</string>
-    <string name="entry_displayname_other">其他</string>
-
-    <string name="shelf_displayname_wishlist">愿望</string>
-    <string name="shelf_displayname_progress">进行中</string>
-    <string name="shelf_displayname_completed">已完成</string>
-    <string name="shelf_displayname_dropped">抛弃</string>
-
-    <string name="detail_field_description">简介</string>
-    <string name="textfield_review">评论</string>
-    <string name="textfield_postdate">指定日期</string>
-    <string name="toggle_postToFedi">转发到联邦宇宙</string>
-    <string name="visibility_displayname_public">公开</string>
-    <string name="visibility_displayname_unlisted">不列出</string>
-    <string name="visibility_displayname_followers">仅关注者</string>
-    <string name="textfield_search">搜索名称或支持的外部链接……</string>
-    <string name="textfield_instanceUrl">实例域名</string>
-    <string name="welcome_firstline">欢迎！</string>
-    <string name="welcome_secondline">请输入你的NeoDB实例地址以登录</string>
-    <string name="detail_show_all_reviews">查看所有评论</string>
-    <string name="common_ok">确认</string>
-    <string name="common_cancel">取消</string>
-    <string name="textfield_instanceUrl_supportingText">不知道输入什么？对于中文用户，通常是 neodb.social。</string>
-
+    <string name="home_title">Home</string>
+    <string name="library_title">Library</string>
+    <string name="settings_title">Settings</string>
+    <string name="entry_displayname_book">Book</string>
+    <string name="entry_displayname_movie">Movie</string>
+    <string name="entry_displayname_tv">TV</string>
+    <string name="entry_displayname_music">Music</string>
+    <string name="entry_displayname_game">Game</string>
+    <string name="entry_displayname_podcast">Podcast</string>
+    <string name="entry_displayname_performance">Performance</string>
+    <string name="entry_displayname_other">Others</string>
+    <string name="shelf_displayname_wishlist">Wishlist</string>
+    <string name="shelf_displayname_progress">In Progress</string>
+    <string name="shelf_displayname_completed">Completed</string>
+    <string name="shelf_displayname_dropped">Dropped</string>
+    <string name="detail_field_description">Description</string>
+    <string name="textfield_review">Review</string>
+    <string name="textfield_postdate">Set post date</string>
+    <string name="toggle_postToFedi">Post to Fediverse</string>
+    <string name="visibility_displayname_public">Public</string>
+    <string name="visibility_displayname_unlisted">Unlisted</string>
+    <string name="visibility_displayname_followers">Followers only</string>
+    <string name="textfield_search">Search by name or supported external link…</string>
+    <string name="textfield_instanceUrl">Instance domain</string>
+    <string name="welcome_firstline">Welcome!</string>
+    <string name="welcome_secondline">Enter your NeoDB instance domain to log in</string>
+    <string name="detail_show_all_reviews">Show all reviews</string>
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="textfield_instanceUrl_supportingText">Not sure what to enter? For English users, this is usually eggplant.place.</string>
+    <string name="settings_accountSetting">Account Settings</string>
+    <string name="settings_logOut">Log out</string>
 </resources>
