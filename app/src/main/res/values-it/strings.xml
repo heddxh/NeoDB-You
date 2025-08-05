@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Impostazioni</string>
+    <string name="entry_displayname_book">Libro</string>
+    <string name="entry_displayname_movie">Film</string>
+    <string name="entry_displayname_music">Musica</string>
+    <string name="entry_displayname_game">Gioco</string>
+    <string name="entry_displayname_podcast">Podcast</string>
+    <string name="shelf_displayname_completed">Completato</string>
+    <string name="shelf_displayname_dropped">Lasciato</string>
+    <string name="detail_field_description">Descrizione</string>
+    <string name="textfield_review">Recensione</string>
+    <string name="textfield_postdate">Imposta data di pubblicazione</string>
+    <string name="common_cancel">Cancella</string>
+    <string name="settings_account_settings">Impostazioni dell’account</string>
+    <string name="settings_account_logOut">Esci</string>
+    <string name="library_title">Libreria</string>
+    <string name="entry_displayname_tv">TV</string>
+    <string name="entry_displayname_performance">Esibizione</string>
+    <string name="entry_displayname_other">Altro</string>
+    <string name="shelf_displayname_wishlist">Lista dei desideri</string>
+    <string name="toggle_postToFedi">Condividi nel Fediverso</string>
+    <string name="visibility_displayname_public">Pubblico</string>
+    <string name="visibility_displayname_followers">Solo seguaci</string>
+    <string name="textfield_search">Cerca tramite nome o link esterno supportato…</string>
+    <string name="textfield_instanceUrl">Dominio dell’istanza</string>
+    <string name="welcome_firstline">Salve!</string>
+    <string name="welcome_secondline">Inserisci il dominio della tua istanza NeoDB per accedere</string>
+    <string name="home_title">Home</string>
+    <string name="detail_show_all_reviews">Mostra tutte le recensioni</string>
+    <string name="common_ok">OK</string>
+    <string name="textfield_instanceUrl_supportingText">Non sai cosa inserire? Per gli utenti inglesi solitamente si tratta di eggplant.place.</string>
+    <string name="shelf_displayname_progress">In corso</string>
+    <string name="visibility_displayname_unlisted">Non in elenco</string>
+</resources>
