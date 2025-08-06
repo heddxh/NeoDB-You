@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -44,14 +44,13 @@ fun LibraryPage(
         ) {
             LazyColumn {
                 stickyHeader {
-                    PrimaryTabRow(
-                        selectedTabIndex = ShelfType.entries.indexOf(uiState.selectedShelfType),
-                    ) {
+                    // FIXME: In some locale like Chinese we don't need scrollable row.
+                    PrimaryScrollableTabRow(ShelfType.entries.indexOf(uiState.selectedShelfType)) {
                         for (type in ShelfType.entries) {
                             Tab(
                                 selected = type == uiState.selectedShelfType,
                                 onClick = { viewModel.switchShelfType(type) },
-                                text = { Text(stringResource(type.toR())) },
+                                text = { Text(stringResource(type.toR()), softWrap = false) },
                             )
                         }
                     }
