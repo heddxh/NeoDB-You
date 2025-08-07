@@ -171,11 +171,7 @@ fun LoginPage(modifier: Modifier = Modifier, viewModel: LoginViewModel = hiltVie
                     modifier = Modifier
                         .clickable {
                             scope.launch {
-                                launchAuthTab(
-                                    context,
-                                    uiState.url,
-                                    viewModel::getClientId,
-                                )
+                                launchAuthTab(context, uiState.url, viewModel::getClientId)
                             }
                         },
                 )
@@ -220,19 +216,25 @@ private class UrlOutputTransformation : OutputTransformation {
 
 @Composable
 fun WelcomeWords(modifier: Modifier = Modifier) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Image(
             painterResource(R.drawable.ic_launcher_foreground),
-            null,
-            modifier = Modifier.fillMaxWidth().height(200.dp),
+            "Logo",
+            modifier = Modifier.size(200.dp),
         )
         Text(
             stringResource(R.string.welcome_firstline),
-            style = MaterialTheme.typography.displaySmall,
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier.fillMaxWidth(),
         )
         Text(
             stringResource(R.string.welcome_secondline),
             style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }
