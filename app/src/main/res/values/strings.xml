@@ -33,4 +33,8 @@
     <string name="textfield_instanceUrl_supportingText">Not sure what to enter? For English users, this is usually eggplant.place.</string>
     <string name="settings_account_settings">Account Settings</string>
     <string name="settings_account_logOut">Log out</string>
+    <string name="settings_logincard_welcomewords">Sign in to enjoy your book, movie, music and other collections on NeoDB.</string>
+    <string name="settings_about_version">Version</string>
+    <string name="settings_about_developer">Developer</string>
+    <string name="settings_about_license">License</string>
 </resources>

@@ -99,7 +99,7 @@ private fun LoginPart(modifier: Modifier = Modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(painterResource(R.drawable.ic_launcher_foreground), "Logo")
             Text(
-                "Sign in to enjoy your book, movie, music and other collections on NeoDB.",
+                stringResource(R.string.settings_logincard_welcomewords),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.weight(1f).padding(4.dp),
             )
@@ -187,13 +187,13 @@ private fun AboutCard(modifier: Modifier = Modifier) {
         // Main Card
         Card(modifier = Modifier) {
             AboutField(
-                key = { Text("Version") },
+                key = { Text(stringResource(R.string.settings_about_version)) },
                 value = { Text("1.0.0") },
                 icon = { Icon(Icons.Default.Info, null) },
                 modifier = Modifier.fillMaxWidth(),
             )
             AboutField(
-                key = { Text("Author") },
+                key = { Text(stringResource(R.string.settings_about_developer)) },
                 value = { Text("@heddxh(Yuzu Vita)") },
                 icon = { Icon(Icons.Default.AccountCircle, null) },
                 modifier = Modifier.fillMaxWidth(),
@@ -229,7 +229,7 @@ private fun AboutCard(modifier: Modifier = Modifier) {
                 },
             )
             AboutField(
-                key = { Text("License") },
+                key = { Text(stringResource(R.string.settings_about_license)) },
                 value = {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowForward,
