@@ -93,13 +93,13 @@ private fun configureSigning(signingConfigs: NamedDomainObjectContainer<out Sign
 android {
     signingConfigs { configureSigning(this) }
     namespace = "day.vitayuzu.neodb"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = android.namespace!!
+        targetSdk = android.compileSdk
         minSdk = 24
-        targetSdk = 35
-        versionCode = 1
+        versionCode = 1 // TODO: Verify increment before release
         versionName = "1.0-rc2"
 
         manifestPlaceholders["auth"] = android.namespace!!
