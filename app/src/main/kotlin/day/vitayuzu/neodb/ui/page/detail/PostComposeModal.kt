@@ -3,6 +3,7 @@ package day.vitayuzu.neodb.ui.page.detail
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.placeCursorAtEnd
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -128,100 +130,102 @@ private fun ComposeModalContent(
         }
     }
 
-    Box(modifier = modifier) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        // BUG: https://issuetracker.google.com/issues/436988693
+        // FIXME: Long text will cause padding between first icon and the outer button too small
+        SingleChoiceSegmentedButtonRow(
+            Modifier.horizontalScroll(rememberScrollState()),
         ) {
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                shelfTypes.forEachIndexed { index, button ->
-                    SegmentedButton(
-                        shape = SegmentedButtonDefaults.itemShape(index, 4),
-                        onClick = { selectedShelfTypeIndex = index },
-                        selected = selectedShelfTypeIndex == index,
-                    ) {
-                        Text(stringResource(button.toR()))
-                    }
-                }
-            }
-            // Review content
-            OutlinedTextField(
-                state = commentState,
-                lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 5),
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.textfield_review)) },
-            )
-            // More settings
-            AnimatedVisibility(visible = isShowMoreSettings) {
-                MoreSettingsContent(
-                    postDate = postDate.toDateString(),
-                    isPostToFedi = isPostToFedi,
-                    onTogglePostToFedi = { isPostToFedi = it },
-                    onShowDatePicker = onShowDatePicker,
-                    postVisibility = postVisibility,
-                    onSetVisibility = { postVisibility = it },
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                AnimatedVisibility(visible = selectedShelfTypeIndex != 0) {
-                    Slider(
-                        value = ratingSliderValue,
-                        valueRange = 0f..10f,
-                        steps = 9,
-                        onValueChange = { ratingSliderValue = it },
-                        track = {
-                            StarsWithScores(
-                                size = 36,
-                                rating = ratingSliderValue,
-                                showScores = false,
-                            )
-                        },
-                        thumb = {}, // clear thumb on the bottom
-                    )
-                }
-                Spacer(Modifier.weight(1f))
-                // Toggle showing more settings
-                IconToggleButton(
-                    checked = isShowMoreSettings,
-                    onCheckedChange = { isShowMoreSettings = it },
+            shelfTypes.forEachIndexed { index, button ->
+                SegmentedButton(
+                    shape = SegmentedButtonDefaults.itemShape(index, 4),
+                    onClick = { selectedShelfTypeIndex = index },
+                    selected = selectedShelfTypeIndex == index,
                 ) {
-                    if (isShowMoreSettings) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Show more settings",
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Outlined.Settings,
-                            contentDescription = "Show more settings",
-                        )
-                    }
+                    Text(stringResource(button.toR()), softWrap = false)
                 }
-                // Send
-                Button(
-                    onClick = {
-                        onSend(
-                            MarkInSchema(
-                                shelfType = shelfTypes[selectedShelfTypeIndex],
-                                visibility = postVisibility.ordinal,
-                                commentText = commentState.text.toString(),
-                                ratingGrade = ratingSliderValue.toInt(),
-                                tags = emptyList(), // TODO: allow add tags
-                                createdTime = postDate.toString(),
-                                postToFediverse = isPostToFedi,
-                            ),
+            }
+        }
+        // Review content
+        OutlinedTextField(
+            state = commentState,
+            lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 5),
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.textfield_review)) },
+        )
+        // More settings
+        AnimatedVisibility(visible = isShowMoreSettings) {
+            MoreSettingsContent(
+                postDate = postDate.toDateString(),
+                isPostToFedi = isPostToFedi,
+                onTogglePostToFedi = { isPostToFedi = it },
+                onShowDatePicker = onShowDatePicker,
+                postVisibility = postVisibility,
+                onSetVisibility = { postVisibility = it },
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AnimatedVisibility(visible = selectedShelfTypeIndex != 0) {
+                Slider(
+                    value = ratingSliderValue,
+                    valueRange = 0f..10f,
+                    steps = 9,
+                    onValueChange = { ratingSliderValue = it },
+                    track = {
+                        StarsWithScores(
+                            size = 36,
+                            rating = ratingSliderValue,
+                            showScores = false,
                         )
                     },
-                ) {
+                    thumb = {}, // clear thumb on the bottom
+                )
+            }
+            Spacer(Modifier.weight(1f))
+            // Toggle showing more settings
+            IconToggleButton(
+                checked = isShowMoreSettings,
+                onCheckedChange = { isShowMoreSettings = it },
+            ) {
+                if (isShowMoreSettings) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Send",
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Show more settings",
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = "Show more settings",
                     )
                 }
+            }
+            // Send
+            Button(
+                onClick = {
+                    onSend(
+                        MarkInSchema(
+                            shelfType = shelfTypes[selectedShelfTypeIndex],
+                            visibility = postVisibility.ordinal,
+                            commentText = commentState.text.toString(),
+                            ratingGrade = ratingSliderValue.toInt(),
+                            tags = emptyList(), // TODO: allow add tags
+                            createdTime = postDate.toString(),
+                            postToFediverse = isPostToFedi,
+                        ),
+                    )
+                },
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "Send",
+                )
             }
         }
     }

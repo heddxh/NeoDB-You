@@ -44,8 +44,12 @@ fun LibraryPage(
         ) {
             LazyColumn {
                 stickyHeader {
-                    // FIXME: In some locale like Chinese we don't need scrollable row.
-                    PrimaryScrollableTabRow(ShelfType.entries.indexOf(uiState.selectedShelfType)) {
+                    // FIXME: In some locale like Chinese we don't need scrollable row
+                    //  so it is not centered.
+                    PrimaryScrollableTabRow(
+                        ShelfType.entries.indexOf(uiState.selectedShelfType),
+                        edgePadding = 16.dp,
+                    ) {
                         for (type in ShelfType.entries) {
                             Tab(
                                 selected = type == uiState.selectedShelfType,

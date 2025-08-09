@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,16 +30,19 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -144,35 +149,40 @@ private fun UserProfilePart(
             )
         }
         // Button row
-        Row(
-            modifier = Modifier.width(IntrinsicSize.Max).padding(top = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-        ) {
-            // Account Setting
-            Button(
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors().copy(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                ),
-                onClick = openAccountSetting,
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+            Row(
+                modifier = Modifier
+                    .width(IntrinsicSize.Max)
+                    .height(IntrinsicSize.Min)
+                    .padding(top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
             ) {
-                Icon(Icons.Default.AccountBox, null)
-                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text(stringResource(R.string.settings_account_settings), softWrap = false)
-            }
-            // Log Out
-            Button(
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors().copy(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.error,
-                ),
-                onClick = logOut,
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ExitToApp, null)
-                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text(stringResource(R.string.settings_account_logOut), softWrap = false)
+                // Account Settings
+                Button(
+                    onClick = openAccountSetting,
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    colors = ButtonDefaults.buttonColors().copy(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    ),
+                ) {
+                    Icon(Icons.Default.AccountBox, null)
+                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(stringResource(R.string.settings_account_settings))
+                }
+                // Log Out
+                Button(
+                    onClick = logOut,
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    colors = ButtonDefaults.buttonColors().copy(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.error,
+                    ),
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.ExitToApp, null)
+                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(stringResource(R.string.settings_account_logOut))
+                }
             }
         }
     }
@@ -284,6 +294,18 @@ private fun PreviewUserAvatarAndName() {
                 fediAccount = "@vita_yuzu_wine@neodb.social",
                 modifier = Modifier.fillMaxWidth(),
             )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ButtonTest() {
+    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+        Row(Modifier.height(IntrinsicSize.Min), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(40.dp).background(Color.Cyan))
+            Button(onClick = {}) { Text("1") }
+            Button(onClick = {}, Modifier.fillMaxHeight()) { Text("2") }
         }
     }
 }
