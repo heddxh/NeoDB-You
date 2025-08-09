@@ -32,4 +32,8 @@
     <string name="textfield_instanceUrl_supportingText">Non sai cosa inserire? Per gli utenti inglesi solitamente si tratta di eggplant.place.</string>
     <string name="shelf_displayname_progress">In corso</string>
     <string name="visibility_displayname_unlisted">Non in elenco</string>
+    <string name="settings_about_version">Versione</string>
+    <string name="settings_about_developer">Sviluppatore</string>
+    <string name="settings_about_license">Licenza</string>
+    <string name="settings_logincard_welcomewords">Accedi per godere dei tuoi libri, film, della tua musica e di altre collezioni su NeoDB.</string>
 </resources>

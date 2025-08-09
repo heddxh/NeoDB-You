@@ -32,7 +32,7 @@
     <string name="textfield_instanceUrl_supportingText">不知道输入什么？对于中文用户，通常是 neodb.social。</string>
     <string name="settings_account_settings">账号设置</string>
     <string name="settings_account_logOut">登出</string>
-    <string name="settings_logincard_welcomewords">登录以享受您在 NeoDB 上的书影音收藏</string>
+    <string name="settings_logincard_welcomewords">登录以享受您在 NeoDB 上的书影音收藏。</string>
     <string name="settings_about_version">版本</string>
     <string name="settings_about_developer">开发者</string>
     <string name="settings_about_license">许可证</string>
