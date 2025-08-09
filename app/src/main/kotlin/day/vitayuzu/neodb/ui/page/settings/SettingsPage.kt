@@ -42,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -58,7 +57,11 @@ import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 
 @Composable
-fun SettingsPage(modifier: Modifier = Modifier, viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsPage(
+    modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = hiltViewModel(),
+    openLicensePage: () -> Unit = {},
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     // Refresh everytime entering this page
@@ -88,7 +91,7 @@ fun SettingsPage(modifier: Modifier = Modifier, viewModel: SettingsViewModel = h
             } else { // need login
                 LoginPart()
             }
-            AboutCard()
+            AboutCard(openLicensePage = openLicensePage)
         }
     }
 }
@@ -149,6 +152,8 @@ private fun UserProfilePart(
             )
         }
         // Button row
+        // WORKAROUND: Disable minimum interactive size for button to avoid excessive height
+        //  see: https://developer.android.com/develop/ui/compose/accessibility/api-defaults#minimum-target-sizes
         CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
             Row(
                 modifier = Modifier
@@ -190,7 +195,7 @@ private fun UserProfilePart(
 
 @Preview
 @Composable
-private fun AboutCard(modifier: Modifier = Modifier) {
+private fun AboutCard(modifier: Modifier = Modifier, openLicensePage: () -> Unit = {}) {
     val context = LocalContext.current
     Column(modifier = modifier) {
         Text("About App", Modifier.alpha(.6f).padding(8.dp))
@@ -248,9 +253,7 @@ private fun AboutCard(modifier: Modifier = Modifier) {
                     )
                 },
                 icon = { Icon(painterResource(R.drawable.baseline_balance_24), null) },
-                modifier = Modifier.fillMaxWidth().clickable {
-                    // TODO: Open OSS license page.
-                },
+                modifier = Modifier.fillMaxWidth().clickable(onClick = openLicensePage),
             )
         }
     }
@@ -294,18 +297,6 @@ private fun PreviewUserAvatarAndName() {
                 fediAccount = "@vita_yuzu_wine@neodb.social",
                 modifier = Modifier.fillMaxWidth(),
             )
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun ButtonTest() {
-    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
-        Row(Modifier.height(IntrinsicSize.Min), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(40.dp).background(Color.Cyan))
-            Button(onClick = {}) { Text("1") }
-            Button(onClick = {}, Modifier.fillMaxHeight()) { Text("2") }
         }
     }
 }

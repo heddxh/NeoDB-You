@@ -28,6 +28,9 @@ sealed interface Navi {
         val uuid: String,
     )
 
+    @Serializable
+    data object License : Navi
+
     companion object {
         // Top level screens
         val mainScreens = listOf(

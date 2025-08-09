@@ -13,8 +13,9 @@ plugins {
     alias(libs.plugins.ktorfit)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.google.hilt.android)
+    alias(libs.plugins.aboutlibraries.android)
+    // Ensure KSP version is compatible with Kotlin version
     require(
-        // Ensure KSP version is compatible with Kotlin version
         libs.versions.ksp
             .get()
             .startsWith(libs.versions.kotlin.get()),
@@ -174,6 +175,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     // UI Lib
     implementation(libs.shimmer)
+    implementation(libs.aboutlibraries.m3)
     // Kotlin
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.datetime)

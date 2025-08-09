@@ -47,6 +47,8 @@ import androidx.navigation.toRoute
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.request.crossfade
+import com.mikepenz.aboutlibraries.ui.compose.android.rememberLibraries
+import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import dagger.hilt.android.AndroidEntryPoint
 import day.vitayuzu.neodb.ui.component.SearchModal
 import day.vitayuzu.neodb.ui.model.Entry
@@ -253,7 +255,7 @@ private fun MainNavi(
             )
         }
         composable<Settings> {
-            SettingsPage(modifier = mainScreenModifier)
+            SettingsPage(modifier = mainScreenModifier) { navController.navigate(Navi.License) }
         }
         composable<Navi.Detail> {
             val detailEntry: Navi.Detail = it.toRoute()
@@ -263,6 +265,10 @@ private fun MainNavi(
                 showNewMarkModal = showNewMarkModal,
                 onModalDismiss = onModalDismiss,
             )
+        }
+        composable<Navi.License> {
+            val libraries by rememberLibraries(R.raw.aboutlibraries)
+            LibrariesContainer(libraries, mainScreenModifier)
         }
     }
 }
