@@ -14,14 +14,11 @@ A native Android app for [NeoDB](https://neodb.net/), crafted with Jetpack Compo
 - Compose and modify your own reviews.
 - Visualize your library with an heat map.
 
-## Checklist for version 1.0
+## 1.0 Release Goals
 
-- [ ] Fetch external links when searching.
 - [ ] Revoke token when logout.
-- [ ] Show mark history/Timeline for entries.
 - [ ] Check update.
 - [ ] Show open source credits.
-- [ ] You tell me.
 
 ## Localization
 
