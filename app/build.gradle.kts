@@ -100,8 +100,8 @@ android {
         applicationId = android.namespace!!
         targetSdk = android.compileSdk
         minSdk = 24
-        versionCode = 1 // TODO: Verify increment before release
-        versionName = "1.0-rc2"
+        versionCode = 2 // TODO: Verify increment before release
+        versionName = "1.0-rc3"
 
         manifestPlaceholders["auth"] = android.namespace!!
         manifestPlaceholders["app_name"] = "NeoDB You"
