@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -71,28 +70,27 @@ fun SettingsPage(
 
     val context = LocalContext.current
 
-    Surface(modifier = modifier.fillMaxSize()) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-            if (uiState.isLogin) { // logged in
-                UserProfilePart(
-                    avatar = uiState.avatar,
-                    username = uiState.username,
-                    fediAccount = uiState.fediAccount,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    logOut = viewModel::logout,
-                ) {
-                    try {
-                        val intent = CustomTabsIntent.Builder().build() // TODO: warmup
-                        intent.launchUrl(context, uiState.url.toUri())
-                    } catch (e: Exception) {
-                        Log.e("SettingsPage", "Failed to open ${uiState.url}", e)
-                    }
+    // WORKAROUND: Only add 8dp padding to UserProfilePart to avoid left button wrapping in English locale
+    Column(modifier = modifier.padding(horizontal = 8.dp)) {
+        if (uiState.isLogin) { // logged in
+            UserProfilePart(
+                avatar = uiState.avatar,
+                username = uiState.username,
+                fediAccount = uiState.fediAccount,
+                modifier = Modifier.fillMaxWidth(),
+                logOut = viewModel::logout,
+            ) {
+                try {
+                    val intent = CustomTabsIntent.Builder().build() // TODO: warmup
+                    intent.launchUrl(context, uiState.url.toUri())
+                } catch (e: Exception) {
+                    Log.e("SettingsPage", "Failed to open ${uiState.url}", e)
                 }
-            } else { // need login
-                LoginPart()
             }
-            AboutCard(openLicensePage = openLicensePage)
+        } else { // need login
+            LoginPart(Modifier.padding(horizontal = 8.dp))
         }
+        AboutCard(Modifier.padding(horizontal = 8.dp), openLicensePage = openLicensePage)
     }
 }
 
@@ -128,7 +126,7 @@ private fun UserProfilePart(
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         AsyncImage(
             model = avatar,

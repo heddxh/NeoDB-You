@@ -35,7 +35,7 @@ sealed interface Navi {
         // Top level screens
         val mainScreens = listOf(
             MainScreen(R.string.home_title, Home, Icons.Default.Home),
-            MainScreen(R.string.library_title, Library, Icons.Default.DateRange), // FIXME: library icon
+            MainScreen(R.string.library_title, Library, Icons.Default.DateRange),
             MainScreen(R.string.settings_title, Settings, Icons.Default.Settings),
         )
     }
