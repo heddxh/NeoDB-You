@@ -16,7 +16,7 @@ A native Android app for [NeoDB](https://neodb.net/), crafted with Jetpack Compo
 
 ## 1.0 Release Goals
 
-- [ ] Revoke token when logout.
+- [x] Revoke token when logout.
 - [ ] Check update.
 - [x] Show open source credits.
 

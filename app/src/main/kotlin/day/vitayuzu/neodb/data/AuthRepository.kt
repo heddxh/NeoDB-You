@@ -132,10 +132,14 @@ class AuthRepository @Inject constructor(
     }.log("Exchange access token", tag = "AuthRepository").catch { emit(false) }
 
     /**
-     * Remove all auth data from local storage.
+     * Remove all auth data from local storage and revoke token.
      */
     suspend fun revoke() {
         try {
+            preferenceSource.getAllAuthData()?.let {
+                val (instanceUrl, clientId, clientSecret, token) = it
+                remoteSource.revokeAccessToken(instanceUrl, clientId, clientSecret, token)
+            }
             preferenceSource.deleteAllAuthData()
             ktorfit.httpClient.clearToken()
             _accountStatus.update { AccountStatus() }
@@ -146,8 +150,8 @@ class AuthRepository @Inject constructor(
     }
 
     /**
-     * Manually clear ktor cached tokens, see: https://youtrack.jetbrains.com/issue/KTOR-4759
-     * Workaround found here: https://github.com/kalinjul/kotlin-multiplatform-oidc/blob/95769c578224ccf2da99087c47f2ecbf39bcb1e4/oidc-ktor/src/commonMain/kotlin/org/publicvalue/multiplatform/oidc/ktor/HttpClient%2BclearTokens.kt
+     * WORKAROUND: Manually clear ktor cached tokens, see: https://youtrack.jetbrains.com/issue/KTOR-4759
+     *  see: https://github.com/kalinjul/kotlin-multiplatform-oidc/blob/95769c578224ccf2da99087c47f2ecbf39bcb1e4/oidc-ktor/src/commonMain/kotlin/org/publicvalue/multiplatform/oidc/ktor/HttpClient%2BclearTokens.kt
      */
     private fun HttpClient.clearToken() {
         authProvider<BearerAuthProvider>()?.clearToken()

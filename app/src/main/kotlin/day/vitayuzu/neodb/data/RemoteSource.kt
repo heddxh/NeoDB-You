@@ -67,6 +67,17 @@ class RemoteSource @Inject constructor(
         }
     }
 
+    suspend fun revokeAccessToken(
+        instanceUrl: String,
+        clientId: String,
+        clientSecret: String,
+        token: String,
+    ) = withContext(dispatcher) {
+        api.revokeAccessToken(clientId, clientSecret, token) {
+            url.set("https", instanceUrl, path = "oauth/revoke")
+        }
+    }
+
     // ===========================================< Auth END >============================
 
     suspend fun fetchMyShelf(type: ShelfType, page: Int = 1): PagedMarkSchema =
@@ -150,6 +161,15 @@ interface NeoDbApi {
         @Field("grant_type") grantType: String = "authorization_code",
         @ReqBuilder ext: HttpRequestBuilder.() -> Unit = {},
     ): TokenSchema
+
+    @POST("oauth/revoke")
+    @FormUrlEncoded
+    suspend fun revokeAccessToken(
+        @Field("client_id") clientId: String,
+        @Field("client_secret") clientSecret: String,
+        @Field("token") token: String,
+        @ReqBuilder ext: HttpRequestBuilder.() -> Unit = {},
+    )
 
     // ===========================================< Auth END >============================
 

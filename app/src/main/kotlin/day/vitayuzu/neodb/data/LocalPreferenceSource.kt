@@ -65,6 +65,17 @@ class LocalPreferenceSource @Inject constructor(private val dataStore: DataStore
         }
     }
 
+    /**
+     * Helper function to get all auth data from local storage,
+     * or null if some of them are missing.
+     */
+    suspend fun getAllAuthData() = listOfNotNull(
+        get(INSTANCE_URL),
+        get(CLIENT_ID),
+        get(CLIENT_SECRET),
+        get(ACCESS_TOKEN),
+    ).let { if (it.size == 4) it else null }
+
     companion object {
         val INSTANCE_URL = stringPreferencesKey("instance_url")
         val CLIENT_ID = stringPreferencesKey("client_id")
