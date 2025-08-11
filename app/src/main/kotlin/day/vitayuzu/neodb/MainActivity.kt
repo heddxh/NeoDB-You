@@ -237,6 +237,7 @@ private fun MainTopBar(
  * Main navigation for the app.
  * Control which screen to show in the [MainScaffold].
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainNavi(
     navController: NavHostController,
@@ -290,7 +291,7 @@ private fun MainNavi(
         }
         composable<Navi.License> {
             val libraries by rememberLibraries(R.raw.aboutlibraries)
-            LibrariesContainer(libraries, mainScreenModifier)
+            LibrariesContainer(libraries, contentPadding = insetsPaddingValues)
         }
     }
 }
