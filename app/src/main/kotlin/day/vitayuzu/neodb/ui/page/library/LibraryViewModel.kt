@@ -3,7 +3,7 @@ package day.vitayuzu.neodb.ui.page.library
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import day.vitayuzu.neodb.data.Repository
+import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
@@ -22,7 +22,7 @@ import kotlin.time.ExperimentalTime
 // FIXME: May move filtering to UI(LibraryPage)
 // FIXME: make refreshDisplayedMarks() and generateHeatMap() pure functions and only call in refresh()
 @HiltViewModel
-class LibraryViewModel @Inject constructor(private val repo: Repository) : ViewModel() {
+class LibraryViewModel @Inject constructor(private val repo: NeoDBRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(LibraryUiState())
     val uiState = _uiState.asStateFlow()
 

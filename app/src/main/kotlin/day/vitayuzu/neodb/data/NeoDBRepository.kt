@@ -3,13 +3,9 @@ package day.vitayuzu.neodb.data
 import android.util.Log
 import day.vitayuzu.neodb.data.schema.HasPages
 import day.vitayuzu.neodb.data.schema.MarkInSchema
-import day.vitayuzu.neodb.data.schema.MarkSchema
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
-import day.vitayuzu.neodb.data.schema.PaginatedPostList
 import day.vitayuzu.neodb.data.schema.ResultSchema
-import day.vitayuzu.neodb.data.schema.SearchResult
 import day.vitayuzu.neodb.data.schema.TrendingItemSchema
-import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,36 +21,19 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 
-interface Repository {
-    fun fetchMyAllShelf(): Flow<PagedMarkSchema>
-
-    fun fetchTrending(): Flow<Map<EntryType, List<TrendingItemSchema>>>
-
-    fun fetchDetail(type: EntryType, uuid: String): Flow<DetailSchema>
-
-    fun fetchItemPosts(uuid: String): Flow<PaginatedPostList>
-
-    fun fetchItemUserMark(uuid: String): Flow<MarkSchema>
-
-    fun postMark(uuid: String, data: MarkInSchema): Flow<ResultSchema>
-
-    fun searchWithKeyword(keywords: String): Flow<SearchResult>
-}
-
-class RealRepository @Inject constructor(private val remoteSource: RemoteSource) : Repository {
+class NeoDBRepository @Inject constructor(private val remoteSource: RemoteSource) {
 
     // Concurrently fetch all shelves
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun fetchMyAllShelf(): Flow<PagedMarkSchema> =
-        flowOf(*ShelfType.entries.toTypedArray())
-            .cancellable()
-            .flatMapMerge {
-                fetchMyShelfByShelfType(it)
-            }
+    fun fetchMyAllShelf(): Flow<PagedMarkSchema> = flowOf(*ShelfType.entries.toTypedArray())
+        .cancellable()
+        .flatMapMerge {
+            fetchMyShelfByShelfType(it)
+        }
 
     // Concurrently fetch all trending, return a map of type to trending
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun fetchTrending(): Flow<Map<EntryType, List<TrendingItemSchema>>> {
+    fun fetchTrending(): Flow<Map<EntryType, List<TrendingItemSchema>>> {
         val typeInTrending = listOf(
             EntryType.book,
             EntryType.movie,
@@ -80,11 +59,11 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
         remoteSource.fetchMyShelf(shelfType, page)
     }.log(shelfType.toString())
 
-    override fun fetchDetail(type: EntryType, uuid: String) = flow {
+    fun fetchDetail(type: EntryType, uuid: String) = flow {
         emit(remoteSource.fetchDetail(type, uuid))
     }.log("$type $uuid")
 
-    override fun fetchItemPosts(uuid: String) = pagedRequest { page ->
+    fun fetchItemPosts(uuid: String) = pagedRequest { page ->
         remoteSource.fetchItemPosts(uuid, "comment", page)
     }.log("comment in $uuid")
 
@@ -97,15 +76,15 @@ class RealRepository @Inject constructor(private val remoteSource: RemoteSource)
         }
     }
 
-    override fun fetchItemUserMark(uuid: String) = flow {
+    fun fetchItemUserMark(uuid: String) = flow {
         emit(remoteSource.fetchItemUserMark(uuid))
     }.log("fetch user mark in $uuid")
 
-    override fun postMark(uuid: String, data: MarkInSchema) = flow {
+    fun postMark(uuid: String, data: MarkInSchema) = flow {
         emit(remoteSource.postMark(uuid, data))
     }.validate().log("post mark in $uuid")
 
-    override fun searchWithKeyword(keywords: String) = pagedRequest {
+    fun searchWithKeyword(keywords: String) = pagedRequest {
         remoteSource.searchWithKeywords(keywords, null, it)
     }.log("search with keyword $keywords")
 }

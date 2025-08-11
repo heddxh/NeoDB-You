@@ -105,8 +105,6 @@ android {
 
         manifestPlaceholders["auth"] = android.namespace!!
         manifestPlaceholders["app_name"] = "NeoDB You"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -137,9 +135,9 @@ android {
 
     packaging {
         // https://issuetracker.google.com/issues/356109544
-        jniLibs.keepDebugSymbols +=
-            "**/libandroidx.graphics.path.so" +
-            "**/libdatastore_shared_counter.so"
+        jniLibs.keepDebugSymbols.addAll(
+            setOf("**/libandroidx.graphics.path.so", "**/libdatastore_shared_counter.so"),
+        )
         // https://github.com/Kotlin/kotlinx.coroutines?tab=readme-ov-file#avoiding-including-the-debug-infrastructure-in-the-resulting-apk
         // https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-debug/README.md#debug-agent-and-android
         // https://youtrack.jetbrains.com/issue/IDEA-335195
@@ -165,7 +163,7 @@ dependencies {
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     // androidTestImplementation(composeBom)
-    debugImplementation(composeBom)
+    // debugImplementation(composeBom)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icon.core)
     implementation(libs.androidx.ui.tooling)

@@ -6,7 +6,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import day.vitayuzu.neodb.data.Repository
+import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.data.schema.MarkInSchema
 import day.vitayuzu.neodb.ui.model.Detail
 import day.vitayuzu.neodb.ui.model.Mark
@@ -26,7 +26,7 @@ import kotlin.time.ExperimentalTime
 class DetailViewModel @AssistedInject constructor(
     @Assisted val type: EntryType,
     @Assisted val uuid: String, // FIXME: tv is kinds of confusing, should be season instead of show
-    private val repo: Repository,
+    private val repo: NeoDBRepository,
 ) : ViewModel() {
 
     @AssistedFactory

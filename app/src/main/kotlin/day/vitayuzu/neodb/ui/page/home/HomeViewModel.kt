@@ -3,7 +3,7 @@ package day.vitayuzu.neodb.ui.page.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import day.vitayuzu.neodb.data.Repository
+import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.util.EntryType
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(private val repo: Repository) : ViewModel() {
+class HomeViewModel @Inject constructor(private val repo: NeoDBRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
