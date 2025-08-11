@@ -1,6 +1,7 @@
 package day.vitayuzu.neodb.data
 
 import day.vitayuzu.neodb.data.schema.AuthClientIdentify
+import day.vitayuzu.neodb.data.schema.GithubLatestReleaseSchema
 import day.vitayuzu.neodb.data.schema.InstanceSchema
 import day.vitayuzu.neodb.data.schema.MarkInSchema
 import day.vitayuzu.neodb.data.schema.MarkSchema
@@ -22,6 +23,7 @@ import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.Field
 import de.jensklingenberg.ktorfit.http.FormUrlEncoded
 import de.jensklingenberg.ktorfit.http.GET
+import de.jensklingenberg.ktorfit.http.Headers
 import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
@@ -125,6 +127,10 @@ class RemoteSource @Inject constructor(
     ): SearchResult = withContext(dispatcher) {
         api.searchWithKeywords(keywords, category, page)
     }
+
+    suspend fun getLatestVersionFromGithub() = withContext(dispatcher) {
+        api.getLatestVersionFromGithub()
+    }
 }
 
 /**
@@ -217,4 +223,8 @@ interface NeoDbApi {
         @Query("category") category: EntryType?,
         @Query("page") page: Int,
     ): SearchResult
+
+    @GET("https://api.github.com/repos/heddxh/NeoDB-You/releases/latest")
+    @Headers("Accept: application/vnd.github+json", "X-GitHub-Api-Version: 2022-11-28")
+    suspend fun getLatestVersionFromGithub(): GithubLatestReleaseSchema
 }

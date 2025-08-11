@@ -146,6 +146,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     androidResources {
@@ -193,6 +194,6 @@ dependencies {
     implementation(libs.datastore.preferences)
     implementation(libs.ktor.client.auth)
     implementation(libs.androidx.browser)
-    // Test
-    testImplementation(libs.junit4)
+    // Other
+    implementation(libs.versionCompare)
 }

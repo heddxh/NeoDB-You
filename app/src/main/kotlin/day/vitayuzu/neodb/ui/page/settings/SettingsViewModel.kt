@@ -8,6 +8,7 @@ import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.schema.UserSchema
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,6 +18,10 @@ class SettingsViewModel @Inject constructor(private val repo: AuthRepository) : 
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState = _uiState.asStateFlow()
+
+    init {
+        _uiState.update { it.copy(newVersionUrl = repo.newVersionUrl.value) }
+    }
 
     fun refresh() {
         viewModelScope.launch {
@@ -50,6 +55,14 @@ class SettingsViewModel @Inject constructor(private val repo: AuthRepository) : 
         }
     }
 
+    fun checkUpdate() {
+        viewModelScope.launch {
+            repo.checkUpdate().lastOrNull()?.let { versionInfo ->
+                _uiState.update { it.copy(newVersionUrl = versionInfo.htmlUrl) }
+            }
+        }
+    }
+
     private companion object {
         fun UserSchema.getFediAccount(): String? {
             val rawAddress = this.externalAccounts.find { it.platform == "mastodon" }?.handle
@@ -68,4 +81,5 @@ data class SettingsUiState(
     val avatar: String? = null,
     val username: String = "",
     val fediAccount: String? = null,
+    val newVersionUrl: String? = null,
 )

@@ -1,6 +1,5 @@
 package day.vitayuzu.neodb.ui.page.settings
 
-import android.R.attr.text
 import android.content.Intent
 import android.util.Log
 import androidx.browser.customtabs.CustomTabsIntent
@@ -25,6 +24,8 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -51,6 +52,7 @@ import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import day.vitayuzu.neodb.BuildConfig
 import day.vitayuzu.neodb.OauthActivity
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
@@ -90,7 +92,12 @@ fun SettingsPage(
         } else { // need login
             LoginPart(Modifier.padding(horizontal = 8.dp))
         }
-        AboutCard(Modifier.padding(horizontal = 8.dp), openLicensePage = openLicensePage)
+        AboutCard(
+            Modifier.padding(horizontal = 8.dp),
+            newVersionUrl = uiState.newVersionUrl,
+            openLicensePage = openLicensePage,
+            checkUpdate = viewModel::checkUpdate,
+        )
     }
 }
 
@@ -193,18 +200,48 @@ private fun UserProfilePart(
 
 @Preview
 @Composable
-private fun AboutCard(modifier: Modifier = Modifier, openLicensePage: () -> Unit = {}) {
+private fun AboutCard(
+    modifier: Modifier = Modifier,
+    newVersionUrl: String? = null,
+    openLicensePage: () -> Unit = {},
+    checkUpdate: () -> Unit = {},
+) {
     val context = LocalContext.current
+    val intent = CustomTabsIntent.Builder().build()
     Column(modifier = modifier) {
         Text("About App", Modifier.alpha(.6f).padding(8.dp))
         // Main Card
         Card(modifier = Modifier) {
+            // Version
             AboutField(
                 key = { Text(stringResource(R.string.settings_about_version)) },
-                value = { Text("1.0.0") },
-                icon = { Icon(Icons.Default.Info, null) },
-                modifier = Modifier.fillMaxWidth(),
+                value = {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (newVersionUrl != null) Text("Go to release page", Modifier.alpha(.6f))
+                        Text(BuildConfig.VERSION_NAME)
+                    }
+                },
+                icon = {
+                    BadgedBox(
+                        badge = {
+                            if (newVersionUrl != null) Badge()
+                        },
+                    ) {
+                        Icon(Icons.Default.Info, null)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().clickable {
+                    if (newVersionUrl != null) {
+                        intent.launchUrl(context, newVersionUrl.toUri())
+                    } else {
+                        checkUpdate()
+                    }
+                },
             )
+            // Developer
             AboutField(
                 key = { Text(stringResource(R.string.settings_about_developer)) },
                 value = { Text("@heddxh(Yuzu Vita)") },
@@ -230,15 +267,10 @@ private fun AboutCard(modifier: Modifier = Modifier, openLicensePage: () -> Unit
                     )
                 },
                 modifier = Modifier.fillMaxWidth().clickable {
-                    try {
-                        val intent = CustomTabsIntent.Builder().build()
-                        intent.launchUrl(
-                            context,
-                            "https://github.com/heddxh/NeoDB-You".toUri(),
-                        )
-                    } catch (e: Exception) {
-                        Log.e("SettingsPage", "Failed to open $text", e)
-                    }
+                    intent.launchUrl(
+                        context,
+                        "https://github.com/heddxh/NeoDB-You".toUri(),
+                    )
                 },
             )
             AboutField(
@@ -272,14 +304,13 @@ fun AboutField(
             icon()
         }
         Spacer(Modifier.width(8.dp))
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                key()
-                value()
-            }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            key()
+            value()
         }
     }
 }

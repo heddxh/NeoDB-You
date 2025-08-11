@@ -107,6 +107,10 @@ object NetworkModule {
                 }
                 install(Auth) {
                     bearer {
+                        // Skip auth header
+                        sendWithoutRequest {
+                            !it.url.host.contains("api.github.com")
+                        }
                         loadTokens {
                             // Will be cached until process die, use clearToken() to refresh.
                             // See: AuthRepository.kt

@@ -1,6 +1,7 @@
 package day.vitayuzu.neodb.data
 
 import android.util.Log
+import day.vitayuzu.neodb.BuildConfig
 import day.vitayuzu.neodb.data.LocalPreferenceSource.Companion.ACCESS_TOKEN
 import day.vitayuzu.neodb.data.LocalPreferenceSource.Companion.CLIENT_ID
 import day.vitayuzu.neodb.data.LocalPreferenceSource.Companion.CLIENT_SECRET
@@ -8,6 +9,7 @@ import day.vitayuzu.neodb.data.LocalPreferenceSource.Companion.INSTANCE_URL
 import day.vitayuzu.neodb.data.schema.InstanceSchema
 import day.vitayuzu.neodb.data.schema.UserSchema
 import de.jensklingenberg.ktorfit.Ktorfit
+import io.github.g00fy2.versioncompare.Version
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.auth.authProvider
@@ -36,13 +38,36 @@ class AuthRepository @Inject constructor(
 
     val instanceUrl get() = preferenceSource.instanceUrl
 
+    private val _newVersionUrl = MutableStateFlow<String?>(null)
+    val newVersionUrl = _newVersionUrl.asStateFlow()
+
     init {
         // Intercept request host if instanceUrl is set.
         ktorfit.httpClient.plugin(HttpSend).intercept { request ->
-            if (instanceUrl != null) {
+            if (request.url.host.contains("api.github.com")) {
+                return@intercept execute(request)
+            }
+            if (instanceUrl != null && accountStatus.value.isLogin) { // double check login status
                 request.url.host = instanceUrl.toString() // can't smart cast here
             }
             execute(request)
+        }
+    }
+
+    /**
+     * Check update from GitHub latest release. If there is a new version,
+     * emit related information and update [newVersionUrl].
+     */
+    fun checkUpdate() = flow {
+        runCatching {
+            with(remoteSource.getLatestVersionFromGithub()) {
+                if (Version(tagName.drop(1)) > Version(BuildConfig.VERSION_NAME)) {
+                    emit(this)
+                    _newVersionUrl.update { htmlUrl }
+                }
+            }
+        }.onFailure { e ->
+            Log.e("AuthRepository", "Failed to check update", e)
         }
     }
 
