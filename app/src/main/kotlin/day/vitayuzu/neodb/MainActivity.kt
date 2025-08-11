@@ -1,6 +1,7 @@
 package day.vitayuzu.neodb
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -34,7 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -50,6 +51,8 @@ import coil3.request.crossfade
 import com.mikepenz.aboutlibraries.ui.compose.android.rememberLibraries
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import dagger.hilt.android.AndroidEntryPoint
+import day.vitayuzu.neodb.data.AuthRepository
+import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.ui.component.SearchModal
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
@@ -66,10 +69,17 @@ import day.vitayuzu.neodb.util.Navi.Library
 import day.vitayuzu.neodb.util.Navi.Settings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.lastOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject lateinit var neoDBRepository: NeoDBRepository
+
+    @Inject lateinit var authRepository: AuthRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -80,10 +90,22 @@ class MainActivity : ComponentActivity() {
                 .build()
         }
 
+        lifecycleScope.launch { authRepository.updateAccountStatus() }
+        lifecycleScope.launch {
+            authRepository.checkUpdate().lastOrNull()?.let {
+                Log.d("MainActivity", "Latest version: ${it.tagName}")
+            }
+        }
+
         enableEdgeToEdge()
         setContent {
             NeoDBYouTheme {
-                MainScaffold()
+                MainScaffold { keywords ->
+                    // onSearch
+                    neoDBRepository.searchWithKeyword(keywords).map { searchResult ->
+                        searchResult.data.map { Entry(it) }
+                    }
+                }
             }
         }
     }
@@ -96,7 +118,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun MainScaffold(
     modifier: Modifier = Modifier,
-    viewModel: MainActivityViewModel = viewModel(),
+    onSearch: (String) -> Flow<List<Entry>> = { flowOf() },
 ) {
     val navController = rememberNavController()
     val currentBackStack by navController.currentBackStackEntryAsState()
@@ -111,7 +133,7 @@ private fun MainScaffold(
     Scaffold(
         modifier = modifier,
         topBar = {
-            MainTopBar(currentMainScreen, viewModel::search) { type, uuid ->
+            MainTopBar(currentMainScreen, onSearch) { type, uuid ->
                 navController.navigate(Navi.Detail(type, uuid))
             }
         },
