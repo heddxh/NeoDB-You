@@ -78,6 +78,11 @@ class DetailViewModel @AssistedInject constructor(
                 loadingReviewsJob?.cancelAndJoin()
             }
 
+            @Suppress(
+                "ktlint:standard:chain-method-continuation",
+                "ktlint:standard:comment-wrapping",
+                "ktlint:standard:comment-wrapping",
+            )
             repo
                 .fetchItemPosts(uuid)
                 ./*buffer().*/collect { postList ->

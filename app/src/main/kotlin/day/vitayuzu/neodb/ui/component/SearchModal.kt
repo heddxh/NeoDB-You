@@ -50,7 +50,6 @@ import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
-@Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun SearchModal(
