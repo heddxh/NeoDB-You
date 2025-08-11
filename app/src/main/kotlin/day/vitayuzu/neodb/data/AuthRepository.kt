@@ -47,7 +47,7 @@ class AuthRepository @Inject constructor(
             if (request.url.host.contains("api.github.com")) {
                 return@intercept execute(request)
             }
-            if (instanceUrl != null && accountStatus.value.isLogin) { // double check login status
+            if (instanceUrl != null) {
                 request.url.host = instanceUrl.toString() // can't smart cast here
             }
             execute(request)
