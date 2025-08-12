@@ -13,6 +13,8 @@
 
 # NeoDB You
 
+[简体中文](https://github.com/heddxh/neodb-you/docs/README_zh.md)
+
 A native Android App for [NeoDB](https://neodb.net/), crafted with Jetpack Compose and Material 3.
 
 > NeoDB is an open-source software and global community platform since 2021.
@@ -22,7 +24,7 @@ A native Android App for [NeoDB](https://neodb.net/), crafted with Jetpack Compo
 > NeoDB integrates the functionalities of platforms like Goodreads, Letterboxd, RateYourMusic, and Podchaser, among others.
 > It also supports self-hosting and interconnection through containerized deployment and the ActivityPub protocol.
 
-I develop this App on my free time. Left your Stars if you like it ;)
+I develop this app in my free time. Leave a star if you like it ;)
 
 ## Screenshots
 <img alt="home" height="500" src="docs/img/home.png"/><img alt="library.png" height="500" src="docs/img/library.png"/><img alt="settings.png" height="500" src="docs/img/settings.png"/><img alt="detail.png" height="500" src="docs/img/detail.png"/>
@@ -49,16 +51,16 @@ Want to help translate the app to your language? Visit our [Weblate page](https:
 
 ## FAQ
 
-1. `The requested scope is invalid, unknown, or malformed.` when login.
+1. **Why do I see `The requested scope is invalid, unknown, or malformed.` when I log in?**
 
-    Type your **NeoDB** server domain instead of your fediverse/mastodon domain. For English user, it is most likely `eggplant.place`.
+    Type your **NeoDB** server domain instead of your fediverse/mastodon domain. For English users, it is most likely `eggplant.place`.
     For Chinese user, `neodb.social`.
 
-2. Some feature broken on my server.
+2. **Some features are broken on my server.**
    
     Currently only test on [neodb.social](https://neodb.social/)
     and [eggplant.place](https://eggplant.place/).
-    If you are using other server and meet promblems, open a issue!
+    If you are using another server and encounter problems, please open an issue!
 
 ## Credits
 
