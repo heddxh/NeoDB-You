@@ -34,7 +34,6 @@ jobs:
         run: |
           set -e
           VERSION=${{ github.ref_name }}
-          VERSION=${VERSION#v}
           echo "Release version is: $VERSION"
           
           APK_DIR="app/build/outputs/apk/release"
