@@ -1,5 +1,5 @@
 <div align="center">
-    <img width="200" height="200" style="display: block;" src="icon.svg">
+    <img alt="App Logo" width="200" height="200" style="display: block;" src="../icon.svg">
 </div>
 <div align="center">
     <a href="https://github.com/heddxh/NeoDB-You/actions/workflows/nightly.yml"><img src="https://img.shields.io/github/actions/workflow/status/heddxh/neodb-you/nightly.yml?style=for-the-badge&amp;logo=github&amp;label=Nightly" alt="Nightly build"></a>
@@ -25,7 +25,8 @@
 这个应用是我在业余时间开发的。如果你喜欢它，请给我点个 Star ;)
 
 ## 截图
-<img alt="home" height="500" src="docs/img/home.png"/><img alt="library.png" height="500" src="docs/img/library.png"/><img alt="settings.png" height="500" src="docs/img/settings.png"/><img alt="detail.png" height="500" src="docs/img/detail.png"/>
+
+<img alt="home" height="400" src="img/cn/home.png"/><img alt="library.png" height="400" src="img/cn/library.png"/><img alt="settings.png" height="400" src="img/cn/settings.png"/><img alt="detail.png" height="400" src="img/detail.png"/>
 
 ## 功能
 
@@ -39,7 +40,8 @@
 ## 下载
 
 - 公开发行版: [GitHub Release](https://github.com/heddxh/NeoDB-You/releases/)
-- 每夜版: [GitHub Actions](https://github.com/heddxh/NeoDB-You/actions/workflows/nightly.yml)。解压构件并安装 apk。
+- 每夜版: [GitHub Actions](https://github.com/heddxh/NeoDB-You/actions/workflows/nightly.yml)
+  。解压构件并安装 apk。
 
 ## 本地化
 
@@ -51,14 +53,15 @@
 
 1. **登录时为什么会显示 “The requested scope is invalid, unknown, or malformed.”？**
 
-    请键入你的 **NeoDB** 服务器域名，而不是你的 Fediverse/Mastodon 域名。对于中文用户，很可能是 `neodb.social`。
-    对于英文用户，很可能是 `eggplant.place`。
+   请键入你的 **NeoDB** 服务器域名，而不是你的 Fediverse/Mastodon 域名。对于中文用户，很可能是
+   `neodb.social`。
+   对于英文用户，很可能是 `eggplant.place`。
 
 2. **在我的服务器上某些功能无法正常使用。**
-   
-    目前只在 [neodb.social](https://neodb.social/)
-    和 [eggplant.place](https://eggplant.place/) 上进行了测试。
-    如果你在使用其他服务器时遇到问题，请提交一个 issue！
+
+   目前只在 [neodb.social](https://neodb.social/)
+   和 [eggplant.place](https://eggplant.place/) 上进行了测试。
+   如果你在使用其他服务器时遇到问题，请提交一个 issue！
 
 ## 致谢
 
@@ -76,6 +79,10 @@
 
 感谢 [NeoDB](https://neodb.net/) 为 Fediverse 打造了这个令人难以置信的平台。
 
-<img  width="200" height="200" src="https://github.com/Piecelet/neodb-app/raw/main/NeoDB/NeoDB/Assets.xcassets/AppIcon.appiconset/1024x1024%20copy%202%401x.png"> 
+<img alt="Piecelet logo" width="200" height="200" src="https://github.com/Piecelet/neodb-app/raw/main/NeoDB/NeoDB/Assets.xcassets/AppIcon.appiconset/1024x1024%20copy%202%401x.png"> 
 
 感谢 [Piecelet](https://github.com/Piecelet/neodb-app) 激励我创建这个项目。
+
+![LineageOS](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/LineageOS_Wordmark.svg/375px-LineageOS_Wordmark.svg.png)
+
+感谢 [LineageOS](https://lineageos.org/)，没有他们我就没有运行 Android15 的实体机了（Pixel 4 XL）。

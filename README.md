@@ -1,5 +1,5 @@
 <div align="center">
-    <img width="200" height="200" style="display: block;" src="icon.svg">
+    <img alt="App Logo" width="200" height="200" style="display: block;" src="icon.svg">
 </div>
 <div align="center">
     <a href="https://github.com/heddxh/NeoDB-You/actions/workflows/nightly.yml"><img src="https://img.shields.io/github/actions/workflow/status/heddxh/neodb-you/nightly.yml?style=for-the-badge&amp;logo=github&amp;label=Nightly" alt="Nightly build"></a>
@@ -18,15 +18,20 @@
 A native Android App for [NeoDB](https://neodb.net/), crafted with Jetpack Compose and Material 3.
 
 > NeoDB is an open-source software and global community platform since 2021.
-> It helps users to manage and explore collections, reviews, and ratings for various cultural products,
+> It helps users to manage and explore collections, reviews, and ratings for various cultural
+> products,
 > including books, movies, music, podcasts, games, and performances.
-> Additionally, users can share their collections, publish microblogs, and engage with others in the Fediverse.
-> NeoDB integrates the functionalities of platforms like Goodreads, Letterboxd, RateYourMusic, and Podchaser, among others.
-> It also supports self-hosting and interconnection through containerized deployment and the ActivityPub protocol.
+> Additionally, users can share their collections, publish microblogs, and engage with others in the
+> Fediverse.
+> NeoDB integrates the functionalities of platforms like Goodreads, Letterboxd, RateYourMusic, and
+> Podchaser, among others.
+> It also supports self-hosting and interconnection through containerized deployment and the
+> ActivityPub protocol.
 
 I develop this app in my free time. Leave a star if you like it ;)
 
 ## Screenshots
+
 <img alt="home" height="500" src="docs/img/home.png"/><img alt="library.png" height="500" src="docs/img/library.png"/><img alt="settings.png" height="500" src="docs/img/settings.png"/><img alt="detail.png" height="500" src="docs/img/detail.png"/>
 
 ## Features
@@ -41,26 +46,29 @@ I develop this app in my free time. Leave a star if you like it ;)
 ## Download
 
 - Public release: [GitHub Release](https://github.com/heddxh/NeoDB-You/releases/)
-- Nightly: [GitHub Actions](https://github.com/heddxh/NeoDB-You/actions/workflows/nightly.yml). Unzip the artifact and install the apk.
+- Nightly: [GitHub Actions](https://github.com/heddxh/NeoDB-You/actions/workflows/nightly.yml).
+  Unzip the artifact and install the apk.
 
 ## Localization
 
 [![Weblate](https://hosted.weblate.org/widget/neodb-you/multi-auto.svg)](https://hosted.weblate.org/engage/neodb-you/)
 
-Want to help translate the app to your language? Visit our [Weblate page](https://hosted.weblate.org/engage/neodb-you/).
+Want to help translate the app to your language? Visit
+our [Weblate page](https://hosted.weblate.org/engage/neodb-you/).
 
 ## FAQ
 
 1. **Why do I see `The requested scope is invalid, unknown, or malformed.` when I log in?**
 
-    Type your **NeoDB** server domain instead of your fediverse/mastodon domain. For English users, it is most likely `eggplant.place`.
-    For Chinese user, `neodb.social`.
+   Type your **NeoDB** server domain instead of your fediverse/mastodon domain. For English users,
+   it is most likely `eggplant.place`.
+   For Chinese user, `neodb.social`.
 
 2. **Some features are broken on my server.**
-   
-    Currently only test on [neodb.social](https://neodb.social/)
-    and [eggplant.place](https://eggplant.place/).
-    If you are using another server and encounter problems, please open an issue!
+
+   Currently only test on [neodb.social](https://neodb.social/)
+   and [eggplant.place](https://eggplant.place/).
+   If you are using another server and encounter problems, please open an issue!
 
 ## Credits
 
@@ -78,6 +86,11 @@ Want to help translate the app to your language? Visit our [Weblate page](https:
 
 Thanks to [NeoDB](https://neodb.net/) for making the incredible platform for Fediverse.
 
-<img  width="200" height="200" src="https://github.com/Piecelet/neodb-app/raw/main/NeoDB/NeoDB/Assets.xcassets/AppIcon.appiconset/1024x1024%20copy%202%401x.png"> 
+<img alt="Piecelet logo" width="200" height="200" src="https://github.com/Piecelet/neodb-app/raw/main/NeoDB/NeoDB/Assets.xcassets/AppIcon.appiconset/1024x1024%20copy%202%401x.png"> 
 
 Thanks to [Piecelet](https://github.com/Piecelet/neodb-app) for inspiring me to create this project.
+
+![LineageOS](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/LineageOS_Wordmark.svg/375px-LineageOS_Wordmark.svg.png)
+
+Thanks to [LineageOS](https://lineageos.org/), I wouldn't have a physical device (Pixel 4 XL)
+running Android 15 without them.
