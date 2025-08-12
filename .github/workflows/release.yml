@@ -38,11 +38,11 @@ jobs:
           echo "Release version is: $VERSION"
           
           APK_DIR="app/build/outputs/apk/release"
-          mv ${APK_DIR}/app-arm64-v8a-release.apk NeoDBYou-arm64-v8a-${{ GITHUB_REF_NAME }}.apk
-          mv ${APK_DIR}/app-armeabi-v7a-release.apk NeoDBYou-armeabi-v7a-${{ GITHUB_REF_NAME }}.apk
-          mv ${APK_DIR}/app-x86-release.apk NeoDBYou-x86-${{ GITHUB_REF_NAME }}.apk
-          mv ${APK_DIR}/app-x86_64-release.apk NeoDBYou-x86_64-{{ GITHUB_REF_NAME }}.apk
-          mv ${APK_DIR}/app-universal-release.apk NeoDBYou-universal-{{ GITHUB_REF_NAME }}.apk
+          mv ${APK_DIR}/app-arm64-v8a-release.apk NeoDBYou-arm64-v8a-${VERSION}.apk
+          mv ${APK_DIR}/app-armeabi-v7a-release.apk NeoDBYou-armeabi-v7a-${VERSION}.apk
+          mv ${APK_DIR}/app-x86-release.apk NeoDBYou-x86-${VERSION}.apk
+          mv ${APK_DIR}/app-x86_64-release.apk NeoDBYou-x86_64-${VERSION}.apk
+          mv ${APK_DIR}/app-universal-release.apk NeoDBYou-universal-${VERSION}.apk
           
       - name: Release
         uses: ncipollo/release-action@v1
