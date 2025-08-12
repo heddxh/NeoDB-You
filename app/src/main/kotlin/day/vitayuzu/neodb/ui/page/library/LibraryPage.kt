@@ -11,7 +11,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -35,46 +34,43 @@ fun LibraryPage(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Surface(
+    PullToRefreshBox(
+        isRefreshing = uiState.isLoading,
+        onRefresh = viewModel::refresh,
         modifier = modifier,
     ) {
-        PullToRefreshBox(
-            isRefreshing = uiState.isLoading,
-            onRefresh = viewModel::refresh,
-        ) {
-            LazyColumn {
-                stickyHeader {
-                    // FIXME: In some locale like Chinese we don't need scrollable row
-                    //  so it is not centered.
-                    PrimaryScrollableTabRow(
-                        ShelfType.entries.indexOf(uiState.selectedShelfType),
-                        edgePadding = 16.dp,
-                    ) {
-                        for (type in ShelfType.entries) {
-                            Tab(
-                                selected = type == uiState.selectedShelfType,
-                                onClick = { viewModel.switchShelfType(type) },
-                                text = { Text(stringResource(type.toR()), softWrap = false) },
-                            )
-                        }
-                    }
-                    EntryTypeFilterChipsRow(
-                        selectedEntryTypes = uiState.selectedEntryTypes,
-                        onClick = viewModel::toggleSelectedEntryType,
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface),
-                    )
-                }
-                item { HeatMap(uiState.heatMap) }
-                items(
-                    items = uiState.displayedMarks,
-                    key = { it.entry.url },
+        LazyColumn {
+            stickyHeader {
+                // FIXME: In some locale like Chinese we don't need scrollable row
+                //  so it is not centered.
+                PrimaryScrollableTabRow(
+                    ShelfType.entries.indexOf(uiState.selectedShelfType),
+                    edgePadding = 16.dp,
                 ) {
-                    EntryMarkCard(
-                        entry = it.entry,
-                        mark = it,
-                        onClickEntry = onClickEntry,
-                    )
+                    for (type in ShelfType.entries) {
+                        Tab(
+                            selected = type == uiState.selectedShelfType,
+                            onClick = { viewModel.switchShelfType(type) },
+                            text = { Text(stringResource(type.toR()), softWrap = false) },
+                        )
+                    }
                 }
+                EntryTypeFilterChipsRow(
+                    selectedEntryTypes = uiState.selectedEntryTypes,
+                    onClick = viewModel::toggleSelectedEntryType,
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+                )
+            }
+            item { HeatMap(uiState.heatMap) }
+            items(
+                items = uiState.displayedMarks,
+                key = { it.entry.url },
+            ) {
+                EntryMarkCard(
+                    entry = it.entry,
+                    mark = it,
+                    onClickEntry = onClickEntry,
+                )
             }
         }
     }

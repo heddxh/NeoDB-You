@@ -1,7 +1,6 @@
 package day.vitayuzu.neodb.ui.page.settings
 
 import android.content.Intent
-import android.util.Log
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -70,8 +69,6 @@ fun SettingsPage(
         viewModel.refresh()
     }
 
-    val context = LocalContext.current
-
     // WORKAROUND: Only add 8dp padding to UserProfilePart to avoid left button wrapping in English locale
     Column(modifier = modifier.padding(horizontal = 8.dp)) {
         if (uiState.isLogin) { // logged in
@@ -81,14 +78,8 @@ fun SettingsPage(
                 fediAccount = uiState.fediAccount,
                 modifier = Modifier.fillMaxWidth(),
                 logOut = viewModel::logout,
-            ) {
-                try {
-                    val intent = CustomTabsIntent.Builder().build() // TODO: warmup
-                    intent.launchUrl(context, uiState.url.toUri())
-                } catch (e: Exception) {
-                    Log.e("SettingsPage", "Failed to open ${uiState.url}", e)
-                }
-            }
+                instanceUrl = uiState.url,
+            )
         } else { // need login
             LoginPart(Modifier.padding(horizontal = 8.dp))
         }
@@ -128,8 +119,10 @@ private fun UserProfilePart(
     fediAccount: String?,
     modifier: Modifier = Modifier,
     logOut: () -> Unit = {},
-    openAccountSetting: () -> Unit = {},
+    instanceUrl: String = "",
 ) {
+    val context = LocalContext.current
+    val intent = CustomTabsIntent.Builder().build()
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -169,7 +162,7 @@ private fun UserProfilePart(
             ) {
                 // Account Settings
                 Button(
-                    onClick = openAccountSetting,
+                    onClick = { intent.launchUrl(context, instanceUrl.toUri()) },
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors().copy(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,

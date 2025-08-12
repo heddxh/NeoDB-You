@@ -22,7 +22,7 @@ class HomeViewModel @Inject constructor(private val repo: NeoDBRepository) : Vie
         updateTrending()
     }
 
-    private fun updateTrending() {
+    fun updateTrending() {
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             repo.fetchTrending().collect { result ->

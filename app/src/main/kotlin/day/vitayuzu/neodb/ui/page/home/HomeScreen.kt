@@ -14,9 +14,9 @@ import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -41,16 +41,17 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // TODO: add swipe refresh
     // TODO: show fetched data immediately
-    if (uiState.isLoading) {
-        LinearProgressIndicator(modifier = modifier.fillMaxWidth())
-    } else {
-        val trendingModifier = Modifier.fillMaxWidth()
+    PullToRefreshBox(
+        isRefreshing = uiState.isLoading,
+        onRefresh = { viewModel.updateTrending() },
+        modifier = modifier,
+    ) {
         LazyColumn(
-            modifier = modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
         ) {
+            val trendingModifier = Modifier.fillMaxWidth()
             // Book
             item {
                 TrendingSection(
