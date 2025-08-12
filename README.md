@@ -13,7 +13,7 @@
 
 # NeoDB You
 
-[简体中文](https://github.com/heddxh/neodb-you/docs/README_zh.md)
+[简体中文](https://github.com/heddxh/NeoDB-You/blob/main/docs/README_zh.md)
 
 A native Android App for [NeoDB](https://neodb.net/), crafted with Jetpack Compose and Material 3.
 
