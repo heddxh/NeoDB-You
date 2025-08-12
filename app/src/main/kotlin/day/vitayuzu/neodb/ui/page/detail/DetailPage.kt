@@ -1,5 +1,6 @@
 package day.vitayuzu.neodb.ui.page.detail
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.LocalIndication
@@ -15,20 +16,23 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
@@ -117,14 +121,17 @@ fun DetailPage(
                     }
                     mutableStateOf(ModalState.CLOSED)
                 }
+
                 var isShowAllReviews by remember { mutableStateOf(false) }
+                BackHandler(enabled = isShowAllReviews) { isShowAllReviews = false }
+
                 DetailContent(
                     detail = detail,
                     mark = uiState.mark,
-                    postList = uiState.postList.take(if (isShowAllReviews) Int.MAX_VALUE else 5),
+                    postList = uiState.postList.take(if (isShowAllReviews) Int.MAX_VALUE else 3),
                     onClick = { modalState = ModalState.DES },
                     onEditMark = { modalState = ModalState.EDIT },
-                    hasMore = uiState.hasMorePost && !uiState.isLoadingPost,
+                    isShowingAll = isShowAllReviews,
                     showMore = {
                         isShowAllReviews = true
                         viewModel.refreshPosts(Int.MAX_VALUE)
@@ -178,7 +185,7 @@ private fun DetailContent(
     postList: List<Post> = emptyList(),
     onClick: () -> Unit = {},
     onEditMark: () -> Unit = {},
-    hasMore: Boolean = false,
+    isShowingAll: Boolean = false,
     showMore: () -> Unit = {},
 ) {
     LazyColumn(
@@ -232,19 +239,24 @@ private fun DetailContent(
                 content = it.content,
                 rating = it.rating,
                 date = it.date.toDateString(),
+                modifier = Modifier.animateItem(),
             )
             HorizontalDivider(thickness = 0.2.dp)
         }
 
         // See all reviews
         item {
-            AnimatedVisibility(hasMore, enter = fadeIn()) {
-                ElevatedButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(WindowInsets.navigationBars.asPaddingValues()),
-                    onClick = showMore,
-                ) { Text(stringResource(R.string.detail_show_all_reviews)) }
+            AnimatedVisibility(postList.isNotEmpty() && !isShowingAll, enter = fadeIn()) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    Button(onClick = showMore) {
+                        Text(stringResource(R.string.detail_show_all_reviews))
+                        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, null)
+                    }
+                }
             }
         }
     }
@@ -450,7 +462,7 @@ private fun DetailContentPreview() {
     )
     NeoDBYouTheme {
         Surface {
-            DetailContent(detail = detail, mark = Mark.TEST, postList = postList, hasMore = true)
+            DetailContent(detail = detail, mark = Mark.TEST, postList = postList)
         }
     }
 }

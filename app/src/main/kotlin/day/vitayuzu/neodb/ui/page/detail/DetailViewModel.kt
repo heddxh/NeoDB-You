@@ -81,14 +81,15 @@ class DetailViewModel @AssistedInject constructor(
             @Suppress(
                 "ktlint:standard:chain-method-continuation",
                 "ktlint:standard:comment-wrapping",
-                "ktlint:standard:comment-wrapping",
             )
             repo
                 .fetchItemPosts(uuid)
                 ./*buffer().*/collect { postList ->
                     _uiState.update { ui ->
                         val newPostList = ui.postList + postList.data.map { Post(it) }
-                        ui.copy(postList = newPostList/*.sortedByDescending { it.date }*/)
+                        ui.copy(
+                            postList = newPostList.distinct(), // .sortedByDescending { it.date }
+                        )
                     }
                     if (uiState.value.postList.size > limit) {
                         _uiState.update { it.copy(hasMorePost = true) }
