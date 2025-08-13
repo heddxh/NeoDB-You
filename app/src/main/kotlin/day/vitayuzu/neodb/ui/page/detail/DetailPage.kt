@@ -91,11 +91,12 @@ fun DetailPage(
     Surface(modifier = modifier) {
         Box {
             // Date Picker
+            // FIXME: try to avoid composition everytime toggle the pick
             var isShowDatePicker by remember { mutableStateOf(false) }
             val currentTimeLong = Clock.System.now().toEpochMilliseconds()
             var postDate by remember { mutableLongStateOf(currentTimeLong) }
 
-            AnimatedVisibility(isShowDatePicker) {
+            if (isShowDatePicker) {
                 DatePickerModal(
                     onConfirm = { postDate = it ?: currentTimeLong },
                     onDismiss = { isShowDatePicker = false },

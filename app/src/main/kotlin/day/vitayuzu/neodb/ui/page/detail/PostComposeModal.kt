@@ -11,15 +11,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.placeCursorAtEnd
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -132,17 +137,17 @@ private fun ComposeModalContent(
 
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
+//        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         // BUG: https://issuetracker.google.com/issues/436988693
         // FIXME: Long text will cause padding between first icon and the outer button too small
         SingleChoiceSegmentedButtonRow(
-            Modifier.horizontalScroll(rememberScrollState()),
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
         ) {
             shelfTypes.forEachIndexed { index, button ->
                 SegmentedButton(
-                    shape = SegmentedButtonDefaults.itemShape(index, 4),
+                    shape = SegmentedButtonDefaults.itemShape(index, shelfTypes.size),
                     onClick = { selectedShelfTypeIndex = index },
                     selected = selectedShelfTypeIndex == index,
                 ) {
@@ -264,14 +269,9 @@ private fun MoreSettingsContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            if (isPostToFedi) {
-                Button(onClick = { onTogglePostToFedi(false) }) {
-                    Text(stringResource(R.string.toggle_postToFedi))
-                }
-            } else {
-                OutlinedButton(onClick = { onTogglePostToFedi(true) }) {
-                    Text(stringResource(R.string.toggle_postToFedi))
-                }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(isPostToFedi, { onTogglePostToFedi(it) })
+                Text(stringResource(R.string.toggle_postToFedi))
             }
             // Set visibility
             var isShowVisibilityMenu by remember { mutableStateOf(false) }
@@ -279,6 +279,8 @@ private fun MoreSettingsContent(
                 AnimatedContent(targetState = postVisibility) {
                     OutlinedButton(onClick = { isShowVisibilityMenu = true }) {
                         Text(stringResource(it.toR()))
+                        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                        Icon(Icons.Default.MoreVert, null, Modifier.size(ButtonDefaults.IconSize))
                     }
                 }
                 DropdownMenu(
