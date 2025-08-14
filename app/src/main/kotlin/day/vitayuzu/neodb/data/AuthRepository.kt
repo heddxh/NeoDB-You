@@ -25,6 +25,15 @@ import javax.inject.Singleton
 
 /**
  * Repository for authentication and account information.
+ *
+ * Authentication flow:
+ * 0. Launch [day.vitayuzu.neodb.OauthActivity].
+ * 1. [validateInstanceUrl]: fetches instance info from given url.
+ * 2. [registerClientIfNeeded]: register app if needed, return client id and secret,
+ * store all related stuff.
+ * 3. Launch browser, permitted from user and get auth code.
+ * 4. [exchangeAccessToken]: exchange auth code for access token.
+ * 5. [updateAccountStatus]: logged, get account information.
  */
 @Singleton
 class AuthRepository @Inject constructor(
@@ -42,13 +51,14 @@ class AuthRepository @Inject constructor(
     val newVersionUrl = _newVersionUrl.asStateFlow()
 
     init {
-        // Intercept request host if instanceUrl is set.
         ktorfit.httpClient.plugin(HttpSend).intercept { request ->
+            // Bypass other requests or github will return 403
             if (request.url.host.contains("api.github.com")) {
                 return@intercept execute(request)
             }
-            if (instanceUrl != null) {
-                request.url.host = instanceUrl.toString() // can't smart cast here
+            // Intercept request host if instanceUrl is set and logged.
+            if (instanceUrl != null && accountStatus.value.isLogin) {
+                request.url.host = instanceUrl.toString() // smart cast unavailable here
             }
             execute(request)
         }
@@ -88,7 +98,7 @@ class AuthRepository @Inject constructor(
             _accountStatus.update { AccountStatus() }
         } else {
             runCatching {
-                remoteSource.fetchSelfAccountInfo()
+                remoteSource.fetchSelfAccountInfo(instanceUrl!!)
             }.onSuccess { userSchema ->
                 _accountStatus.update {
                     AccountStatus(true, userSchema)

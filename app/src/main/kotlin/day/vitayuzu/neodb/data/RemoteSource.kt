@@ -108,8 +108,12 @@ class RemoteSource @Inject constructor(
         api.fetchItemPosts(uuid, type, page)
     }
 
-    suspend fun fetchSelfAccountInfo(): UserSchema = withContext(dispatcher) {
-        api.fetchSelfAccountInfo()
+    suspend fun fetchSelfAccountInfo(instanceUrl: String): UserSchema = withContext(dispatcher) {
+        // This should be called after exchangeAccessToken, before emitting logged state.
+        // Since ktor interceptor is chained after login, should pass instance url as parameter.
+        api.fetchSelfAccountInfo {
+            url.set("https", instanceUrl, path = "api/me")
+        }
     }
 
     suspend fun fetchItemUserMark(uuid: String): MarkSchema = withContext(dispatcher) {
@@ -204,7 +208,9 @@ interface NeoDbApi {
     ): PaginatedPostList
 
     @GET("me")
-    suspend fun fetchSelfAccountInfo(): UserSchema
+    suspend fun fetchSelfAccountInfo(
+        @ReqBuilder ext: HttpRequestBuilder.() -> Unit = {},
+    ): UserSchema
 
     @GET("me/shelf/item/{uuid}")
     suspend fun fetchItemUserMark(

@@ -122,7 +122,7 @@ fun LoginPage(modifier: Modifier = Modifier, viewModel: LoginViewModel = hiltVie
                     }
                     default()
                 },
-                outputTransformation = UrlOutputTransformation(),
+//                outputTransformation = UrlOutputTransformation(),
                 label = { Text(stringResource(R.string.textfield_instanceUrl)) },
                 supportingText = {
                     Text(
