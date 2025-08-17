@@ -9,4 +9,12 @@ data class GithubLatestReleaseSchema(
     @SerialName("html_url") val htmlUrl: String,
     @SerialName("tag_name") val tagName: String,
     val body: String,
-)
+) {
+    companion object {
+        val TEST = GithubLatestReleaseSchema(
+            htmlUrl = "https://github.com/heddxh/NeoDB-You/releases/tag/v1.0.0",
+            tagName = "v9.9",
+            body = "",
+        )
+    }
+}

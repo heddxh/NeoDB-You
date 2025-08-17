@@ -134,6 +134,7 @@ class RemoteSource @Inject constructor(
 
     suspend fun getLatestVersionFromGithub() = withContext(dispatcher) {
         api.getLatestVersionFromGithub()
+//        GithubLatestReleaseSchema.TEST
     }
 }
 
