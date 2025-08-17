@@ -7,12 +7,15 @@ import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.util.EntryType
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.chunked
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val neoDBRepository: NeoDBRepository,
@@ -23,10 +26,12 @@ class HomeViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     init {
-        // Refresh data when login status changes(login for example)
+        // Refresh data when login status changes.
         viewModelScope.launch {
-            authRepository.accountStatus.collect {
-                updateTrending()
+            authRepository.accountStatus.chunked(2).collect {
+                if (it.first().isLogin != it.last().isLogin) {
+                    updateTrending()
+                }
             }
         }
     }
