@@ -5,11 +5,9 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 /**
@@ -21,18 +19,7 @@ import javax.inject.Inject
 class LocalPreferenceSource @Inject constructor(private val dataStore: DataStore<Preferences>) {
 
     /**
-     * Public immutable cache of instance url.
-     * All external access should use this read-only property.
-     */
-    val instanceUrl get() = _instanceUrl.value
-    private val _instanceUrl = MutableStateFlow<String?>(null)
-
-    init {
-        runBlocking { _instanceUrl.value = get(INSTANCE_URL) }
-    }
-
-    /**
-     * Delete all local authentication and set [instanceUrl] to null.
+     * Delete all local authentication.
      */
     suspend fun deleteAllAuthData() {
         dataStore.edit {
@@ -40,7 +27,6 @@ class LocalPreferenceSource @Inject constructor(private val dataStore: DataStore
             it.remove(CLIENT_SECRET)
             it.remove(ACCESS_TOKEN)
             it.remove(INSTANCE_URL)
-            _instanceUrl.value = null
         }
     }
 
@@ -57,7 +43,6 @@ class LocalPreferenceSource @Inject constructor(private val dataStore: DataStore
         runCatching {
             dataStore.edit {
                 it[key] = value
-                if (key == INSTANCE_URL) _instanceUrl.value = value // update cache
             }
         }.onFailure {
 //            if (it !is IOException) throw it // rethrow all but IOException

@@ -1,6 +1,5 @@
 package day.vitayuzu.neodb.ui.page.login
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -51,18 +50,12 @@ class LoginViewModel @Inject constructor(private val authRepo: AuthRepository) :
         // Called from OauthActivity.
         // Since `OauthActivity` creates a new instance of this ViewModel,
         // the instance URL needs to be retrieved from the AuthRepository rather than the UI state.
-        val instanceUrl = authRepo.instanceUrl ?: throw Exception("No instance url found")
-        _uiState.update { it.copy(isExchangingAccessToken = true, isShowTextField = false) }
-        authRepo.registerClientIfNeeded(instanceUrl).onSuccess { (clientId, clientSecret) ->
-            authRepo
-                .exchangeAccessToken(clientId, clientSecret, code)
-                .collect { result ->
-                    if (result) {
-                        Log.d("LoginViewModel", "Successfully exchanged access token")
-                    } else {
-                        throw Exception("No instance url found")
-                    }
-                }
+        with(authRepo) {
+            val instanceUrl = accountStatus.value.instanceUrl
+            _uiState.update { it.copy(isExchangingAccessToken = true, isShowTextField = false) }
+            registerClientIfNeeded(instanceUrl).onSuccess { (clientId, clientSecret) ->
+                exchangeAccessToken(clientId, clientSecret, code)
+            }
         }
     }.onCompletion {
         _uiState.update { it.copy(isExchangingAccessToken = false) }

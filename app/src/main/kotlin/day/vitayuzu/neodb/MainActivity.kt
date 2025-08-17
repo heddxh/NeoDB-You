@@ -1,7 +1,6 @@
 package day.vitayuzu.neodb
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -53,6 +52,7 @@ import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import dagger.hilt.android.AndroidEntryPoint
 import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
+import day.vitayuzu.neodb.data.UpdateRepository
 import day.vitayuzu.neodb.ui.component.SearchModal
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
@@ -68,8 +68,8 @@ import day.vitayuzu.neodb.util.Navi.Home
 import day.vitayuzu.neodb.util.Navi.Library
 import day.vitayuzu.neodb.util.Navi.Settings
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -79,6 +79,8 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var neoDBRepository: NeoDBRepository
 
     @Inject lateinit var authRepository: AuthRepository
+
+    @Inject lateinit var updateRepository: UpdateRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,11 +93,7 @@ class MainActivity : ComponentActivity() {
         }
 
         lifecycleScope.launch { authRepository.updateAccountStatus() }
-        lifecycleScope.launch {
-            authRepository.checkUpdate().lastOrNull()?.let {
-                Log.d("MainActivity", "Latest version: ${it.tagName}")
-            }
-        }
+        lifecycleScope.launch { updateRepository.checkUpdate().collect() }
 
         enableEdgeToEdge()
         setContent {

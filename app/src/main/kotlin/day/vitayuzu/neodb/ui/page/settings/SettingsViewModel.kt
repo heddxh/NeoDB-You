@@ -5,27 +5,35 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import day.vitayuzu.neodb.data.AuthRepository
+import day.vitayuzu.neodb.data.UpdateRepository
 import day.vitayuzu.neodb.data.schema.UserSchema
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.lastOrNull
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(private val repo: AuthRepository) : ViewModel() {
+class SettingsViewModel @Inject constructor(
+    private val authRepo: AuthRepository,
+    private val updateRepo: UpdateRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
-        _uiState.update { it.copy(newVersionUrl = repo.newVersionUrl.value) }
+        viewModelScope.launch {
+            updateRepo.newVersionUrl.collect { url ->
+                _uiState.update { it.copy(newVersionUrl = url) }
+            }
+        }
     }
 
     fun refresh() {
         viewModelScope.launch {
-            repo.accountStatus.collect { (isLogin, schema) ->
+            authRepo.accountStatus.collect { (isLogin, _, schema) ->
                 if (isLogin && schema != null) {
                     _uiState.update {
                         it.copy(
@@ -44,23 +52,18 @@ class SettingsViewModel @Inject constructor(private val repo: AuthRepository) : 
     }
 
     fun logout() {
-        if (!repo.accountStatus.value.isLogin) {
+        if (!authRepo.accountStatus.value.isLogin) {
             Log.d("SettingsViewModel", "Already logged out, do nothing")
         }
         viewModelScope.launch {
-            // TODO: send revoke request
-            repo.revoke()
+            authRepo.revoke()
             _uiState.update { it.copy(isLogin = false) }
             Log.d("SettingsViewModel", "Logout successfully")
         }
     }
 
     fun checkUpdate() {
-        viewModelScope.launch {
-            repo.checkUpdate().lastOrNull()?.let { versionInfo ->
-                _uiState.update { it.copy(newVersionUrl = versionInfo.htmlUrl) }
-            }
-        }
+        viewModelScope.launch { updateRepo.checkUpdate().collect() }
     }
 
     private companion object {
