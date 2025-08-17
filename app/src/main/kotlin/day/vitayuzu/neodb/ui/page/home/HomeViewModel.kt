@@ -3,6 +3,7 @@ package day.vitayuzu.neodb.ui.page.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.util.EntryType
@@ -13,19 +14,27 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(private val repo: NeoDBRepository) : ViewModel() {
+class HomeViewModel @Inject constructor(
+    private val neoDBRepository: NeoDBRepository,
+    private val authRepository: AuthRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
-        updateTrending()
+        // Refresh data when login status changes(login for example)
+        viewModelScope.launch {
+            authRepository.accountStatus.collect {
+                updateTrending()
+            }
+        }
     }
 
     fun updateTrending() {
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            repo.fetchTrending().collect { result ->
+            neoDBRepository.fetchTrending().collect { result ->
                 result.forEach { (type, list) ->
                     _uiState.update { curr ->
                         when (type) {
