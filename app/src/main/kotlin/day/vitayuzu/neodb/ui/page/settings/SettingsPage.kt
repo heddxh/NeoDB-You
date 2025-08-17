@@ -6,7 +6,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -29,6 +28,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -105,7 +106,7 @@ private fun LoginPart(modifier: Modifier = Modifier) {
             Text(
                 stringResource(R.string.settings_logincard_welcomewords),
                 style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.weight(1f).padding(4.dp),
+                modifier = Modifier.weight(1f).padding(8.dp),
             )
             Icon(Icons.AutoMirrored.Filled.ArrowForward, null, Modifier.padding(end = 8.dp))
         }
@@ -202,13 +203,17 @@ private fun AboutCard(
     val context = LocalContext.current
     val intent = CustomTabsIntent.Builder().build()
     Column(modifier = modifier) {
-        Text("About App", Modifier.alpha(.6f).padding(8.dp))
+        Text(stringResource(R.string.settings_title_about), Modifier.alpha(.6f).padding(8.dp))
         // Main Card
         Card(modifier = Modifier) {
+            val itemColors = ListItemDefaults.colors().copy(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            )
             // Version
-            AboutField(
-                key = { Text(stringResource(R.string.settings_about_version)) },
-                value = {
+            ListItem(
+                colors = itemColors,
+                headlineContent = { Text(stringResource(R.string.settings_about_version)) },
+                trailingContent = {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -217,7 +222,7 @@ private fun AboutCard(
                         Text(BuildConfig.VERSION_NAME)
                     }
                 },
-                icon = {
+                leadingContent = {
                     BadgedBox(
                         badge = {
                             if (newVersionUrl != null) Badge()
@@ -235,28 +240,30 @@ private fun AboutCard(
                 },
             )
             // Developer
-            AboutField(
-                key = { Text(stringResource(R.string.settings_about_developer)) },
-                value = { Text("@heddxh(Yuzu Vita)") },
-                icon = { Icon(Icons.Default.AccountCircle, null) },
+            ListItem(
+                colors = itemColors,
+                headlineContent = { Text(stringResource(R.string.settings_about_developer)) },
+                trailingContent = { Text("@heddxh(Yuzu Vita)") },
+                leadingContent = { Icon(Icons.Default.AccountCircle, null) },
                 modifier = Modifier.fillMaxWidth(),
             )
-            AboutField(
-                key = { Text("GitHub") },
-                value = {
+            ListItem(
+                colors = itemColors,
+                headlineContent = { Text("GitHub") },
+                trailingContent = {
                     Icon(
                         painterResource(R.drawable.outline_arrow_outward_24),
                         "Go to GitHub repo",
                         Modifier.size(16.dp),
                     )
                 },
-                icon = {
+                leadingContent = {
                     Icon(
                         painterResource(R.drawable.github_mark),
                         null,
                         // Editing GitHub trademark is not permitted.
                         // Add padding to make all icons the same size.
-                        Modifier.padding(2.dp),
+                        Modifier.size(24.dp).padding(2.dp),
                     )
                 },
                 modifier = Modifier.fillMaxWidth().clickable {
@@ -266,44 +273,19 @@ private fun AboutCard(
                     )
                 },
             )
-            AboutField(
-                key = { Text(stringResource(R.string.settings_about_license)) },
-                value = {
+            ListItem(
+                colors = itemColors,
+                headlineContent = { Text(stringResource(R.string.settings_about_license)) },
+                trailingContent = {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowForward,
                         "See open source license",
                         Modifier.size(16.dp),
                     )
                 },
-                icon = { Icon(painterResource(R.drawable.baseline_balance_24), null) },
+                leadingContent = { Icon(painterResource(R.drawable.baseline_balance_24), null) },
                 modifier = Modifier.fillMaxWidth().clickable(onClick = openLicensePage),
             )
-        }
-    }
-}
-
-@Composable
-fun AboutField(
-    key: @Composable () -> Unit,
-    value: @Composable () -> Unit,
-    icon: @Composable () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier.padding(vertical = 12.dp, horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(Modifier.size(24.dp), Alignment.Center) {
-            icon()
-        }
-        Spacer(Modifier.width(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            key()
-            value()
         }
     }
 }

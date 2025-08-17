@@ -36,4 +36,5 @@
     <string name="settings_about_version">版本</string>
     <string name="settings_about_developer">开发者</string>
     <string name="settings_about_license">许可证</string>
+    <string name="settings_title_about">关于 APP</string>
 </resources>

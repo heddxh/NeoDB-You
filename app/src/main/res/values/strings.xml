@@ -37,4 +37,5 @@
     <string name="settings_about_version">Version</string>
     <string name="settings_about_developer">Developer</string>
     <string name="settings_about_license">License</string>
+    <string name="settings_title_about">About APP</string>
 </resources>
