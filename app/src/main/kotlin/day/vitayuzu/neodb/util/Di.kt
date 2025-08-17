@@ -110,9 +110,9 @@ object NetworkModule {
                     bearer {
                         // Skip auth header
                         sendWithoutRequest {
-                            !it.url.host.contains("api.github.com")
-                            !it.url.encodedPath.contains("api/v1")
-                            !it.url.encodedPath.contains("oauth/")
+                            !it.url.host.contains("api.github.com") &&
+                                !it.url.encodedPath.contains("api/v1") &&
+                                !it.url.encodedPath.contains("oauth/")
                         }
                         loadTokens {
                             // Will be cached until process die, use clearToken() to refresh.
