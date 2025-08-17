@@ -11,7 +11,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import day.vitayuzu.neodb.data.LocalPreferenceSource
+import day.vitayuzu.neodb.data.AppSettingsManager
 import day.vitayuzu.neodb.data.NeoDbApi
 import day.vitayuzu.neodb.data.createNeoDbApi
 import de.jensklingenberg.ktorfit.Ktorfit
@@ -86,7 +86,7 @@ object NetworkModule {
 
     @Singleton
     @Provides
-    fun provideHttpClient(preferenceSource: LocalPreferenceSource): Ktorfit = ktorfit {
+    fun provideHttpClient(preferenceSource: AppSettingsManager): Ktorfit = ktorfit {
         httpClient(
             HttpClient {
                 baseUrl("https://$BASE_URL/api/") // using https://neodb.social/api as default
@@ -117,7 +117,7 @@ object NetworkModule {
                         loadTokens {
                             // Will be cached until process die, use clearToken() to refresh.
                             // See: AuthRepository.kt
-                            val token = preferenceSource.get(LocalPreferenceSource.ACCESS_TOKEN)
+                            val token = preferenceSource.get(AppSettingsManager.ACCESS_TOKEN)
                             if (token != null) {
                                 // No expire time, no need to refresh
                                 BearerTokens(token, null)

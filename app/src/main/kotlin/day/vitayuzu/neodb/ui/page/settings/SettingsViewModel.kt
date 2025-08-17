@@ -4,13 +4,18 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import day.vitayuzu.neodb.data.AppSettings
+import day.vitayuzu.neodb.data.AppSettingsManager
+import day.vitayuzu.neodb.data.AppSettingsManager.Companion.VERBOSE_LOG
 import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.UpdateRepository
 import day.vitayuzu.neodb.data.schema.UserSchema
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,52 +23,52 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val authRepo: AuthRepository,
     private val updateRepo: UpdateRepository,
+    private val appSettingsManager: AppSettingsManager,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(SettingsUiState())
-    val uiState = _uiState.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            updateRepo.newVersionUrl.collect { url ->
-                _uiState.update { it.copy(newVersionUrl = url) }
-            }
+    val uiState: StateFlow<SettingsUiState> = combine(
+        authRepo.accountStatus,
+        updateRepo.checkUpdateFlow.onStart { emit(null) }, // Start combination asap.
+        appSettingsManager.settingsFlow,
+    ) { (isLogin, _, schema), appVersionData, appSettings ->
+        if (isLogin && schema != null) {
+            SettingsUiState(
+                isLogin = true,
+                url = schema.url,
+                avatar = schema.avatar,
+                username = schema.displayName,
+                fediAccount = schema.getFediAccount(),
+                newVersionUrl = appVersionData?.htmlUrl,
+                appSettings = appSettings,
+            )
+        } else {
+            SettingsUiState(
+                isLogin = false,
+                newVersionUrl = appVersionData?.htmlUrl,
+                appSettings = appSettings,
+            )
         }
-    }
-
-    fun refresh() {
-        viewModelScope.launch {
-            authRepo.accountStatus.collect { (isLogin, _, schema) ->
-                if (isLogin && schema != null) {
-                    _uiState.update {
-                        it.copy(
-                            isLogin = true,
-                            url = schema.url,
-                            avatar = schema.avatar,
-                            username = schema.displayName,
-                            fediAccount = schema.getFediAccount(),
-                        )
-                    }
-                } else {
-                    _uiState.update { it.copy(isLogin = false) }
-                }
-            }
-        }
-    }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = SettingsUiState(),
+    )
 
     fun logout() {
-        if (!authRepo.accountStatus.value.isLogin) {
-            Log.d("SettingsViewModel", "Already logged out, do nothing")
-        }
         viewModelScope.launch {
             authRepo.revoke()
-            _uiState.update { it.copy(isLogin = false) }
             Log.d("SettingsViewModel", "Logout successfully")
         }
     }
 
     fun checkUpdate() {
-        viewModelScope.launch { updateRepo.checkUpdate().collect() }
+        viewModelScope.launch { updateRepo.checkUpdateFlow.collect() }
+    }
+
+    fun onToggleVerboseLog(enabled: Boolean) {
+        viewModelScope.launch {
+            appSettingsManager.store(VERBOSE_LOG, enabled)
+        }
     }
 
     private companion object {
@@ -85,4 +90,5 @@ data class SettingsUiState(
     val username: String = "",
     val fediAccount: String? = null,
     val newVersionUrl: String? = null,
+    val appSettings: AppSettings = AppSettings(),
 )

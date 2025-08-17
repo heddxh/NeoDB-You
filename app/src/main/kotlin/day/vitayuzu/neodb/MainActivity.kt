@@ -93,7 +93,7 @@ class MainActivity : ComponentActivity() {
         }
 
         lifecycleScope.launch { authRepository.updateAccountStatus() }
-        lifecycleScope.launch { updateRepository.checkUpdate().collect() }
+        lifecycleScope.launch { updateRepository.checkUpdateFlow.collect() }
 
         enableEdgeToEdge()
         setContent {

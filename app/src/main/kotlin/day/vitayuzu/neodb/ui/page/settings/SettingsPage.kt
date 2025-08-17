@@ -1,6 +1,7 @@
 package day.vitayuzu.neodb.ui.page.settings
 
 import android.content.Intent
+import android.util.Log
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,6 +17,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -33,10 +36,10 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,6 +58,7 @@ import coil3.compose.AsyncImage
 import day.vitayuzu.neodb.BuildConfig
 import day.vitayuzu.neodb.OauthActivity
 import day.vitayuzu.neodb.R
+import day.vitayuzu.neodb.data.AppSettings
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 
 @Composable
@@ -65,13 +69,8 @@ fun SettingsPage(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Refresh everytime entering this page
-    LaunchedEffect(true) {
-        viewModel.refresh()
-    }
-
     // WORKAROUND: Only add 8dp padding to UserProfilePart to avoid left button wrapping in English locale
-    Column(modifier = modifier.padding(horizontal = 8.dp)) {
+    Column(modifier = modifier.padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
         if (uiState.isLogin) { // logged in
             UserProfilePart(
                 avatar = uiState.avatar,
@@ -89,6 +88,12 @@ fun SettingsPage(
             newVersionUrl = uiState.newVersionUrl,
             openLicensePage = openLicensePage,
             checkUpdate = viewModel::checkUpdate,
+        )
+        ExperimentalCard(
+            Modifier.padding(horizontal = 8.dp),
+            appSettings = uiState.appSettings,
+            onClearAuthData = viewModel::logout,
+            onToggleVerboseLog = viewModel::onToggleVerboseLog,
         )
     }
 }
@@ -205,7 +210,7 @@ private fun AboutCard(
     Column(modifier = modifier) {
         Text(stringResource(R.string.settings_title_about), Modifier.alpha(.6f).padding(8.dp))
         // Main Card
-        Card(modifier = Modifier) {
+        Card {
             val itemColors = ListItemDefaults.colors().copy(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
             )
@@ -231,7 +236,7 @@ private fun AboutCard(
                         Icon(Icons.Default.Info, null)
                     }
                 },
-                modifier = Modifier.fillMaxWidth().clickable {
+                modifier = Modifier.clickable {
                     if (newVersionUrl != null) {
                         intent.launchUrl(context, newVersionUrl.toUri())
                     } else {
@@ -245,7 +250,6 @@ private fun AboutCard(
                 headlineContent = { Text(stringResource(R.string.settings_about_developer)) },
                 trailingContent = { Text("@heddxh(Yuzu Vita)") },
                 leadingContent = { Icon(Icons.Default.AccountCircle, null) },
-                modifier = Modifier.fillMaxWidth(),
             )
             ListItem(
                 colors = itemColors,
@@ -266,7 +270,7 @@ private fun AboutCard(
                         Modifier.size(24.dp).padding(2.dp),
                     )
                 },
-                modifier = Modifier.fillMaxWidth().clickable {
+                modifier = Modifier.clickable {
                     intent.launchUrl(
                         context,
                         "https://github.com/heddxh/NeoDB-You".toUri(),
@@ -284,7 +288,55 @@ private fun AboutCard(
                     )
                 },
                 leadingContent = { Icon(painterResource(R.drawable.baseline_balance_24), null) },
-                modifier = Modifier.fillMaxWidth().clickable(onClick = openLicensePage),
+                modifier = Modifier.clickable(onClick = openLicensePage),
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ExperimentalCard(
+    modifier: Modifier = Modifier,
+    appSettings: AppSettings = AppSettings(),
+    onClearAuthData: () -> Unit = {},
+    onToggleVerboseLog: (Boolean) -> Unit = {},
+) {
+    Column(modifier = modifier) {
+        Text("Experimental", Modifier.alpha(.6f).padding(8.dp))
+        Card {
+            val itemColors = ListItemDefaults.colors().copy(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                leadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
+                headlineColor = MaterialTheme.colorScheme.onErrorContainer,
+            )
+            ListItem(
+                colors = itemColors,
+                headlineContent = {
+                    Text("Clear local stored account credentials")
+                },
+                modifier = Modifier.clickable(onClick = onClearAuthData),
+            )
+            ListItem(
+                colors = itemColors,
+                headlineContent = {
+                    Text("Verbose logging")
+                },
+                supportingContent = {
+                    Text("Verbose logs contain sensitive information and will reduce performance")
+                },
+                trailingContent = {
+                    Switch(checked = appSettings.verboseLog, onCheckedChange = onToggleVerboseLog)
+                },
+            )
+            ListItem(
+                colors = itemColors,
+                headlineContent = {
+                    Text("Print app settings")
+                },
+                modifier = Modifier.clickable {
+                    Log.d("ExperimentalCard", appSettings.toString())
+                },
             )
         }
     }

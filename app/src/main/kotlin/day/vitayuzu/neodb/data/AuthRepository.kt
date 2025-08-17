@@ -1,10 +1,10 @@
 package day.vitayuzu.neodb.data
 
 import android.util.Log
-import day.vitayuzu.neodb.data.LocalPreferenceSource.Companion.ACCESS_TOKEN
-import day.vitayuzu.neodb.data.LocalPreferenceSource.Companion.CLIENT_ID
-import day.vitayuzu.neodb.data.LocalPreferenceSource.Companion.CLIENT_SECRET
-import day.vitayuzu.neodb.data.LocalPreferenceSource.Companion.INSTANCE_URL
+import day.vitayuzu.neodb.data.AppSettingsManager.Companion.ACCESS_TOKEN
+import day.vitayuzu.neodb.data.AppSettingsManager.Companion.CLIENT_ID
+import day.vitayuzu.neodb.data.AppSettingsManager.Companion.CLIENT_SECRET
+import day.vitayuzu.neodb.data.AppSettingsManager.Companion.INSTANCE_URL
 import day.vitayuzu.neodb.data.schema.InstanceSchema
 import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.util.BASE_URL
@@ -35,7 +35,7 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepository @Inject constructor(
     private val remoteSource: RemoteSource,
-    private val preferenceSource: LocalPreferenceSource,
+    private val preferenceSource: AppSettingsManager,
     private val ktorfit: Ktorfit,
 ) {
 
@@ -68,7 +68,7 @@ class AuthRepository @Inject constructor(
 
     /**
      * Register app if not already registered.
-     * If successful, store client id, secret, instance url in [LocalPreferenceSource].
+     * If successful, store client id, secret, instance url in [AppSettingsManager].
      * @return `Pair<ClientId, ClientSecret>` if successfully registered.
      */
     suspend fun registerClientIfNeeded(instanceUrl: String): Result<Pair<String, String>> {

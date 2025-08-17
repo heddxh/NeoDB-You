@@ -3,8 +3,11 @@ package day.vitayuzu.neodb.data
 import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -16,7 +19,16 @@ import javax.inject.Inject
  * get function will return null if error occurred.
  * NOTE: [DataStore] has used `Dispatchers.IO` under the hood.
  */
-class LocalPreferenceSource @Inject constructor(private val dataStore: DataStore<Preferences>) {
+class AppSettingsManager @Inject constructor(private val dataStore: DataStore<Preferences>) {
+
+    val settingsFlow: Flow<AppSettings> = dataStore.data
+        .catch { e ->
+            emit(emptyPreferences())
+            Log.e("LocalSettingsManager", "Error while reading preferences", e)
+        }.map { preferences ->
+            val verboseLog = preferences[VERBOSE_LOG] ?: false
+            AppSettings(verboseLog)
+        }
 
     /**
      * Delete all local authentication.
@@ -31,15 +43,14 @@ class LocalPreferenceSource @Inject constructor(private val dataStore: DataStore
     }
 
     // Utility functions, only IOException will be caught.
-    suspend fun get(key: Preferences.Key<String>) = dataStore.data
+    suspend fun <T> get(key: Preferences.Key<T>) = dataStore.data
         .map { it[key] }
         .catch {
 //            if (it !is IOException) throw it // rethrow all but IOException
             Log.e("AuthRepository", "Error while reading preferences ${key.name}", it)
-            emit(null)
         }.firstOrNull()
 
-    suspend fun store(key: Preferences.Key<String>, value: String) {
+    suspend fun <T> store(key: Preferences.Key<T>, value: T) {
         runCatching {
             dataStore.edit {
                 it[key] = value
@@ -66,5 +77,10 @@ class LocalPreferenceSource @Inject constructor(private val dataStore: DataStore
         val CLIENT_ID = stringPreferencesKey("client_id")
         val CLIENT_SECRET = stringPreferencesKey("client_secret")
         val ACCESS_TOKEN = stringPreferencesKey("access_token")
+
+        // Settings
+        val VERBOSE_LOG = booleanPreferencesKey("verbose_log")
     }
 }
+
+data class AppSettings(val verboseLog: Boolean = false)
