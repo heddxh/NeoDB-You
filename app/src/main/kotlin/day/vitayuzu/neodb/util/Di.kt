@@ -25,6 +25,7 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.appendIfNameAndValueAbsent
 import kotlinx.coroutines.CoroutineDispatcher
@@ -110,6 +111,8 @@ object NetworkModule {
                         // Skip auth header
                         sendWithoutRequest {
                             !it.url.host.contains("api.github.com")
+                            !it.url.encodedPath.contains("api/v1")
+                            !it.url.encodedPath.contains("oauth/")
                         }
                         loadTokens {
                             // Will be cached until process die, use clearToken() to refresh.
