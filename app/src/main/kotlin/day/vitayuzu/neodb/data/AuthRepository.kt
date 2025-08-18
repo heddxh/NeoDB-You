@@ -7,7 +7,6 @@ import day.vitayuzu.neodb.data.AppSettingsManager.Companion.CLIENT_SECRET
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.INSTANCE_URL
 import day.vitayuzu.neodb.data.schema.InstanceSchema
 import day.vitayuzu.neodb.data.schema.UserSchema
-import day.vitayuzu.neodb.util.BASE_URL
 import de.jensklingenberg.ktorfit.Ktorfit
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpSend
@@ -128,15 +127,17 @@ class AuthRepository @Inject constructor(
     suspend fun updateAccountStatus() {
         Log.d("AuthRepository", "Updating account status...")
         val token = appSettingsManager.get(ACCESS_TOKEN)
-        if (token == null) {
+        val instanceUrl = appSettingsManager.get(INSTANCE_URL)
+        if (token == null || instanceUrl == null) {
             _accountStatus.update { AccountStatus() }
         } else {
             runCatching {
-                remoteSource.fetchSelfAccountInfo(accountStatus.value.instanceUrl)
+                remoteSource.fetchSelfAccountInfo(instanceUrl)
             }.onSuccess { userSchema ->
                 _accountStatus.update {
                     it.copy(
                         isLogin = true,
+                        instanceUrl = instanceUrl,
                         account = userSchema,
                     )
                 }
@@ -175,6 +176,6 @@ class AuthRepository @Inject constructor(
 
 data class AccountStatus(
     val isLogin: Boolean = false,
-    val instanceUrl: String = BASE_URL,
+    val instanceUrl: String = "",
     val account: UserSchema? = null,
 )
