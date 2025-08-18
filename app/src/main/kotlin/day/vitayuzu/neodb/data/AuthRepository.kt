@@ -72,31 +72,31 @@ class AuthRepository @Inject constructor(
      * @return `Pair<ClientId, ClientSecret>` if successfully registered.
      */
     suspend fun registerClientIfNeeded(instanceUrl: String): Result<Pair<String, String>> {
-        appSettingsManager.getAllAuthData()?.let {
-            val (storedInstanceUrl, clientId, clientSecret, _) = it
-            if (instanceUrl == storedInstanceUrl) {
-                Log.d("AuthRepository", "Found saved auth client identification")
-                return Result.success(Pair(clientId, clientSecret))
-            } else {
-                revoke()
-                Log.d("AuthRepository", "Invalid saved auth client identification, revoked")
-            }
-        }
+        val clientId = appSettingsManager.get(CLIENT_ID)
+        val clientSecret = appSettingsManager.get(CLIENT_SECRET)
 
-        Log.d("AuthRepository", "No saved auth client identification found, registering...")
-        runCatching {
-            remoteSource.registerOauthAPP(instanceUrl)
-        }.onSuccess { oauthData ->
-            with(appSettingsManager) {
-                store(INSTANCE_URL, instanceUrl)
-                store(CLIENT_ID, oauthData.clientId)
-                store(CLIENT_SECRET, oauthData.clientSecret)
+        if (clientId != null &&
+            clientSecret != null &&
+            instanceUrl == accountStatus.value.instanceUrl
+        ) {
+            Log.d("AuthRepository", "Found saved auth client identification")
+            return Result.success(Pair(clientId, clientSecret))
+        } else {
+            Log.d("AuthRepository", "No saved auth client identification found, registering...")
+            runCatching {
+                remoteSource.registerOauthAPP(instanceUrl)
+            }.onSuccess { oauthData ->
+                with(appSettingsManager) {
+                    store(INSTANCE_URL, instanceUrl)
+                    store(CLIENT_ID, oauthData.clientId)
+                    store(CLIENT_SECRET, oauthData.clientSecret)
+                }
+                _accountStatus.update { it.copy(instanceUrl = instanceUrl) }
+                Log.d("AuthRepository", "Registered client saved")
+                return Result.success(Pair(oauthData.clientId, oauthData.clientSecret))
+            }.onFailure {
+                Log.e("AuthRepository", "Failed to register client", it)
             }
-            _accountStatus.update { it.copy(instanceUrl = instanceUrl) }
-            Log.d("AuthRepository", "Registered client saved")
-            return Result.success(Pair(oauthData.clientId, oauthData.clientSecret))
-        }.onFailure {
-            Log.e("AuthRepository", "Failed to register client", it)
         }
 
         Log.e("AuthRepository", "Failed to register app")
