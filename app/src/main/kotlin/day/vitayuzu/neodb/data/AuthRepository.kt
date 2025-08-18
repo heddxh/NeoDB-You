@@ -35,7 +35,7 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepository @Inject constructor(
     private val remoteSource: RemoteSource,
-    private val preferenceSource: AppSettingsManager,
+    private val appSettingsManager: AppSettingsManager,
     private val ktorfit: Ktorfit,
 ) {
 
@@ -72,31 +72,31 @@ class AuthRepository @Inject constructor(
      * @return `Pair<ClientId, ClientSecret>` if successfully registered.
      */
     suspend fun registerClientIfNeeded(instanceUrl: String): Result<Pair<String, String>> {
-        val clientId = preferenceSource.get(CLIENT_ID)
-        val clientSecret = preferenceSource.get(CLIENT_SECRET)
-
-        if (clientId != null &&
-            clientSecret != null &&
-            instanceUrl == accountStatus.value.instanceUrl
-        ) {
-            Log.d("AuthRepository", "Found saved auth client identification")
-            return Result.success(Pair(clientId, clientSecret))
-        } else {
-            Log.d("AuthRepository", "No saved auth client identification found, registering...")
-            runCatching {
-                remoteSource.registerOauthAPP(instanceUrl)
-            }.onSuccess { oauthData ->
-                with(preferenceSource) {
-                    store(INSTANCE_URL, instanceUrl)
-                    store(CLIENT_ID, oauthData.clientId)
-                    store(CLIENT_SECRET, oauthData.clientSecret)
-                }
-                _accountStatus.update { it.copy(instanceUrl = instanceUrl) }
-                Log.d("AuthRepository", "Registered client saved")
-                return Result.success(Pair(oauthData.clientId, oauthData.clientSecret))
-            }.onFailure {
-                Log.e("AuthRepository", "Failed to register client", it)
+        appSettingsManager.getAllAuthData()?.let {
+            val (storedInstanceUrl, clientId, clientSecret, _) = it
+            if (instanceUrl == storedInstanceUrl) {
+                Log.d("AuthRepository", "Found saved auth client identification")
+                return Result.success(Pair(clientId, clientSecret))
+            } else {
+                revoke()
+                Log.d("AuthRepository", "Invalid saved auth client identification, revoked")
             }
+        }
+
+        Log.d("AuthRepository", "No saved auth client identification found, registering...")
+        runCatching {
+            remoteSource.registerOauthAPP(instanceUrl)
+        }.onSuccess { oauthData ->
+            with(appSettingsManager) {
+                store(INSTANCE_URL, instanceUrl)
+                store(CLIENT_ID, oauthData.clientId)
+                store(CLIENT_SECRET, oauthData.clientSecret)
+            }
+            _accountStatus.update { it.copy(instanceUrl = instanceUrl) }
+            Log.d("AuthRepository", "Registered client saved")
+            return Result.success(Pair(oauthData.clientId, oauthData.clientSecret))
+        }.onFailure {
+            Log.e("AuthRepository", "Failed to register client", it)
         }
 
         Log.e("AuthRepository", "Failed to register app")
@@ -117,7 +117,7 @@ class AuthRepository @Inject constructor(
                 .exchangeAccessToken(instanceUrl, clientId, clientSecret, code)
                 .accessToken
         }.onSuccess { token ->
-            preferenceSource.store(ACCESS_TOKEN, token)
+            appSettingsManager.store(ACCESS_TOKEN, token)
             ktorfit.httpClient.clearToken()
             updateAccountStatus()
         }.onFailure {
@@ -127,7 +127,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun updateAccountStatus() {
         Log.d("AuthRepository", "Updating account status...")
-        val token = preferenceSource.get(ACCESS_TOKEN)
+        val token = appSettingsManager.get(ACCESS_TOKEN)
         if (token == null) {
             _accountStatus.update { AccountStatus() }
         } else {
@@ -151,11 +151,11 @@ class AuthRepository @Inject constructor(
      */
     suspend fun revoke() {
         try {
-            preferenceSource.getAllAuthData()?.let {
+            appSettingsManager.getAllAuthData()?.let {
                 val (instanceUrl, clientId, clientSecret, token) = it
                 remoteSource.revokeAccessToken(instanceUrl, clientId, clientSecret, token)
             }
-            preferenceSource.deleteAllAuthData()
+            appSettingsManager.deleteAllAuthData()
             ktorfit.httpClient.clearToken()
             _accountStatus.update { AccountStatus() }
             Log.d("AuthRepository", "Revoked all auth data")
