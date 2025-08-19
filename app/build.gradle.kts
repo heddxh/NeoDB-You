@@ -32,10 +32,112 @@ kotlin {
     }
 }
 
-// Sign config
-val isGithubActions = System.getenv("GITHUB_ACTIONS").toBoolean()
+android {
+    signingConfigs { configureSigning(this) }
+    namespace = "day.vitayuzu.neodb"
+    compileSdk = 36
 
-private fun getEnv(key: String): String? = System.getenv(key)?.takeIf { it.isNotBlank() }
+    defaultConfig {
+        applicationId = android.namespace
+        targetSdk = android.compileSdk
+        minSdk = 24
+        versionCode = 3 // TODO: Verify increment before release
+        versionName = "1.0"
+
+        manifestPlaceholders["auth"] = namespace.toString()
+        manifestPlaceholders["app_name"] = "NeoDB You"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+            signingConfig = signingConfigs.getByName("release")
+            splits {
+                abi {
+                    isEnable = true
+                    isUniversalApk = true
+                    reset()
+                    include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+                }
+            }
+        }
+        debug {
+            applicationIdSuffix = ".debug"
+            manifestPlaceholders["app_name"] = "NeoDB You Debug"
+        }
+    }
+
+    packaging {
+        // https://issuetracker.google.com/issues/356109544
+        jniLibs.keepDebugSymbols.addAll(
+            setOf("**/libandroidx.graphics.path.so", "**/libdatastore_shared_counter.so"),
+        )
+        // https://github.com/Kotlin/kotlinx.coroutines?tab=readme-ov-file#avoiding-including-the-debug-infrastructure-in-the-resulting-apk
+        // https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-debug/README.md#debug-agent-and-android
+        // https://youtrack.jetbrains.com/issue/IDEA-335195
+        resources.excludes += "DebugProbesKt.bin"
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+    @Suppress("UnstableApiUsage")
+    androidResources.generateLocaleConfig = true
+}
+
+dependencies {
+    // Android
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.slf4j.android)
+    implementation(libs.kotlinx.coroutines.android)
+    // Jetpack Compose
+    val composeBom = platform(libs.androidx.compose.bom)
+    implementation(composeBom)
+    // androidTestImplementation(composeBom)
+    // debugImplementation(composeBom)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icon.core)
+    implementation(libs.androidx.ui.tooling)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
+    // UI Lib
+    implementation(libs.shimmer)
+    implementation(libs.aboutlibraries.m3)
+    // Kotlin
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.datetime)
+    // Hilt
+    implementation(libs.google.hilt.android)
+    ksp(libs.google.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+    // Http client
+    implementation(libs.ktorfit.lib)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.client.logging)
+    // Coil
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+    // Oauth2
+    implementation(libs.datastore.preferences)
+    implementation(libs.ktor.client.auth)
+    implementation(libs.androidx.browser)
+    // Other
+    implementation(libs.versionCompare)
+}
+
+// Sign config
+// TODO: Move into a gradle task
+val isGithubActions = System.getenv("GITHUB_ACTIONS").toBoolean()
 
 @OptIn(ExperimentalEncodingApi::class)
 private fun configureSigning(signingConfigs: NamedDomainObjectContainer<out SigningConfig>) {
@@ -91,109 +193,4 @@ private fun configureSigning(signingConfigs: NamedDomainObjectContainer<out Sign
     }
 }
 
-android {
-    signingConfigs { configureSigning(this) }
-    namespace = "day.vitayuzu.neodb"
-    compileSdk = 36
-
-    defaultConfig {
-        applicationId = android.namespace!!
-        targetSdk = android.compileSdk
-        minSdk = 24
-        versionCode = 3 // TODO: Verify increment before release
-        versionName = "1.0"
-
-        manifestPlaceholders["auth"] = android.namespace!!
-        manifestPlaceholders["app_name"] = "NeoDB You"
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
-            signingConfigs.findByName("release")?.let {
-                signingConfig = it
-            }
-            splits {
-                abi {
-                    isEnable = true
-                    isUniversalApk = true
-                    reset()
-                    include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
-                }
-            }
-        }
-        debug {
-            applicationIdSuffix = ".debug"
-            manifestPlaceholders["app_name"] = "NeoDB You Debug"
-        }
-    }
-
-    packaging {
-        // https://issuetracker.google.com/issues/356109544
-        jniLibs.keepDebugSymbols.addAll(
-            setOf("**/libandroidx.graphics.path.so", "**/libdatastore_shared_counter.so"),
-        )
-        // https://github.com/Kotlin/kotlinx.coroutines?tab=readme-ov-file#avoiding-including-the-debug-infrastructure-in-the-resulting-apk
-        // https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-debug/README.md#debug-agent-and-android
-        // https://youtrack.jetbrains.com/issue/IDEA-335195
-        resources.excludes += "DebugProbesKt.bin"
-    }
-
-    buildFeatures {
-        compose = true
-        buildConfig = true
-    }
-
-    androidResources {
-        @Suppress("UnstableApiUsage")
-        generateLocaleConfig = true
-    }
-}
-
-dependencies {
-    // Android
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.slf4j.android)
-    implementation(libs.kotlinx.coroutines.android)
-    // Jetpack Compose
-    val composeBom = platform(libs.androidx.compose.bom)
-    implementation(composeBom)
-    // androidTestImplementation(composeBom)
-    // debugImplementation(composeBom)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.material.icon.core)
-    implementation(libs.androidx.ui.tooling)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.navigation.compose)
-    // UI Lib
-    implementation(libs.shimmer)
-    implementation(libs.aboutlibraries.m3)
-    // Kotlin
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.datetime)
-    // Hilt
-    implementation(libs.google.hilt.android)
-    ksp(libs.google.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
-    // Http client
-    implementation(libs.ktorfit.lib)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.ktor.client.logging)
-    // Coil
-    implementation(libs.coil.compose)
-    implementation(libs.coil.network.okhttp)
-    // Oauth2
-    implementation(libs.datastore.preferences)
-    implementation(libs.ktor.client.auth)
-    implementation(libs.androidx.browser)
-    // Other
-    implementation(libs.versionCompare)
-}
+private fun getEnv(key: String): String? = System.getenv(key)?.takeIf { it.isNotBlank() }
