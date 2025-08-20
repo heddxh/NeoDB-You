@@ -137,11 +137,9 @@ dependencies {
 
 // Sign config
 // TODO: Move into a gradle task
-val isGithubActions = System.getenv("GITHUB_ACTIONS").toBoolean()
-
 @OptIn(ExperimentalEncodingApi::class)
 private fun configureSigning(signingConfigs: NamedDomainObjectContainer<out SigningConfig>) {
-    if (isGithubActions) {
+    if (System.getenv("GITHUB_ACTIONS").toBoolean()) {
         // Read from env
         val keyBase64 = getEnv("SIGN_KEY_BASE64")
         val keyPassword = getEnv("SIGN_KEY_PWD")
