@@ -1,14 +1,20 @@
 <div align="center">
-    <img alt="App Logo" width="200" height="200" style="display: block;" src="../icon.svg">
+    <img alt="App Logo" width="200" height="200" style="display: block;" src="../icon.svg"/>
 </div>
 <div align="center">
-    <a href="https://github.com/heddxh/NeoDB-You/actions/workflows/nightly.yml"><img src="https://img.shields.io/github/actions/workflow/status/heddxh/neodb-you/nightly.yml?style=for-the-badge&amp;logo=github&amp;label=Nightly" alt="Nightly build"></a>
-    <a href="https://github.com/heddxh/NeoDB-You/blob/main/LICENSE"><img src="https://img.shields.io/github/license/heddxh/neodb-you?style=for-the-badge" alt="License"></a>
-    <a href="https://github.com/heddxh/NeoDB-You/releases/latest"><img src="https://img.shields.io/github/v/release/heddxh/neodb-you?include_prereleases&amp;style=for-the-badge&amp;label=Version&amp;color=%238DCAFF" alt="Version"></a>
+    <a href="https://github.com/heddxh/NeoDB-You/actions/workflows/nightly.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/heddxh/neodb-you/nightly.yml?style=for-the-badge&amp;logo=github&amp;label=Nightly" alt="Nightly build"/>
+    </a>
+    <a href="https://github.com/heddxh/NeoDB-You/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/heddxh/neodb-you?style=for-the-badge" alt="License"/>
+    </a>
+    <a href="https://github.com/heddxh/NeoDB-You/releases/latest">
+    <img src="https://img.shields.io/github/v/release/heddxh/neodb-you?include_prereleases&amp;style=for-the-badge&amp;label=Version&amp;color=%238DCAFF" alt="Version"/>
+    </a>
     <br>
-    <img src="https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&amp;logo=kotlin&amp;logoColor=white" alt="Kotlin">
-    <img src="https://img.shields.io/badge/Jetpack%20Compose-4285F4?logo=jetpackcompose&amp;logoColor=fff&amp;&amp;style=for-the-badge" alt="Jetpack Compose">
-    <img src="https://img.shields.io/badge/android%20studio-346ac1?style=for-the-badge&amp;logo=android%20studio&amp;logoColor=white" alt="Android Studio">
+    <img src="https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&amp;logo=kotlin&amp;logoColor=white" alt="Kotlin"/>
+    <img src="https://img.shields.io/badge/Jetpack%20Compose-4285F4?logo=jetpackcompose&amp;logoColor=fff&amp;&amp;style=for-the-badge" alt="Jetpack Compose"/>
+    <img src="https://img.shields.io/badge/android%20studio-346ac1?style=for-the-badge&amp;logo=android%20studio&amp;logoColor=white" alt="Android Studio"/>
 </div>
 
 # NeoDB You
@@ -39,9 +45,17 @@
 
 ## 下载
 
-- 公开发行版: [GitHub Release](https://github.com/heddxh/NeoDB-You/releases/)
-- 每夜版: [GitHub Actions](https://github.com/heddxh/NeoDB-You/actions/workflows/nightly.yml)
-  。解压构件并安装 apk。
+<a href="https://github.com/heddxh/NeoDB-You/releases/latest">
+<img alt="Get it on GitHub" height="96" 
+src="https://raw.githubusercontent.com/rubenpgrady/get-it-on-github/refs/heads/main/get-it-on-github.png"/>
+</a>
+<a href="https://apt.izzysoft.de/packages/day.vitayuzu.neodb">
+<img height="96" alt="Git it on IzzyOnDroid" 
+src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" />
+</a>
+
+每夜版: [GitHub Actions](https://github.com/heddxh/NeoDB-You/actions/workflows/nightly.yml)（解压产物并安装
+APK）。
 
 ## 本地化
 
