@@ -3,14 +3,13 @@ package day.vitayuzu.neodb.data
 import android.util.Log
 import day.vitayuzu.neodb.data.schema.HasPages
 import day.vitayuzu.neodb.data.schema.MarkInSchema
-import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.data.schema.ResultSchema
 import day.vitayuzu.neodb.data.schema.TrendingItemSchema
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapMerge
@@ -24,32 +23,22 @@ import javax.inject.Inject
 class NeoDBRepository @Inject constructor(private val remoteSource: RemoteSource) {
 
     // Concurrently fetch all shelves
+    // TODO: Check cancellable here
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun fetchMyAllShelf(): Flow<PagedMarkSchema> = flowOf(*ShelfType.entries.toTypedArray())
-        .cancellable()
+    val userShelf = flowOf(*ShelfType.entries.toTypedArray())
         .flatMapMerge {
+            delay(2000)
             fetchMyShelfByShelfType(it)
         }
 
     // Concurrently fetch all trending, return a map of type to trending
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun fetchTrending(): Flow<Map<EntryType, List<TrendingItemSchema>>> {
-        val typeInTrending = listOf(
-            EntryType.book,
-            EntryType.movie,
-            EntryType.tv,
-            EntryType.music,
-            EntryType.game,
-            EntryType.podcast,
-        )
-        return flowOf(*typeInTrending.toTypedArray())
-            .cancellable()
-            .flatMapMerge { type ->
-                fetchTrendingByEntryType(type).map {
-                    mapOf(type to it)
-                }
+    val serverTrending = flowOf(*EntryType.entries.take(6).toTypedArray())
+        .flatMapMerge { type ->
+            fetchTrendingByEntryType(type).map {
+                mapOf(type to it)
             }
-    }
+        }
 
     private fun fetchTrendingByEntryType(type: EntryType): Flow<List<TrendingItemSchema>> = flow {
         emit(remoteSource.fetchTrending(type))

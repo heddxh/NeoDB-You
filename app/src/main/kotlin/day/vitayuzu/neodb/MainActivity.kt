@@ -68,8 +68,8 @@ import day.vitayuzu.neodb.util.Navi.Home
 import day.vitayuzu.neodb.util.Navi.Library
 import day.vitayuzu.neodb.util.Navi.Settings
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -93,7 +93,7 @@ class MainActivity : ComponentActivity() {
         }
 
         lifecycleScope.launch { authRepository.updateAccountStatus() }
-        lifecycleScope.launch { updateRepository.checkUpdateFlow.collect() }
+        updateRepository.checkUpdateFlow.launchIn(lifecycleScope)
 
         enableEdgeToEdge()
         setContent {

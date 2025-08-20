@@ -9,8 +9,10 @@ import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.todayIn
@@ -34,19 +36,16 @@ class LibraryViewModel @Inject constructor(private val repo: NeoDBRepository) : 
 
     fun refresh() {
         marks.clear()
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            repo.fetchMyAllShelf().collect { pagedMarkSchemaFlow ->
+        _uiState.update { it.copy(isLoading = true) }
+        repo.userShelf
+            .onEach { pagedMarkSchemaFlow ->
                 marks += pagedMarkSchemaFlow.data?.map { Mark(it) }?.sortedByDescending { it.date }
                     ?: emptyList()
-            }
-            refreshDisplayedMarks()
-            generateHeatMap()
-            _uiState.update { it.copy(isLoading = false) }
-//            marks.forEach {
-//                Log.d("LibraryViewModel", "Mark: ${it.date} ${it.entry.title}")
-//            }
-        }
+            }.onCompletion {
+                refreshDisplayedMarks()
+                generateHeatMap()
+                _uiState.update { it.copy(isLoading = false) }
+            }.launchIn(viewModelScope)
     }
 
     fun toggleSelectedEntryType(which: EntryType) {

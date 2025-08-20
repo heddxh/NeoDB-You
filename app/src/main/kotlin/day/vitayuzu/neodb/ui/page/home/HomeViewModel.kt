@@ -11,6 +11,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.chunked
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -26,20 +29,20 @@ class HomeViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     init {
+        // Initial refresh
+        viewModelScope.launch { updateTrending() }
         // Refresh data when login status changes.
-        viewModelScope.launch {
-            authRepository.accountStatus.chunked(2).collect {
-                if (it.first().isLogin != it.last().isLogin) {
-                    updateTrending()
-                }
-            }
-        }
+        authRepository.accountStatus
+            .chunked(2)
+            .onEach {
+                if (it.first().isLogin != it.last().isLogin) updateTrending()
+            }.launchIn(viewModelScope)
     }
 
     fun updateTrending() {
         _uiState.update { it.copy(isLoading = true) }
-        viewModelScope.launch {
-            neoDBRepository.fetchTrending().collect { result ->
+        neoDBRepository.serverTrending
+            .onEach { result ->
                 result.forEach { (type, list) ->
                     _uiState.update { curr ->
                         when (type) {
@@ -53,9 +56,9 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                 }
-            }
-            _uiState.update { it.copy(isLoading = false) }
-        }
+            }.onCompletion {
+                _uiState.update { it.copy(isLoading = false) }
+            }.launchIn(viewModelScope)
     }
 }
 
