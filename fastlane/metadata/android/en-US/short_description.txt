@@ -1,1 +1,1 @@
-a Material 3 client for NeoDB
+A native Android app for NeoDB designed with Material 3/You.

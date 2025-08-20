@@ -1,1 +1,12 @@
-<p><i>NeoDB You</i> is a Material 3 Android client for <a href='https://neodb.net/' target='_blank' rel='nofollow noopener'>NeoDB</a>.</p><blockquote>NeoDB is an open-source software and global community platform since 2021. It helps users to manage and explore collections, reviews, and ratings for various cultural products, including books, movies, music, podcasts, games, and performances. Additionally, users can share their collections, publish microblogs, and engage with others in the Fediverse. NeoDB integrates the functionalities of platforms like Goodreads, Letterboxd, RateYourMusic, and Podchaser, among others. It also supports self-hosting and interconnection through containerized deployment and the ActivityPub protocol.</blockquote><p><br><b>Features</b></p><ul><li>Login into your favorite <a href='https://neodb.net/servers/' target='_blank' rel='nofollow noopener'>NeoDB servers</a></li><li>View trending entries on the server.</li><li>Search for entries using keywords.</li><li>Access detailed information and reviews for any entry.</li><li>Compose and modify your own reviews.</li><li>Visualize your library with heat map.</li></ul>
+<p><i>NeoDB You</i> is a native Android app for NeoDB, crafted with Jetpack Compose and Material
+    3/You.</p><p><br><b>Features</b></p>
+<ul>
+    <li>Material 3/You design</li>
+    <li>Native UI</li>
+    <li>Login into any NeoDB servers</li>
+    <li>View trending entries</li>
+    <li>Search with keywords</li>
+    <li>Access detailed information and reviews</li>
+    <li>Compose and modify your own reviews</li>
+    <li>Visualize your library with heat map.</li>
+</ul><p>More features on the way...</p>
