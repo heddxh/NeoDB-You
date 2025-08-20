@@ -1,12 +1,1 @@
-<p><i>NeoDB You</i> is a native Android app for NeoDB, crafted with Jetpack Compose and Material
-    3/You.</p><p><br><b>Features</b></p>
-<ul>
-    <li>Material 3/You design</li>
-    <li>Native UI</li>
-    <li>Login into any NeoDB servers</li>
-    <li>View trending entries</li>
-    <li>Search with keywords</li>
-    <li>Access detailed information and reviews</li>
-    <li>Compose and modify your own reviews</li>
-    <li>Visualize your library with heat map.</li>
-</ul><p>More features on the way...</p>
+<p><i>NeoDB You</i> is a native Android app for NeoDB, crafted with Jetpack Compose and Material 3/You.</p><p><br><b>Features</b></p><ul><li>Material 3/You design</li><li>Native UI</li><li>Login into any NeoDB servers</li><li>View trending entries</li><li>Search with keywords</li><li>Access detailed information and reviews</li><li>Compose and modify your own reviews</li><li>Visualize your library with heat map.</li></ul><p>More features on the way...</p>
