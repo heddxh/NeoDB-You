@@ -1,6 +1,11 @@
 name: Validate fastlane metadata
 
-on: [ pull_request ]
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+    paths: [ "fastlane/**" ]
+
 jobs:
   validate:
     runs-on: ubuntu-latest
