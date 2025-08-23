@@ -3,6 +3,7 @@ name: Nightly build
 on:
   push:
     branches: [ "main" ]
+    paths-ignore: [ "docs/**", "fastlane/**", "**.md" ]
   workflow_dispatch:
 
 concurrency:
@@ -32,9 +33,17 @@ jobs:
           SIGN_KEY_ALIAS: ${{ secrets.SIGN_KEY_ALIAS }}
         run: ./gradlew assembleRelease
 
+      - name: Rename APK
+        run: |
+          set -e
+          SHA=${{ github.sha }}
+          echo "Release version is: $SHA"
+          
+          APK_DIR="app/build/outputs/apk/release"
+          mv ${APK_DIR}/app-release.apk NeoDB-You-nightly-${SHA}.apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: arm64-v8a-${{ github.sha }}
-          path: app/build/outputs/apk/release/app-arm64-v8a-release.apk
-
+          name: nightly
+          path: app/build/outputs/apk/release/app-release.apk

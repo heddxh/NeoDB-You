@@ -1,9 +1,7 @@
-import com.android.build.api.dsl.SigningConfig
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import java.io.FileInputStream
 import java.util.Properties
 import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 plugins {
     alias(libs.plugins.android.application)
@@ -33,7 +31,6 @@ kotlin {
 }
 
 android {
-    signingConfigs { configureSigning(this) }
     namespace = "day.vitayuzu.neodb"
     compileSdk = 36
 
@@ -56,15 +53,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            signingConfig = signingConfigs.getByName("release")
-            splits {
-                abi {
-                    isEnable = true
-                    isUniversalApk = true
-                    reset()
-                    include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
-                }
-            }
+            // Return null to get unsigned apk to make RB happy.
+            configureSigning()
+            signingConfig = signingConfigs.findByName("release")
         }
         debug {
             applicationIdSuffix = ".debug"
@@ -135,10 +126,8 @@ dependencies {
     implementation(libs.versionCompare)
 }
 
-// Sign config
-// TODO: Move into a gradle task
-@OptIn(ExperimentalEncodingApi::class)
-private fun configureSigning(signingConfigs: NamedDomainObjectContainer<out SigningConfig>) {
+// Signing config
+private fun configureSigning() {
     if (System.getenv("GITHUB_ACTIONS").toBoolean()) {
         // Read from env
         val keyBase64 = getEnv("SIGN_KEY_BASE64")
@@ -156,7 +145,7 @@ private fun configureSigning(signingConfigs: NamedDomainObjectContainer<out Sign
         try {
             tmpFile.writeBytes(Base64.decode(keyBase64))
             tmpFile.deleteOnExit()
-            signingConfigs.create("release") {
+            android.signingConfigs.register("release") {
                 storeFile = tmpFile
                 storePassword = keyPassword
                 this.keyAlias = keyAlias
@@ -167,9 +156,13 @@ private fun configureSigning(signingConfigs: NamedDomainObjectContainer<out Sign
             throw e
         }
     } else {
-        // Read from file
         val keystorePropertiesFile = rootProject.file("keystore.properties")
-        require(keystorePropertiesFile.exists()) { println("Missing keystore.properties") }
+        // Unsigned for IzzyOnDroid
+        if (!keystorePropertiesFile.exists()) {
+            println("Missing keystore.properties, create unsigned APK")
+            return
+        }
+        // Read from file
         val keystoreProperties =
             Properties().apply { load(FileInputStream(keystorePropertiesFile)) }
         val keyAlias = keystoreProperties.getProperty("keyAlias")
@@ -182,7 +175,7 @@ private fun configureSigning(signingConfigs: NamedDomainObjectContainer<out Sign
         requireNotNull(storeFile) { "Missing storeFile in keystore.properties" }
         requireNotNull(storePassword) { "Missing storePassword in keystore.properties" }
 
-        signingConfigs.create("release") {
+        android.signingConfigs.register("release") {
             this.keyAlias = keyAlias
             this.keyPassword = keyPassword
             this.storeFile = file(storeFile)
