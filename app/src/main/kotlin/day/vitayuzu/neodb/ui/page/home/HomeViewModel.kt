@@ -15,10 +15,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val neoDBRepository: NeoDBRepository,
@@ -29,9 +27,9 @@ class HomeViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     init {
-        // Initial refresh
-        viewModelScope.launch { updateTrending() }
+        _uiState.update { it.copy(isLoading = true) }
         // Refresh data when login status changes.
+        @OptIn(ExperimentalCoroutinesApi::class)
         authRepository.accountStatus
             .chunked(2)
             .onEach {

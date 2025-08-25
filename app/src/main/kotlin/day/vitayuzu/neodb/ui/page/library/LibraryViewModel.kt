@@ -3,12 +3,15 @@ package day.vitayuzu.neodb.ui.page.library
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.chunked
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
@@ -24,20 +27,30 @@ import kotlin.time.ExperimentalTime
 // FIXME: May move filtering to UI(LibraryPage)
 // FIXME: make refreshDisplayedMarks() and generateHeatMap() pure functions and only call in refresh()
 @HiltViewModel
-class LibraryViewModel @Inject constructor(private val repo: NeoDBRepository) : ViewModel() {
+class LibraryViewModel @Inject constructor(
+    private val neoDBRepository: NeoDBRepository,
+    private val authRepository: AuthRepository,
+) : ViewModel() {
     private val _uiState = MutableStateFlow(LibraryUiState())
     val uiState = _uiState.asStateFlow()
 
     private val marks = mutableListOf<Mark>()
 
     init {
-        refresh()
+        _uiState.update { it.copy(isLoading = true) }
+        // Refresh data when login status changes.
+        @OptIn(ExperimentalCoroutinesApi::class)
+        authRepository.accountStatus
+            .chunked(2)
+            .onEach {
+                if (it.first().isLogin != it.last().isLogin) refresh()
+            }.launchIn(viewModelScope)
     }
 
     fun refresh() {
-        marks.clear()
         _uiState.update { it.copy(isLoading = true) }
-        repo.userShelf
+        marks.clear()
+        neoDBRepository.userShelf
             .onEach { pagedMarkSchemaFlow ->
                 marks += pagedMarkSchemaFlow.data?.map { Mark(it) }?.sortedByDescending { it.date }
                     ?: emptyList()
