@@ -99,17 +99,20 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.navigation.compose)
     // UI Lib
     implementation(libs.shimmer)
     implementation(libs.aboutlibraries.m3)
+    // Navigation 3
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     // Kotlin
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.datetime)
     // Hilt
     implementation(libs.google.hilt.android)
     ksp(libs.google.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.viewmodel)
     // Http client
     implementation(libs.ktorfit.lib)
     implementation(libs.ktor.client.content.negotiation)
