@@ -41,9 +41,10 @@ jobs:
           
           APK_DIR="app/build/outputs/apk/release"
           mv ${APK_DIR}/app-release.apk NeoDB-You-nightly-${SHA}.apk
+          echo "APK renamed to NeoDB-You-nightly-${SHA}.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: nightly
-          path: app/build/outputs/apk/release/app-release.apk
+          path: NeoDB-You-nightly-${{ github.sha }}.apk
