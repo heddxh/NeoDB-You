@@ -8,7 +8,6 @@ import day.vitayuzu.neodb.data.schema.TrendingItemSchema
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
@@ -23,11 +22,9 @@ import javax.inject.Inject
 class NeoDBRepository @Inject constructor(private val remoteSource: RemoteSource) {
 
     // Concurrently fetch all shelves
-    // TODO: Check cancellable here
     @OptIn(ExperimentalCoroutinesApi::class)
     val userShelf = flowOf(*ShelfType.entries.toTypedArray())
         .flatMapMerge {
-            delay(2000)
             fetchMyShelfByShelfType(it)
         }
 
