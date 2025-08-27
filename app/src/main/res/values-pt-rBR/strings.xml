@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_title">Página Inicial</string>
+    <string name="library_title">Biblioteca</string>
+    <string name="settings_title">Configurações</string>
+    <string name="entry_displayname_book">Livro</string>
+    <string name="entry_displayname_movie">Filme</string>
+    <string name="entry_displayname_tv">TV</string>
+    <string name="entry_displayname_music">Música</string>
+    <string name="entry_displayname_game">Jogo</string>
+    <string name="entry_displayname_podcast">Podcast</string>
+    <string name="entry_displayname_performance">Performance</string>
+    <string name="entry_displayname_other">Outros</string>
+    <string name="shelf_displayname_wishlist">Lista de desejos</string>
+    <string name="shelf_displayname_progress">Em Andamento</string>
+    <string name="shelf_displayname_completed">Completado</string>
+    <string name="shelf_displayname_dropped">Descartado</string>
+    <string name="detail_field_description">Descrição</string>
+    <string name="textfield_review">Análise</string>
+    <string name="textfield_postdate">Definir data da postagem</string>
+    <string name="toggle_postToFedi">Postagem cruzada para o Fediverse</string>
+    <string name="visibility_displayname_public">Público</string>
+    <string name="visibility_displayname_unlisted">Não listado</string>
+    <string name="visibility_displayname_followers">Somente seguidores</string>
+    <string name="textfield_search">Pesquisar por nome ou link externo suportado…</string>
+    <string name="textfield_instanceUrl">Domínio da instância</string>
+    <string name="welcome_firstline">Bem-vindo!</string>
+    <string name="welcome_secondline">Digite o domínio da sua instância NeoDB para fazer login</string>
+    <string name="detail_show_all_reviews">Mostrar todas as análises</string>
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Cancelar</string>
+    <string name="textfield_instanceUrl_supportingText">Não sabe o que inserir? Para usuários em inglês, geralmente é eggplant.place.</string>
+    <string name="settings_account_settings">Configurações de Conta</string>
+    <string name="settings_account_logOut">Sair</string>
+    <string name="settings_logincard_welcomewords">Faça login para aproveitar seu livro, filme, música e outras coleções no Neodb.</string>
+    <string name="settings_about_version">Versão</string>
+    <string name="settings_about_developer">Desenvolvedor</string>
+    <string name="settings_about_license">Licença</string>
+    <string name="settings_title_about">Sobre APP</string>
+</resources>
