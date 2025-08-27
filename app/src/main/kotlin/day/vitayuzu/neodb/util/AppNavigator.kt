@@ -19,7 +19,7 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
     val current: AppDestination?
         get() = backStack.lastOrNull()
 
-    infix fun goTo(destination: AppDestination) {
+    infix fun goto(destination: AppDestination) {
         if (destination is RequireLogin && !checkLogin()) {
             gotoLogin()
         } else if (destination is TopLevelDestination) {

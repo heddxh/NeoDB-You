@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,18 +14,26 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -42,6 +51,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.data.UpdateRepository
+import day.vitayuzu.neodb.ui.component.SearchModal
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
@@ -58,6 +68,7 @@ import day.vitayuzu.neodb.util.AppNavigator.Library
 import day.vitayuzu.neodb.util.AppNavigator.License
 import day.vitayuzu.neodb.util.AppNavigator.Settings
 import day.vitayuzu.neodb.util.AppNavigator.TopLevelDestination
+import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.LocalModalSheetController
 import day.vitayuzu.neodb.util.ModalSheetController
 import day.vitayuzu.neodb.util.ModalState
@@ -92,16 +103,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NeoDBYouTheme {
-                MainScaffold(
-                    appNavigator = remember {
-                        AppNavigator(
-                            checkLogin = { authRepository.accountStatus.value.isLogin },
-                            gotoLogin = {
-                                this.startActivity(Intent(this, OauthActivity::class.java))
-                            },
-                        )
-                    },
-                ) { keywords ->
+                val appNavigator = remember {
+                    AppNavigator(
+                        checkLogin = { authRepository.accountStatus.value.isLogin },
+                        gotoLogin = {
+                            this.startActivity(Intent(this, OauthActivity::class.java))
+                        },
+                    )
+                }
+                MainScaffold(appNavigator = appNavigator) { keywords ->
                     // onSearch
                     neoDBRepository.searchWithKeyword(keywords).map { searchResult ->
                         searchResult.data.map { Entry(it) }
@@ -123,43 +133,13 @@ private fun MainScaffold(
     CompositionLocalProvider(LocalModalSheetController provides modalSheetController) {
         Scaffold(
             modifier = modifier,
-            //        topBar = {
-            //            MainTopBar(currentMainScreen, onSearch) { type, uuid ->
-            //                navController.navigate(Navi.Detail(type, uuid))
-            //            }
-            //        },
-            floatingActionButton = {
-                AnimatedVisibility(appNavigator.current is Detail) {
-                    val modalSheetController = LocalModalSheetController.current
-                    FloatingActionButton(
-                        modifier = Modifier.animateEnterExit(),
-                        onClick = { modalSheetController.status = ModalState.NEW },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add new mark for this entry",
-                        )
-                    }
+            topBar = {
+                MainTopBar(appNavigator, onSearch) { type, uuid ->
+                    appNavigator goto Detail(type, uuid)
                 }
             },
-            bottomBar = {
-                AnimatedVisibility(
-                    visible = appNavigator.current is TopLevelDestination,
-                    enter = expandVertically(),
-                    exit = shrinkVertically(),
-                ) {
-                    NavigationBar(Modifier.animateEnterExit()) {
-                        AppNavigator.TopLevelDestinations.forEach { destination ->
-                            NavigationBarItem(
-                                icon = { Icon(destination.icon, null) },
-                                label = { Text(stringResource(destination.name)) },
-                                selected = appNavigator.current == destination,
-                                onClick = { appNavigator goTo destination },
-                            )
-                        }
-                    }
-                }
-            },
+            floatingActionButton = { MainFAB(appNavigator) },
+            bottomBar = { MainBottomBar(appNavigator) },
         ) {
             MainNavDisplay(
                 appNavigator = appNavigator,
@@ -171,7 +151,7 @@ private fun MainScaffold(
 
 @Composable
 @Suppress("ktlint:compose:vm-injection-check")
-fun MainNavDisplay(
+private fun MainNavDisplay(
     appNavigator: AppNavigator,
     insetsPaddingValues: PaddingValues,
     modifier: Modifier = Modifier,
@@ -193,17 +173,17 @@ fun MainNavDisplay(
         entryProvider = entryProvider {
             entry<Home> {
                 HomeScreen(mainScreenModifier, homeViewModel) { type, uuid ->
-                    appNavigator goTo Detail(type, uuid)
+                    appNavigator goto Detail(type, uuid)
                 }
             }
             entry<Library> {
                 LibraryPage(mainScreenModifier, libraryViewModel) { type, uuid ->
-                    appNavigator goTo Detail(type, uuid)
+                    appNavigator goto Detail(type, uuid)
                 }
             }
             entry<Settings> {
                 SettingsPage(mainScreenModifier, settingsViewModel) {
-                    appNavigator goTo License
+                    appNavigator goto License
                 }
             }
             entry<Detail> { (type, uuid) ->
@@ -220,46 +200,84 @@ fun MainNavDisplay(
     )
 }
 
-// @OptIn(ExperimentalMaterial3Api::class)
-// @Composable
-// private fun MainTopBar(
-//    currentMainScreen: MainScreen<out Navi>?,
-//    onSearch: (String) -> Flow<List<Entry>> = { flowOf() },
-//    onClickEntry: (EntryType, String) -> Unit = { _, _ -> },
-// ) {
-//    val scope = rememberCoroutineScope()
-//    if (currentMainScreen != null) {
-//        val searchBarState = rememberSearchBarState(SearchBarValue.Collapsed)
-//        Crossfade(searchBarState.currentValue) {
-//            if (it == SearchBarValue.Expanded) {
-//                SearchModal(
-//                    state = searchBarState,
-//                    onSearch = onSearch,
-//                    onClickEntry = onClickEntry,
-//                )
-//            } else {
-//                TopAppBar(
-//                    modifier = Modifier.padding(top = 8.dp), // TopSearchBar has an extra padding
-//                    title = { Text(stringResource(currentMainScreen.name)) },
-//                    actions = {
-//                        when (currentMainScreen.nav) {
-//                            // Show search button
-//                            Home, Library -> IconButton(
-//                                onClick = {
-//                                    scope.launch { searchBarState.animateToExpanded() }
-//                                },
-//                            ) {
-//                                Icon(
-//                                    imageVector = Icons.Default.Search,
-//                                    contentDescription = null,
-//                                )
-//                            }
-//
-//                            else -> {}
-//                        }
-//                    },
-//                )
-//            }
-//        }
-//    }
-// }
+@Composable
+private fun MainFAB(appNavigator: AppNavigator, modifier: Modifier = Modifier) {
+    AnimatedVisibility(appNavigator.current is Detail, modifier = modifier) {
+        val modalSheetController = LocalModalSheetController.current
+        FloatingActionButton(
+            modifier = Modifier.animateEnterExit(),
+            onClick = { modalSheetController.status = ModalState.NEW },
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add new mark for this entry",
+            )
+        }
+    }
+}
+
+@Composable
+fun MainBottomBar(appNavigator: AppNavigator, modifier: Modifier = Modifier) {
+    AnimatedVisibility(
+        visible = appNavigator.current is TopLevelDestination,
+        modifier = modifier,
+        enter = expandVertically(),
+        exit = shrinkVertically(),
+    ) {
+        NavigationBar(Modifier.animateEnterExit()) {
+            AppNavigator.TopLevelDestinations.forEach { destination ->
+                NavigationBarItem(
+                    icon = { Icon(destination.icon, null) },
+                    label = { Text(stringResource(destination.name)) },
+                    selected = appNavigator.current == destination,
+                    onClick = { appNavigator goto destination },
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MainTopBar(
+    appNavigator: AppNavigator,
+    onSearch: (String) -> Flow<List<Entry>> = { flowOf() },
+    onClickEntry: (EntryType, String) -> Unit = { _, _ -> },
+) {
+    val scope = rememberCoroutineScope()
+    if (appNavigator.current is TopLevelDestination) {
+        val currentMainScreen = appNavigator.current as TopLevelDestination
+        val searchBarState = rememberSearchBarState(SearchBarValue.Collapsed)
+        Crossfade(searchBarState.currentValue) {
+            if (it == SearchBarValue.Expanded) {
+                SearchModal(
+                    state = searchBarState,
+                    onSearch = onSearch,
+                    onClickEntry = onClickEntry,
+                )
+            } else {
+                TopAppBar(
+                    modifier = Modifier.padding(top = 8.dp), // TopSearchBar has an extra padding
+                    title = { Text(stringResource(currentMainScreen.name)) },
+                    actions = {
+                        when (currentMainScreen) {
+                            // Show search button
+                            Home, Library -> IconButton(
+                                onClick = {
+                                    scope.launch { searchBarState.animateToExpanded() }
+                                },
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null,
+                                )
+                            }
+
+                            else -> {}
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
