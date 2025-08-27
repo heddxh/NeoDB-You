@@ -70,6 +70,8 @@ import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.model.Post
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.EntryType
+import day.vitayuzu.neodb.util.LocalModalSheetController
+import day.vitayuzu.neodb.util.ModalState
 import day.vitayuzu.neodb.util.toDateString
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -83,10 +85,9 @@ fun DetailPage(
     modifier: Modifier = Modifier,
     viewModel: DetailViewModel =
         hiltViewModel<DetailViewModel, DetailViewModel.Factory> { it.create(type, uuid) },
-    showNewMarkModal: Boolean = false,
-    onModalDismiss: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val modalSheetController = LocalModalSheetController.current
 
     Surface(modifier = modifier) {
         Box {
@@ -116,22 +117,16 @@ fun DetailPage(
                 )
 
                 // Content
-                var modalState by remember(showNewMarkModal) {
-                    if (showNewMarkModal) {
-                        return@remember mutableStateOf(ModalState.NEW)
-                    }
-                    mutableStateOf(ModalState.CLOSED)
-                }
-
                 var isShowAllReviews by remember { mutableStateOf(false) }
+
                 BackHandler(enabled = isShowAllReviews) { isShowAllReviews = false }
 
                 DetailContent(
                     detail = detail,
                     mark = uiState.mark,
                     postList = uiState.postList.take(if (isShowAllReviews) Int.MAX_VALUE else 3),
-                    onClick = { modalState = ModalState.DES },
-                    onEditMark = { modalState = ModalState.EDIT },
+                    onClick = { modalSheetController.status = ModalState.DES },
+                    onEditMark = { modalSheetController.status = ModalState.EDIT },
                     isShowingAll = isShowAllReviews,
                     showMore = {
                         isShowAllReviews = true
@@ -139,15 +134,14 @@ fun DetailPage(
                     },
                 )
 
-                // Modal
-                when (modalState) {
+                // Modal sheet
+                when (modalSheetController.status) {
                     ModalState.NEW -> PostComposeModal(
                         postDate = Instant.fromEpochMilliseconds(postDate),
                         onSend = viewModel::postMark,
                         onShowDatePicker = { isShowDatePicker = true },
                         onDismiss = {
-                            modalState = ModalState.CLOSED
-                            onModalDismiss()
+                            modalSheetController.status = ModalState.CLOSED
                         },
                     )
 
@@ -157,15 +151,13 @@ fun DetailPage(
                         onSend = viewModel::postMark,
                         onShowDatePicker = { isShowDatePicker = true },
                         onDismiss = {
-                            modalState = ModalState.CLOSED
-                            onModalDismiss()
+                            modalSheetController.status = ModalState.CLOSED
                         },
                     )
 
                     // TODO: show other field.
                     ModalState.DES -> ModalBottomSheet(onDismissRequest = {
-                        modalState = ModalState.CLOSED
-                        onModalDismiss()
+                        modalSheetController.status = ModalState.CLOSED
                     }) {
                         ShowAllInfoModalContent(des = detail.des ?: "")
                     }

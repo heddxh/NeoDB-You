@@ -115,5 +115,3 @@ data class DetailUiState(
     val hasMorePost: Boolean = false,
     val postList: List<Post> = emptyList(),
 )
-
-enum class ModalState { CLOSED, EDIT, NEW, DES }

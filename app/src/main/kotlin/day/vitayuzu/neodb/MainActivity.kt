@@ -20,10 +20,9 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -59,6 +58,9 @@ import day.vitayuzu.neodb.util.AppNavigator.Library
 import day.vitayuzu.neodb.util.AppNavigator.License
 import day.vitayuzu.neodb.util.AppNavigator.Settings
 import day.vitayuzu.neodb.util.AppNavigator.TopLevelDestination
+import day.vitayuzu.neodb.util.LocalModalSheetController
+import day.vitayuzu.neodb.util.ModalSheetController
+import day.vitayuzu.neodb.util.ModalState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
@@ -116,53 +118,53 @@ private fun MainScaffold(
     modifier: Modifier = Modifier,
     onSearch: (String) -> Flow<List<Entry>> = { flowOf() },
 ) {
-    var showNewMarkModal by remember { mutableStateOf(false) }
+    val modalSheetController = remember { ModalSheetController() }
 
-    Scaffold(
-        modifier = modifier,
-//        topBar = {
-//            MainTopBar(currentMainScreen, onSearch) { type, uuid ->
-//                navController.navigate(Navi.Detail(type, uuid))
-//            }
-//        },
-        floatingActionButton = {
-            AnimatedVisibility(appNavigator.current is Detail) {
-                FloatingActionButton(
-                    modifier = Modifier.animateEnterExit(),
-                    onClick = { showNewMarkModal = true },
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add new mark for this entry",
-                    )
-                }
-            }
-        },
-        bottomBar = {
-            AnimatedVisibility(
-                visible = appNavigator.current is TopLevelDestination,
-                enter = expandVertically(),
-                exit = shrinkVertically(),
-            ) {
-                NavigationBar(Modifier.animateEnterExit()) {
-                    AppNavigator.TopLevelDestinations.forEach { destination ->
-                        NavigationBarItem(
-                            icon = { Icon(destination.icon, null) },
-                            label = { Text(stringResource(destination.name)) },
-                            selected = appNavigator.current == destination,
-                            onClick = { appNavigator goTo destination },
+    CompositionLocalProvider(LocalModalSheetController provides modalSheetController) {
+        Scaffold(
+            modifier = modifier,
+            //        topBar = {
+            //            MainTopBar(currentMainScreen, onSearch) { type, uuid ->
+            //                navController.navigate(Navi.Detail(type, uuid))
+            //            }
+            //        },
+            floatingActionButton = {
+                AnimatedVisibility(appNavigator.current is Detail) {
+                    val modalSheetController = LocalModalSheetController.current
+                    FloatingActionButton(
+                        modifier = Modifier.animateEnterExit(),
+                        onClick = { modalSheetController.status = ModalState.NEW },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add new mark for this entry",
                         )
                     }
                 }
-            }
-        },
-    ) {
-        MainNavDisplay(
-            navigation = appNavigator,
-            insetsPaddingValues = it,
-            showNewMarkModal = showNewMarkModal,
+            },
+            bottomBar = {
+                AnimatedVisibility(
+                    visible = appNavigator.current is TopLevelDestination,
+                    enter = expandVertically(),
+                    exit = shrinkVertically(),
+                ) {
+                    NavigationBar(Modifier.animateEnterExit()) {
+                        AppNavigator.TopLevelDestinations.forEach { destination ->
+                            NavigationBarItem(
+                                icon = { Icon(destination.icon, null) },
+                                label = { Text(stringResource(destination.name)) },
+                                selected = appNavigator.current == destination,
+                                onClick = { appNavigator goTo destination },
+                            )
+                        }
+                    }
+                }
+            },
         ) {
-            showNewMarkModal = false
+            MainNavDisplay(
+                appNavigator = appNavigator,
+                insetsPaddingValues = it,
+            )
         }
     }
 }
@@ -170,11 +172,9 @@ private fun MainScaffold(
 @Composable
 @Suppress("ktlint:compose:vm-injection-check")
 fun MainNavDisplay(
-    navigation: AppNavigator,
+    appNavigator: AppNavigator,
     insetsPaddingValues: PaddingValues,
     modifier: Modifier = Modifier,
-    showNewMarkModal: Boolean = false,
-    onModalDismiss: () -> Unit = {},
 ) {
     val mainScreenModifier =
         Modifier.padding(insetsPaddingValues).consumeWindowInsets(insetsPaddingValues)
@@ -183,7 +183,7 @@ fun MainNavDisplay(
     val libraryViewModel: LibraryViewModel = hiltViewModel()
     val settingsViewModel: SettingsViewModel = hiltViewModel()
     NavDisplay(
-        backStack = navigation.backStack,
+        backStack = appNavigator.backStack,
         modifier = modifier,
         entryDecorators = listOf(
             rememberSceneSetupNavEntryDecorator(),
@@ -193,25 +193,23 @@ fun MainNavDisplay(
         entryProvider = entryProvider {
             entry<Home> {
                 HomeScreen(mainScreenModifier, homeViewModel) { type, uuid ->
-                    navigation goTo Detail(type, uuid)
+                    appNavigator goTo Detail(type, uuid)
                 }
             }
             entry<Library> {
                 LibraryPage(mainScreenModifier, libraryViewModel) { type, uuid ->
-                    navigation goTo Detail(type, uuid)
+                    appNavigator goTo Detail(type, uuid)
                 }
             }
             entry<Settings> {
                 SettingsPage(mainScreenModifier, settingsViewModel) {
-                    navigation goTo License
+                    appNavigator goTo License
                 }
             }
             entry<Detail> { (type, uuid) ->
                 DetailPage(
                     type = type,
                     uuid = uuid,
-                    showNewMarkModal = showNewMarkModal,
-                    onModalDismiss = onModalDismiss,
                 )
             }
             entry<License> {
