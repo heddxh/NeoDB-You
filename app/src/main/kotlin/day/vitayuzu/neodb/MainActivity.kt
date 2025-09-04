@@ -5,10 +5,17 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
@@ -68,8 +75,8 @@ import day.vitayuzu.neodb.util.AppNavigator.Library
 import day.vitayuzu.neodb.util.AppNavigator.License
 import day.vitayuzu.neodb.util.AppNavigator.Settings
 import day.vitayuzu.neodb.util.AppNavigator.TopLevelDestination
-import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.LocalModalSheetController
+import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.ModalSheetController
 import day.vitayuzu.neodb.util.ModalState
 import kotlinx.coroutines.flow.Flow
@@ -111,10 +118,15 @@ class MainActivity : ComponentActivity() {
                         },
                     )
                 }
-                MainScaffold(appNavigator = appNavigator) { keywords ->
-                    // onSearch
-                    neoDBRepository.searchWithKeyword(keywords).map { searchResult ->
-                        searchResult.data.map { Entry(it) }
+                CompositionLocalProvider(
+                    LocalNavigator provides appNavigator,
+                    LocalModalSheetController provides remember { ModalSheetController() },
+                ) {
+                    MainScaffold { keywords ->
+                        // onSearch
+                        neoDBRepository.searchWithKeyword(keywords).map { searchResult ->
+                            searchResult.data.map { Entry(it) }
+                        }
                     }
                 }
             }
@@ -124,76 +136,67 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun MainScaffold(
-    appNavigator: AppNavigator,
     modifier: Modifier = Modifier,
     onSearch: (String) -> Flow<List<Entry>> = { flowOf() },
 ) {
-    val modalSheetController = remember { ModalSheetController() }
-
-    CompositionLocalProvider(LocalModalSheetController provides modalSheetController) {
-        Scaffold(
-            modifier = modifier,
-            topBar = {
-                MainTopBar(appNavigator, onSearch) { type, uuid ->
-                    appNavigator goto Detail(type, uuid)
-                }
-            },
-            floatingActionButton = { MainFAB(appNavigator) },
-            bottomBar = { MainBottomBar(appNavigator) },
-        ) {
-            MainNavDisplay(
-                appNavigator = appNavigator,
-                insetsPaddingValues = it,
-            )
-        }
+    val appNavigator = LocalNavigator.current
+    Scaffold(
+        modifier = modifier,
+        topBar = { MainTopBar(onSearch) },
+        floatingActionButton = { MainFAB(appNavigator) },
+        bottomBar = { MainBottomBar() },
+    ) {
+        MainNavDisplay(insetsPaddingValues = it)
     }
 }
 
 @Composable
 @Suppress("ktlint:compose:vm-injection-check")
-private fun MainNavDisplay(
-    appNavigator: AppNavigator,
-    insetsPaddingValues: PaddingValues,
-    modifier: Modifier = Modifier,
-) {
+private fun MainNavDisplay(insetsPaddingValues: PaddingValues, modifier: Modifier = Modifier) {
+    val appNavigator = LocalNavigator.current
     val mainScreenModifier =
         Modifier.padding(insetsPaddingValues).consumeWindowInsets(insetsPaddingValues)
     // Hoist viewmodel for top level screens to avoid reconstruction.
     val homeViewModel: HomeViewModel = hiltViewModel()
     val libraryViewModel: LibraryViewModel = hiltViewModel()
     val settingsViewModel: SettingsViewModel = hiltViewModel()
+    val libraries by rememberLibraries(R.raw.aboutlibraries)
     NavDisplay(
         backStack = appNavigator.backStack,
+        onBack = { appNavigator.back() },
         modifier = modifier,
         entryDecorators = listOf(
             rememberSceneSetupNavEntryDecorator(),
             rememberSavedStateNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
         ),
+        transitionSpec = {
+            if (appNavigator.animationDestination) {
+                slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
+            } else {
+                slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+            }
+        },
+        predictivePopTransitionSpec = {
+            fadeIn(tween(300)) togetherWith fadeOut(tween(300))
+        },
+        popTransitionSpec = {
+            fadeIn(tween(300)) togetherWith fadeOut(tween(300))
+        },
         entryProvider = entryProvider {
             entry<Home> {
-                HomeScreen(mainScreenModifier, homeViewModel) { type, uuid ->
-                    appNavigator goto Detail(type, uuid)
-                }
+                HomeScreen(mainScreenModifier, homeViewModel)
             }
             entry<Library> {
-                LibraryPage(mainScreenModifier, libraryViewModel) { type, uuid ->
-                    appNavigator goto Detail(type, uuid)
-                }
+                LibraryPage(mainScreenModifier, libraryViewModel)
             }
             entry<Settings> {
-                SettingsPage(mainScreenModifier, settingsViewModel) {
-                    appNavigator goto License
-                }
+                SettingsPage(mainScreenModifier, settingsViewModel)
             }
-            entry<Detail> { (type, uuid) ->
-                DetailPage(
-                    type = type,
-                    uuid = uuid,
-                )
+            entry<Detail> {
+                DetailPage(it.type, it.uuid)
             }
             entry<License> {
-                val libraries by rememberLibraries(R.raw.aboutlibraries)
                 LibrariesContainer(libraries, contentPadding = insetsPaddingValues)
             }
         },
@@ -217,7 +220,8 @@ private fun MainFAB(appNavigator: AppNavigator, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun MainBottomBar(appNavigator: AppNavigator, modifier: Modifier = Modifier) {
+fun MainBottomBar(modifier: Modifier = Modifier) {
+    val appNavigator = LocalNavigator.current
     AnimatedVisibility(
         visible = appNavigator.current is TopLevelDestination,
         modifier = modifier,
@@ -239,41 +243,40 @@ fun MainBottomBar(appNavigator: AppNavigator, modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MainTopBar(
-    appNavigator: AppNavigator,
-    onSearch: (String) -> Flow<List<Entry>> = { flowOf() },
-    onClickEntry: (EntryType, String) -> Unit = { _, _ -> },
-) {
+private fun MainTopBar(onSearch: (String) -> Flow<List<Entry>> = { flowOf() }) {
     val scope = rememberCoroutineScope()
+    val appNavigator = LocalNavigator.current
     if (appNavigator.current is TopLevelDestination) {
         val currentMainScreen = appNavigator.current as TopLevelDestination
         val searchBarState = rememberSearchBarState(SearchBarValue.Collapsed)
-        Crossfade(searchBarState.currentValue) {
+        Crossfade(searchBarState.currentValue) { it ->
             if (it == SearchBarValue.Expanded) {
-                SearchModal(
-                    state = searchBarState,
-                    onSearch = onSearch,
-                    onClickEntry = onClickEntry,
-                )
+                SearchModal(state = searchBarState, onSearch = onSearch)
             } else {
                 TopAppBar(
                     modifier = Modifier.padding(top = 8.dp), // TopSearchBar has an extra padding
-                    title = { Text(stringResource(currentMainScreen.name)) },
+                    title = {
+                        AnimatedContent(currentMainScreen) {
+                            Text(stringResource(it.name))
+                        }
+                    },
                     actions = {
-                        when (currentMainScreen) {
-                            // Show search button
-                            Home, Library -> IconButton(
-                                onClick = {
-                                    scope.launch { searchBarState.animateToExpanded() }
-                                },
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = null,
-                                )
-                            }
+                        AnimatedContent(currentMainScreen) { mainScreen ->
+                            when (mainScreen) {
+                                // Show search button
+                                Home, Library -> IconButton(
+                                    onClick = {
+                                        scope.launch { searchBarState.animateToExpanded() }
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = null,
+                                    )
+                                }
 
-                            else -> {}
+                                else -> {}
+                            }
                         }
                     },
                 )

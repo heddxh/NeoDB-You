@@ -31,14 +31,12 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import day.vitayuzu.neodb.ui.model.Entry
+import day.vitayuzu.neodb.util.AppNavigator.Detail
 import day.vitayuzu.neodb.util.EntryType
+import day.vitayuzu.neodb.util.LocalNavigator
 
 @Composable
-fun HomeScreen(
-    modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = hiltViewModel(),
-    onClickEntry: (EntryType, String) -> Unit = { _, _ -> },
-) {
+fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     // TODO: show fetched data immediately
@@ -58,7 +56,6 @@ fun HomeScreen(
                     data = uiState.book,
                     type = EntryType.book,
                     modifier = trendingModifier,
-                    onClickEntry = onClickEntry,
                 )
             }
             // Game
@@ -67,7 +64,6 @@ fun HomeScreen(
                     data = uiState.game,
                     type = EntryType.game,
                     modifier = trendingModifier,
-                    onClickEntry = onClickEntry,
                 )
             }
             // Movie
@@ -76,7 +72,6 @@ fun HomeScreen(
                     data = uiState.movie,
                     type = EntryType.movie,
                     modifier = trendingModifier,
-                    onClickEntry = onClickEntry,
                 )
             }
             // TV
@@ -85,7 +80,6 @@ fun HomeScreen(
                     data = uiState.tv,
                     type = EntryType.tv,
                     modifier = trendingModifier,
-                    onClickEntry = onClickEntry,
                 )
             }
             // Music
@@ -94,7 +88,6 @@ fun HomeScreen(
                     data = uiState.music,
                     type = EntryType.music,
                     modifier = trendingModifier,
-                    onClickEntry = onClickEntry,
                 )
             }
             // Podcast
@@ -103,7 +96,6 @@ fun HomeScreen(
                     data = uiState.podcast,
                     type = EntryType.podcast,
                     modifier = trendingModifier,
-                    onClickEntry = onClickEntry,
                 )
             }
         }
@@ -115,8 +107,8 @@ fun TrendingSection(
     data: List<Entry>,
     type: EntryType,
     modifier: Modifier = Modifier,
-    onClickEntry: (type: EntryType, uuid: String) -> Unit = { _, _ -> },
 ) {
+    val appNavigator = LocalNavigator.current
     if (data.isEmpty()) return // return in advance if no data
     Column(
         modifier = modifier,
@@ -155,7 +147,7 @@ fun TrendingSection(
                     modifier = Modifier
                         .height(type.coverDimension.second.dp)
                         .clip(MaterialTheme.shapes.small)
-                        .clickable { onClickEntry(type, item.uuid) },
+                        .clickable { appNavigator goto Detail(type, item.uuid) },
                 )
                 // FIXME: may show 2 lines at most without mess the layout
                 Text(

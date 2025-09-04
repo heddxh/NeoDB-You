@@ -27,11 +27,7 @@ import day.vitayuzu.neodb.util.ShelfType
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun LibraryPage(
-    modifier: Modifier = Modifier,
-    viewModel: LibraryViewModel = hiltViewModel(),
-    onClickEntry: (EntryType, String) -> Unit = { _, _ -> },
-) {
+fun LibraryPage(modifier: Modifier = Modifier, viewModel: LibraryViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     PullToRefreshBox(
@@ -66,11 +62,7 @@ fun LibraryPage(
                 items = uiState.displayedMarks,
                 key = { it.entry.url },
             ) {
-                EntryMarkCard(
-                    entry = it.entry,
-                    mark = it,
-                    onClickEntry = onClickEntry,
-                )
+                EntryMarkCard(entry = it.entry, mark = it)
             }
         }
     }

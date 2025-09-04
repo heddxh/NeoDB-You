@@ -28,18 +28,19 @@ import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
-import day.vitayuzu.neodb.util.EntryType
+import day.vitayuzu.neodb.util.AppNavigator
+import day.vitayuzu.neodb.util.LocalNavigator
 
 @Composable
 fun EntryMarkCard(
     entry: Entry,
     mark: Mark?,
     modifier: Modifier = Modifier,
-    onClickEntry: (EntryType, String) -> Unit = { _, _ -> },
 ) {
+    val appNavigator = LocalNavigator.current
     Card(
         modifier = modifier,
-        onClick = { onClickEntry(entry.category, entry.uuid) },
+        onClick = { appNavigator goto AppNavigator.Detail(entry.category, entry.uuid) },
         colors = CardDefaults.cardColors(
             contentColor = MaterialTheme.colorScheme.onBackground,
             containerColor = MaterialTheme.colorScheme.background,

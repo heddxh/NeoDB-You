@@ -34,7 +34,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
-import day.vitayuzu.neodb.util.EntryType
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
@@ -49,7 +48,6 @@ fun SearchModal(
     modifier: Modifier = Modifier,
     state: SearchBarState = rememberSearchBarState(),
     onSearch: (String) -> Flow<List<Entry>> = { flowOf() },
-    onClickEntry: (EntryType, String) -> Unit = { _, _ -> },
 ) {
     val textFieldState = rememberTextFieldState()
     val scope = rememberCoroutineScope()
@@ -128,9 +126,7 @@ fun SearchModal(
 //                }
 //            }
             items(resultList.toList(), key = { it.uuid }) {
-                EntryMarkCard(entry = it, mark = null) { type, uuid ->
-                    onClickEntry(type, uuid)
-                }
+                EntryMarkCard(entry = it, mark = null)
             }
         }
     }

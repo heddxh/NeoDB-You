@@ -60,13 +60,11 @@ import day.vitayuzu.neodb.OauthActivity
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.data.AppSettings
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
+import day.vitayuzu.neodb.util.AppNavigator
+import day.vitayuzu.neodb.util.LocalNavigator
 
 @Composable
-fun SettingsPage(
-    modifier: Modifier = Modifier,
-    viewModel: SettingsViewModel = hiltViewModel(),
-    openLicensePage: () -> Unit = {},
-) {
+fun SettingsPage(modifier: Modifier = Modifier, viewModel: SettingsViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     // WORKAROUND: Only add 8dp padding to UserProfilePart to avoid left button wrapping in English locale
@@ -86,7 +84,6 @@ fun SettingsPage(
         AboutCard(
             Modifier.padding(horizontal = 8.dp),
             newVersionUrl = uiState.newVersionUrl,
-            openLicensePage = openLicensePage,
             checkUpdate = viewModel::checkUpdate,
         )
         ExperimentalCard(
@@ -202,11 +199,11 @@ private fun UserProfilePart(
 private fun AboutCard(
     modifier: Modifier = Modifier,
     newVersionUrl: String? = null,
-    openLicensePage: () -> Unit = {},
     checkUpdate: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val intent = CustomTabsIntent.Builder().build()
+    val appNavigator = LocalNavigator.current
     Column(modifier = modifier) {
         Text(stringResource(R.string.settings_title_about), Modifier.alpha(.6f).padding(8.dp))
         // Main Card
@@ -288,7 +285,7 @@ private fun AboutCard(
                     )
                 },
                 leadingContent = { Icon(painterResource(R.drawable.baseline_balance_24), null) },
-                modifier = Modifier.clickable(onClick = openLicensePage),
+                modifier = Modifier.clickable { appNavigator goto AppNavigator.License },
             )
         }
     }
