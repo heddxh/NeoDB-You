@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.vector.ImageVector
 import day.vitayuzu.neodb.R
+import day.vitayuzu.neodb.ui.theme.MotionNavigationDirection
 
 /**
  * Navi: さくらふたば
@@ -23,8 +24,8 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
     var previous: AppDestination? = null
         private set
 
-    val animationDestination: Boolean
-        get() = previous?.directionFor(current) ?: true
+    val animationDirection: MotionNavigationDirection
+        get() = previous?.directionTo(current) ?: MotionNavigationDirection.Forward
 
     infix fun goto(destination: AppDestination) {
         if (destination is RequireLogin && !checkLogin()) {
@@ -47,7 +48,7 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
     private sealed interface RequireLogin
 
     sealed interface AppDestination {
-        fun directionFor(destination: AppDestination): Boolean
+        fun directionTo(destination: AppDestination): MotionNavigationDirection
     }
 
     sealed interface TopLevelDestination : AppDestination {
@@ -60,7 +61,7 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
 
         @StringRes override val name = R.string.home_title
 
-        override fun directionFor(destination: AppDestination) = true
+        override fun directionTo(destination: AppDestination) = MotionNavigationDirection.Forward
     }
 
     data object Library : RequireLogin, TopLevelDestination {
@@ -68,7 +69,11 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
 
         @StringRes override val name = R.string.library_title
 
-        override fun directionFor(destination: AppDestination) = destination !is Home
+        override fun directionTo(destination: AppDestination) = if (destination is Home) {
+            MotionNavigationDirection.Backward
+        } else {
+            MotionNavigationDirection.Forward
+        }
     }
 
     data object Settings : TopLevelDestination {
@@ -76,15 +81,19 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
 
         @StringRes override val name = R.string.settings_title
 
-        override fun directionFor(destination: AppDestination) = destination is License
+        override fun directionTo(destination: AppDestination) = if (destination is License) {
+            MotionNavigationDirection.Forward
+        } else {
+            MotionNavigationDirection.Backward
+        }
     }
 
     data class Detail(val type: EntryType, val uuid: String) : AppDestination, RequireLogin {
-        override fun directionFor(destination: AppDestination) = true
+        override fun directionTo(destination: AppDestination) = MotionNavigationDirection.Forward
     }
 
     data object License : AppDestination {
-        override fun directionFor(destination: AppDestination) = true
+        override fun directionTo(destination: AppDestination) = MotionNavigationDirection.Forward
     }
 
     companion object {

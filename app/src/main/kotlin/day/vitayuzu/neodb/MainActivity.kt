@@ -13,8 +13,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -41,7 +39,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entry
@@ -62,11 +59,9 @@ import day.vitayuzu.neodb.ui.component.SearchModal
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
-import day.vitayuzu.neodb.ui.page.home.HomeViewModel
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
-import day.vitayuzu.neodb.ui.page.library.LibraryViewModel
 import day.vitayuzu.neodb.ui.page.settings.SettingsPage
-import day.vitayuzu.neodb.ui.page.settings.SettingsViewModel
+import day.vitayuzu.neodb.ui.theme.MotionTheme
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.AppNavigator.Detail
@@ -139,11 +134,10 @@ private fun MainScaffold(
     modifier: Modifier = Modifier,
     onSearch: (String) -> Flow<List<Entry>> = { flowOf() },
 ) {
-    val appNavigator = LocalNavigator.current
     Scaffold(
         modifier = modifier,
         topBar = { MainTopBar(onSearch) },
-        floatingActionButton = { MainFAB(appNavigator) },
+        floatingActionButton = { MainFAB() },
         bottomBar = { MainBottomBar() },
     ) {
         MainNavDisplay(insetsPaddingValues = it)
@@ -156,10 +150,6 @@ private fun MainNavDisplay(insetsPaddingValues: PaddingValues, modifier: Modifie
     val appNavigator = LocalNavigator.current
     val mainScreenModifier =
         Modifier.padding(insetsPaddingValues).consumeWindowInsets(insetsPaddingValues)
-    // Hoist viewmodel for top level screens to avoid reconstruction.
-    val homeViewModel: HomeViewModel = hiltViewModel()
-    val libraryViewModel: LibraryViewModel = hiltViewModel()
-    val settingsViewModel: SettingsViewModel = hiltViewModel()
     val libraries by rememberLibraries(R.raw.aboutlibraries)
     NavDisplay(
         backStack = appNavigator.backStack,
@@ -168,15 +158,12 @@ private fun MainNavDisplay(insetsPaddingValues: PaddingValues, modifier: Modifie
         entryDecorators = listOf(
             rememberSceneSetupNavEntryDecorator(),
             rememberSavedStateNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator(),
+            // Keep viewmodel of top level destinations.
+            rememberViewModelStoreNavEntryDecorator {
+                appNavigator.current !is TopLevelDestination
+            },
         ),
-        transitionSpec = {
-            if (appNavigator.animationDestination) {
-                slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
-            } else {
-                slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-            }
-        },
+        transitionSpec = { MotionTheme.slideHorizontally(appNavigator.animationDirection) },
         predictivePopTransitionSpec = {
             fadeIn(tween(300)) togetherWith fadeOut(tween(300))
         },
@@ -185,13 +172,13 @@ private fun MainNavDisplay(insetsPaddingValues: PaddingValues, modifier: Modifie
         },
         entryProvider = entryProvider {
             entry<Home> {
-                HomeScreen(mainScreenModifier, homeViewModel)
+                HomeScreen(mainScreenModifier)
             }
             entry<Library> {
-                LibraryPage(mainScreenModifier, libraryViewModel)
+                LibraryPage(mainScreenModifier)
             }
             entry<Settings> {
-                SettingsPage(mainScreenModifier, settingsViewModel)
+                SettingsPage(mainScreenModifier)
             }
             entry<Detail> {
                 DetailPage(it.type, it.uuid)
@@ -204,7 +191,8 @@ private fun MainNavDisplay(insetsPaddingValues: PaddingValues, modifier: Modifie
 }
 
 @Composable
-private fun MainFAB(appNavigator: AppNavigator, modifier: Modifier = Modifier) {
+private fun MainFAB(modifier: Modifier = Modifier) {
+    val appNavigator = LocalNavigator.current
     AnimatedVisibility(appNavigator.current is Detail, modifier = modifier) {
         val modalSheetController = LocalModalSheetController.current
         FloatingActionButton(
@@ -256,7 +244,9 @@ private fun MainTopBar(onSearch: (String) -> Flow<List<Entry>> = { flowOf() }) {
                 TopAppBar(
                     modifier = Modifier.padding(top = 8.dp), // TopSearchBar has an extra padding
                     title = {
-                        AnimatedContent(currentMainScreen) {
+                        AnimatedContent(currentMainScreen, transitionSpec = {
+                            MotionTheme.slideHorizontally(appNavigator.animationDirection)
+                        }) {
                             Text(stringResource(it.name))
                         }
                     },
