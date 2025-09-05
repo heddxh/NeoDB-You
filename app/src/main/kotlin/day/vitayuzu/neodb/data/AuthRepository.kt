@@ -131,6 +131,13 @@ class AuthRepository @Inject constructor(
         if (token == null || instanceUrl == null) {
             _accountStatus.update { AccountStatus() }
         } else {
+            // Emit status asap before network call.
+            _accountStatus.update {
+                AccountStatus(
+                    isLogin = true,
+                    instanceUrl = instanceUrl,
+                )
+            }
             runCatching {
                 remoteSource.fetchSelfAccountInfo(instanceUrl)
             }.onSuccess { userSchema ->

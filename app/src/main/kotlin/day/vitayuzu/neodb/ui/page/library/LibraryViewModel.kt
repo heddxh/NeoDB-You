@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.chunked
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -41,6 +42,7 @@ class LibraryViewModel @Inject constructor(
         // Refresh data when login status changes.
         @OptIn(ExperimentalCoroutinesApi::class)
         authRepository.accountStatus
+            .onSubscription { refresh() }
             .chunked(2)
             .onEach {
                 if (it.first().isLogin != it.last().isLogin) refresh()
