@@ -101,6 +101,6 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
     }
 }
 
-val LocalNavigator = staticCompositionLocalOf<AppNavigator> {
-    error("No AppNavigator provided")
+val LocalNavigator = staticCompositionLocalOf {
+    AppNavigator({ true }, {})
 }

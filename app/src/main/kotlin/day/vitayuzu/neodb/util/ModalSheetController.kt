@@ -9,8 +9,8 @@ class ModalSheetController {
     var status by mutableStateOf(ModalState.CLOSED)
 }
 
-val LocalModalSheetController = staticCompositionLocalOf<ModalSheetController> {
-    error("No ModalSheetController provided")
+val LocalModalSheetController = staticCompositionLocalOf {
+    ModalSheetController()
 }
 
 enum class ModalState { CLOSED, EDIT, NEW, DES }
