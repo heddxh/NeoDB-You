@@ -41,8 +41,8 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
     }
 
     fun back() {
-        backStack.removeLastOrNull()
         previous = backStack.lastOrNull()
+        backStack.removeLastOrNull()
     }
 
     private sealed interface RequireLogin
