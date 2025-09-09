@@ -114,13 +114,14 @@ dependencies {
     ksp(libs.google.hilt.compiler)
     implementation(libs.androidx.hilt.viewmodel)
     // Http client
-    implementation(libs.ktorfit.lib)
+    implementation(libs.ktorfit.lib.light)
+    implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.client.logging)
     // Coil
     implementation(libs.coil.compose)
-    implementation(libs.coil.network.okhttp)
+    implementation(libs.coil.network.ktor3)
     // Oauth2
     implementation(libs.datastore.preferences)
     implementation(libs.ktor.client.auth)
