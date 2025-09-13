@@ -61,6 +61,13 @@ android {
             applicationIdSuffix = ".debug"
             manifestPlaceholders["app_name"] = "NeoDB You Debug"
         }
+        // Release build without R8 and lint for faster build time.
+        register("fastRelease") {
+            initWith(getByName("release"))
+            isMinifyEnabled = false
+            isShrinkResources = false
+            lint.checkReleaseBuilds = false
+        }
     }
 
     packaging {
