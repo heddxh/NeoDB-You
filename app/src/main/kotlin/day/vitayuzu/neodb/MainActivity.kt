@@ -11,6 +11,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.togetherWith
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -32,11 +33,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.data.UpdateRepository
-import day.vitayuzu.neodb.ui.component.SearchModal
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
+import day.vitayuzu.neodb.ui.page.search.SearchPage
 import day.vitayuzu.neodb.ui.page.settings.SettingsPage
+import day.vitayuzu.neodb.ui.theme.MotionHorizontallyDirection
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.ui.theme.sharedXAxisTransition
 import day.vitayuzu.neodb.util.AppNavigator
@@ -96,7 +98,11 @@ class MainActivity : ComponentActivity() {
                         CompositionLocalProvider(
                             LocalSharedTransitionScope provides SharedTransitionScopeProvider(this),
                         ) {
-                            MainNavDisplay()
+                            // This root surface is to make all transition have proper background.
+                            // Or when transition between screens with dark mode, user will see white background.
+                            Surface {
+                                MainNavDisplay()
+                            }
                         }
                     }
                 }
@@ -147,8 +153,22 @@ private fun MainNavDisplay(modifier: Modifier = Modifier) {
             entry<Settings> {
                 SettingsPage()
             }
-            entry<AppNavigator.Search> {
-                SearchModal()
+            entry<AppNavigator.Search>(
+                metadata = NavDisplay.transitionSpec {
+                    sharedXAxisTransition(
+                        MotionHorizontallyDirection.Forward,
+                    )
+                } + NavDisplay.popTransitionSpec {
+                    sharedXAxisTransition(
+                        MotionHorizontallyDirection.Backward,
+                    )
+                } + NavDisplay.predictivePopTransitionSpec {
+                    sharedXAxisTransition(
+                        MotionHorizontallyDirection.Backward,
+                    )
+                },
+            ) {
+                SearchPage()
             }
             entry<Detail> {
                 DetailPage(it.type, it.uuid)

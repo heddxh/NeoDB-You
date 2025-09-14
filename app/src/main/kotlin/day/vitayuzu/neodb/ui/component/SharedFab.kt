@@ -16,6 +16,7 @@ fun SharedFab(
     onClick: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
+    // FIXME: Disable animation between same Fab.
     val fabState =
         remember { MutableTransitionState(false).apply { targetState = true } }
     AnimatedVisibility(
