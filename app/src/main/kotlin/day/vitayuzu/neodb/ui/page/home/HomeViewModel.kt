@@ -27,7 +27,7 @@ class HomeViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     init {
-        _uiState.update { it.copy(isLoading = true) }
+        // FIXME: maybe race condition
         // Refresh data when login status changes.
         @OptIn(ExperimentalCoroutinesApi::class)
         authRepository.accountStatus

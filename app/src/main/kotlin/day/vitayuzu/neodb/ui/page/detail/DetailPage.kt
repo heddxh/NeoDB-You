@@ -3,11 +3,11 @@ package day.vitayuzu.neodb.ui.page.detail
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -24,6 +25,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -35,6 +37,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -63,6 +66,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.component.ExpandableText
+import day.vitayuzu.neodb.ui.component.SharedFab
 import day.vitayuzu.neodb.ui.component.StarsWithScores
 import day.vitayuzu.neodb.ui.component.UserMarkCard
 import day.vitayuzu.neodb.ui.model.Detail
@@ -72,6 +76,7 @@ import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.LocalModalSheetController
 import day.vitayuzu.neodb.util.ModalState
+import day.vitayuzu.neodb.util.sharedBoundsTransition
 import day.vitayuzu.neodb.util.toDateString
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -89,81 +94,95 @@ fun DetailPage(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val modalSheetController = LocalModalSheetController.current
 
-    Surface(modifier = modifier) {
-        Box {
-            // Date Picker
-            // FIXME: try to avoid composition everytime toggle the pick
-            var isShowDatePicker by remember { mutableStateOf(false) }
-            val currentTimeLong = Clock.System.now().toEpochMilliseconds()
-            var postDate by remember { mutableLongStateOf(currentTimeLong) }
-
-            if (isShowDatePicker) {
-                DatePickerModal(
-                    onConfirm = { postDate = it ?: currentTimeLong },
-                    onDismiss = { isShowDatePicker = false },
+    Scaffold(
+        modifier = modifier.fillMaxSize().sharedBoundsTransition(uuid),
+        contentWindowInsets = WindowInsets(),
+        floatingActionButton = {
+            SharedFab(Modifier.navigationBarsPadding()) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add new mark for this entry",
                 )
             }
+        },
+    ) { paddings ->
+        // Date Picker
+        // FIXME: try to avoid composition everytime toggle the pick
+        var isShowDatePicker by remember { mutableStateOf(false) }
+        val currentTimeLong = Clock.System.now().toEpochMilliseconds()
+        var postDate by remember { mutableLongStateOf(currentTimeLong) }
 
-            // Main UI with background image.
-            AnimatedVisibility(uiState.detail != null, enter = fadeIn()) {
-                val detail = uiState.detail!!
-                // Background
-                AsyncImage(
-                    model = detail.coverUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    alpha = 0.2f,
-                    modifier = Modifier.fillMaxSize().blur(12.dp),
-                )
+        if (isShowDatePicker) {
+            DatePickerModal(
+                onConfirm = { postDate = it ?: currentTimeLong },
+                onDismiss = { isShowDatePicker = false },
+            )
+        }
 
-                // Content
-                var isShowAllReviews by remember { mutableStateOf(false) }
+        // Main UI with background image.
+        AnimatedVisibility(
+            uiState.detail != null,
+            modifier = Modifier.padding(paddings).consumeWindowInsets(paddings),
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            val detail = uiState.detail!!
+            // Background cover image
+            AsyncImage(
+                model = detail.coverUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                alpha = 0.2f,
+                modifier = Modifier.fillMaxSize().blur(12.dp),
+            )
 
-                BackHandler(enabled = isShowAllReviews) { isShowAllReviews = false }
+            // Content
+            var isShowAllReviews by remember { mutableStateOf(false) }
 
-                DetailContent(
-                    detail = detail,
-                    mark = uiState.mark,
-                    postList = uiState.postList.take(if (isShowAllReviews) Int.MAX_VALUE else 3),
-                    onClick = { modalSheetController.status = ModalState.DES },
-                    onEditMark = { modalSheetController.status = ModalState.EDIT },
-                    isShowingAll = isShowAllReviews,
-                    showMore = {
-                        isShowAllReviews = true
-                        viewModel.refreshPosts(Int.MAX_VALUE)
+            BackHandler(enabled = isShowAllReviews) { isShowAllReviews = false }
+
+            DetailContent(
+                detail = detail,
+                mark = uiState.mark,
+                postList = uiState.postList.take(if (isShowAllReviews) Int.MAX_VALUE else 3),
+                onClick = { modalSheetController.status = ModalState.DES },
+                onEditMark = { modalSheetController.status = ModalState.EDIT },
+                isShowingAll = isShowAllReviews,
+                showMore = {
+                    isShowAllReviews = true
+                    viewModel.refreshPosts(Int.MAX_VALUE)
+                },
+            )
+
+            // Modal sheet
+            when (modalSheetController.status) {
+                ModalState.NEW -> PostComposeModal(
+                    postDate = Instant.fromEpochMilliseconds(postDate),
+                    onSend = viewModel::postMark,
+                    onShowDatePicker = { isShowDatePicker = true },
+                    onDismiss = {
+                        modalSheetController.status = ModalState.CLOSED
                     },
                 )
 
-                // Modal sheet
-                when (modalSheetController.status) {
-                    ModalState.NEW -> PostComposeModal(
-                        postDate = Instant.fromEpochMilliseconds(postDate),
-                        onSend = viewModel::postMark,
-                        onShowDatePicker = { isShowDatePicker = true },
-                        onDismiss = {
-                            modalSheetController.status = ModalState.CLOSED
-                        },
-                    )
-
-                    ModalState.EDIT -> PostComposeModal(
-                        postDate = Instant.fromEpochMilliseconds(postDate),
-                        originMark = uiState.mark,
-                        onSend = viewModel::postMark,
-                        onShowDatePicker = { isShowDatePicker = true },
-                        onDismiss = {
-                            modalSheetController.status = ModalState.CLOSED
-                        },
-                    )
-
-                    // TODO: show other field.
-                    ModalState.DES -> ModalBottomSheet(onDismissRequest = {
+                ModalState.EDIT -> PostComposeModal(
+                    postDate = Instant.fromEpochMilliseconds(postDate),
+                    originMark = uiState.mark,
+                    onSend = viewModel::postMark,
+                    onShowDatePicker = { isShowDatePicker = true },
+                    onDismiss = {
                         modalSheetController.status = ModalState.CLOSED
-                    }) {
-                        ShowAllInfoModalContent(des = detail.des ?: "")
-                    }
+                    },
+                )
 
-                    ModalState.CLOSED -> {}
+                // TODO: show other field.
+                ModalState.DES -> ModalBottomSheet(onDismissRequest = {
+                    modalSheetController.status = ModalState.CLOSED
+                }) {
+                    ShowAllInfoModalContent(des = detail.des ?: "")
                 }
+
+                ModalState.CLOSED -> {}
             }
         }
     }

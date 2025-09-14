@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,6 +36,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -59,6 +61,7 @@ import day.vitayuzu.neodb.BuildConfig
 import day.vitayuzu.neodb.OauthActivity
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.data.AppSettings
+import day.vitayuzu.neodb.ui.component.SharedBottomBar
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.LocalNavigator
@@ -67,31 +70,39 @@ import day.vitayuzu.neodb.util.LocalNavigator
 fun SettingsPage(modifier: Modifier = Modifier, viewModel: SettingsViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // WORKAROUND: Only add 8dp padding to UserProfilePart to avoid left button wrapping in English locale
-    Column(modifier = modifier.padding(horizontal = 8.dp).verticalScroll(rememberScrollState())) {
-        if (uiState.isLogin) { // logged in
-            UserProfilePart(
-                avatar = uiState.avatar,
-                username = uiState.username,
-                fediAccount = uiState.fediAccount,
-                modifier = Modifier.fillMaxWidth(),
-                logOut = viewModel::logout,
-                instanceUrl = uiState.url,
+    Scaffold(modifier, bottomBar = { SharedBottomBar() }) {
+        // WORKAROUND: Only add 8dp padding to UserProfilePart to avoid left button wrapping in English locale
+        Column(
+            modifier = Modifier
+                .padding(it)
+                .consumeWindowInsets(it)
+                .padding(horizontal = 8.dp)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            if (uiState.isLogin) { // logged in
+                UserProfilePart(
+                    avatar = uiState.avatar,
+                    username = uiState.username,
+                    fediAccount = uiState.fediAccount,
+                    modifier = Modifier.fillMaxWidth(),
+                    logOut = viewModel::logout,
+                    instanceUrl = uiState.url,
+                )
+            } else { // need login
+                LoginPart(Modifier.padding(horizontal = 8.dp))
+            }
+            AboutCard(
+                Modifier.padding(horizontal = 8.dp),
+                newVersionUrl = uiState.newVersionUrl,
+                checkUpdate = viewModel::checkUpdate,
             )
-        } else { // need login
-            LoginPart(Modifier.padding(horizontal = 8.dp))
+            ExperimentalCard(
+                Modifier.padding(horizontal = 8.dp),
+                appSettings = uiState.appSettings,
+                onClearAuthData = viewModel::logout,
+                onToggleVerboseLog = viewModel::onToggleVerboseLog,
+            )
         }
-        AboutCard(
-            Modifier.padding(horizontal = 8.dp),
-            newVersionUrl = uiState.newVersionUrl,
-            checkUpdate = viewModel::checkUpdate,
-        )
-        ExperimentalCard(
-            Modifier.padding(horizontal = 8.dp),
-            appSettings = uiState.appSettings,
-            onClearAuthData = viewModel::logout,
-            onToggleVerboseLog = viewModel::onToggleVerboseLog,
-        )
     }
 }
 

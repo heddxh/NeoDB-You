@@ -18,7 +18,6 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarState
 import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopSearchBar
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -46,7 +45,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SearchModal(
     modifier: Modifier = Modifier,
-    state: SearchBarState = rememberSearchBarState(),
+    state: SearchBarState = rememberSearchBarState(SearchBarValue.Expanded),
     onSearch: (String) -> Flow<List<Entry>> = { flowOf() },
 ) {
     val textFieldState = rememberTextFieldState()
@@ -78,14 +77,14 @@ fun SearchModal(
         )
     }
 
-    TopSearchBar(state, inputField, modifier)
+//    AppBarWithSearch(state, inputField, modifier)
+//
+//    // Auto expand the search bar when enter composition
+//    LaunchedEffect(true) {
+//        state.animateToExpanded()
+//    }
 
-    // Auto expand the search bar when enter composition
-    LaunchedEffect(true) {
-        state.animateToExpanded()
-    }
-
-    ExpandedFullScreenSearchBar(state, inputField) {
+    ExpandedFullScreenSearchBar(state, inputField, modifier) {
         val resultList = remember { mutableStateSetOf<Entry>() }
 
         // Perform search request

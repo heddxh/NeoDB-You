@@ -5,40 +5,17 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBarValue
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entry
@@ -56,13 +33,12 @@ import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.data.UpdateRepository
 import day.vitayuzu.neodb.ui.component.SearchModal
-import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
 import day.vitayuzu.neodb.ui.page.settings.SettingsPage
-import day.vitayuzu.neodb.ui.theme.MotionTheme
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
+import day.vitayuzu.neodb.ui.theme.sharedXAxisTransition
 import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.AppNavigator.Detail
 import day.vitayuzu.neodb.util.AppNavigator.Home
@@ -72,12 +48,10 @@ import day.vitayuzu.neodb.util.AppNavigator.Settings
 import day.vitayuzu.neodb.util.AppNavigator.TopLevelDestination
 import day.vitayuzu.neodb.util.LocalModalSheetController
 import day.vitayuzu.neodb.util.LocalNavigator
+import day.vitayuzu.neodb.util.LocalSharedTransitionScope
 import day.vitayuzu.neodb.util.ModalSheetController
-import day.vitayuzu.neodb.util.ModalState
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import day.vitayuzu.neodb.util.SharedTransitionScopeProvider
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -89,6 +63,7 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var updateRepository: UpdateRepository
 
+    @OptIn(ExperimentalSharedTransitionApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -117,10 +92,11 @@ class MainActivity : ComponentActivity() {
                     LocalNavigator provides appNavigator,
                     LocalModalSheetController provides remember { ModalSheetController() },
                 ) {
-                    MainScaffold { keywords ->
-                        // onSearch
-                        neoDBRepository.searchWithKeyword(keywords).map { searchResult ->
-                            searchResult.data.map { Entry(it) }
+                    SharedTransitionLayout {
+                        CompositionLocalProvider(
+                            LocalSharedTransitionScope provides SharedTransitionScopeProvider(this),
+                        ) {
+                            MainNavDisplay()
                         }
                     }
                 }
@@ -129,28 +105,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MainScaffold(
-    modifier: Modifier = Modifier,
-    onSearch: (String) -> Flow<List<Entry>> = { flowOf() },
-) {
-    Scaffold(
-        modifier = modifier,
-        topBar = { MainTopBar(onSearch) },
-        floatingActionButton = { MainFAB() },
-        bottomBar = { MainBottomBar() },
-    ) {
-        MainNavDisplay(insetsPaddingValues = it)
-    }
-}
-
-@Composable
-@Suppress("ktlint:compose:vm-injection-check")
-private fun MainNavDisplay(insetsPaddingValues: PaddingValues, modifier: Modifier = Modifier) {
+private fun MainNavDisplay(modifier: Modifier = Modifier) {
     val appNavigator = LocalNavigator.current
-    val mainScreenModifier =
-        Modifier.padding(insetsPaddingValues).consumeWindowInsets(insetsPaddingValues)
+
     val libraries by rememberLibraries(R.raw.aboutlibraries)
+
     NavDisplay(
         backStack = appNavigator.backStack,
         onBack = { appNavigator.back() },
@@ -160,117 +121,41 @@ private fun MainNavDisplay(insetsPaddingValues: PaddingValues, modifier: Modifie
             rememberSavedStateNavEntryDecorator(),
             // Keep viewmodel of top level destinations.
             rememberViewModelStoreNavEntryDecorator {
-                appNavigator.current !is TopLevelDestination
+                appNavigator.previous !is TopLevelDestination
             },
         ),
-        transitionSpec = { MotionTheme.slideHorizontally(appNavigator.animationDirection) },
+        transitionSpec = {
+            if (appNavigator.current is TopLevelDestination) {
+                sharedXAxisTransition(appNavigator.animationDirection)
+            } else {
+                EnterTransition.None togetherWith ExitTransition.None
+            }
+        },
         predictivePopTransitionSpec = {
-            fadeIn(tween(300)) togetherWith fadeOut(tween(300))
+            EnterTransition.None togetherWith ExitTransition.None
         },
         popTransitionSpec = {
-            fadeIn(tween(300)) togetherWith fadeOut(tween(300))
+            EnterTransition.None togetherWith ExitTransition.None
         },
         entryProvider = entryProvider {
             entry<Home> {
-                HomeScreen(mainScreenModifier)
+                HomeScreen()
             }
             entry<Library> {
-                LibraryPage(mainScreenModifier)
+                LibraryPage()
             }
             entry<Settings> {
-                SettingsPage(mainScreenModifier)
+                SettingsPage()
+            }
+            entry<AppNavigator.Search> {
+                SearchModal()
             }
             entry<Detail> {
                 DetailPage(it.type, it.uuid)
             }
             entry<License> {
-                LibrariesContainer(libraries, contentPadding = insetsPaddingValues)
+                LibrariesContainer(libraries)
             }
         },
     )
-}
-
-@Composable
-private fun MainFAB(modifier: Modifier = Modifier) {
-    val appNavigator = LocalNavigator.current
-    AnimatedVisibility(appNavigator.current is Detail, modifier = modifier) {
-        val modalSheetController = LocalModalSheetController.current
-        FloatingActionButton(
-            modifier = Modifier.animateEnterExit(),
-            onClick = { modalSheetController.status = ModalState.NEW },
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add new mark for this entry",
-            )
-        }
-    }
-}
-
-@Composable
-fun MainBottomBar(modifier: Modifier = Modifier) {
-    val appNavigator = LocalNavigator.current
-    AnimatedVisibility(
-        visible = appNavigator.current is TopLevelDestination,
-        modifier = modifier,
-        enter = expandVertically(),
-        exit = shrinkVertically(),
-    ) {
-        NavigationBar(Modifier.animateEnterExit()) {
-            AppNavigator.TopLevelDestinations.forEach { destination ->
-                NavigationBarItem(
-                    icon = { Icon(destination.icon, null) },
-                    label = { Text(stringResource(destination.name)) },
-                    selected = appNavigator.current == destination,
-                    onClick = { appNavigator goto destination },
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun MainTopBar(onSearch: (String) -> Flow<List<Entry>> = { flowOf() }) {
-    val scope = rememberCoroutineScope()
-    val appNavigator = LocalNavigator.current
-    if (appNavigator.current is TopLevelDestination) {
-        val currentMainScreen = appNavigator.current as TopLevelDestination
-        val searchBarState = rememberSearchBarState(SearchBarValue.Collapsed)
-        Crossfade(searchBarState.currentValue) { it ->
-            if (it == SearchBarValue.Expanded) {
-                SearchModal(state = searchBarState, onSearch = onSearch)
-            } else {
-                TopAppBar(
-                    modifier = Modifier.padding(top = 8.dp), // TopSearchBar has an extra padding
-                    title = {
-                        AnimatedContent(currentMainScreen, transitionSpec = {
-                            MotionTheme.slideHorizontally(appNavigator.animationDirection)
-                        }) {
-                            Text(stringResource(it.name))
-                        }
-                    },
-                    actions = {
-                        AnimatedContent(currentMainScreen) { mainScreen ->
-                            when (mainScreen) {
-                                // Show search button
-                                Home, Library -> IconButton(
-                                    onClick = {
-                                        scope.launch { searchBarState.animateToExpanded() }
-                                    },
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Search,
-                                        contentDescription = null,
-                                    )
-                                }
-
-                                else -> {}
-                            }
-                        }
-                    },
-                )
-            }
-        }
-    }
 }

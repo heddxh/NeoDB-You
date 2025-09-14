@@ -23,6 +23,7 @@ import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.ANDROID
+import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.encodedPath
@@ -92,7 +93,7 @@ object NetworkModule {
                 baseUrl("https://$BASE_URL/api/") // using https://neodb.social/api as default
                 install(Logging) {
                     logger = Logger.ANDROID
-//                    level = LogLevel.NONE
+                    level = LogLevel.NONE
                 }
                 defaultRequest {
                     headers.appendIfNameAndValueAbsent("Content-Type", "application/json")

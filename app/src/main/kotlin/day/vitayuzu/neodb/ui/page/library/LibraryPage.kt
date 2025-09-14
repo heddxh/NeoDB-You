@@ -1,16 +1,20 @@
 package day.vitayuzu.neodb.ui.page.library
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -22,10 +26,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import day.vitayuzu.neodb.ui.component.EntryMarkCard
+import day.vitayuzu.neodb.ui.component.SharedBottomBar
+import day.vitayuzu.neodb.ui.component.SharedFab
+import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.EntryType
+import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.ShelfType
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun LibraryPage(modifier: Modifier = Modifier, viewModel: LibraryViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -35,34 +42,45 @@ fun LibraryPage(modifier: Modifier = Modifier, viewModel: LibraryViewModel = hil
         onRefresh = viewModel::refresh,
         modifier = modifier,
     ) {
-        LazyColumn {
-            stickyHeader {
-                // FIXME: In some locale like Chinese we don't need scrollable row
-                //  so it is not centered.
-                PrimaryScrollableTabRow(
-                    ShelfType.entries.indexOf(uiState.selectedShelfType),
-                    edgePadding = 16.dp,
-                ) {
-                    for (type in ShelfType.entries) {
-                        Tab(
-                            selected = type == uiState.selectedShelfType,
-                            onClick = { viewModel.switchShelfType(type) },
-                            text = { Text(stringResource(type.toR()), softWrap = false) },
-                        )
-                    }
-                }
-                EntryTypeFilterChipsRow(
-                    selectedEntryTypes = uiState.selectedEntryTypes,
-                    onClick = viewModel::toggleSelectedEntryType,
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+        val appNavigator = LocalNavigator.current
+
+        Scaffold(bottomBar = { SharedBottomBar() }, floatingActionButton = {
+            SharedFab(onClick = { appNavigator goto AppNavigator.Search }) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Perform search",
                 )
             }
-            item { HeatMap(uiState.heatMap) }
-            items(
-                items = uiState.displayedMarks,
-                key = { it.entry.url },
-            ) {
-                EntryMarkCard(entry = it.entry, mark = it)
+        }) { paddings ->
+            LazyColumn(Modifier.padding(paddings).consumeWindowInsets(paddings)) {
+                stickyHeader {
+                    // FIXME: In some locale like Chinese we don't need scrollable row
+                    //  so it is not centered.
+                    PrimaryScrollableTabRow(
+                        ShelfType.entries.indexOf(uiState.selectedShelfType),
+                        edgePadding = 16.dp,
+                    ) {
+                        for (type in ShelfType.entries) {
+                            Tab(
+                                selected = type == uiState.selectedShelfType,
+                                onClick = { viewModel.switchShelfType(type) },
+                                text = { Text(stringResource(type.toR()), softWrap = false) },
+                            )
+                        }
+                    }
+                    EntryTypeFilterChipsRow(
+                        selectedEntryTypes = uiState.selectedEntryTypes,
+                        onClick = viewModel::toggleSelectedEntryType,
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+                    )
+                }
+                item { HeatMap(uiState.heatMap) }
+                items(
+                    items = uiState.displayedMarks,
+                    key = { it.entry.url },
+                ) {
+                    EntryMarkCard(entry = it.entry, mark = it)
+                }
             }
         }
     }

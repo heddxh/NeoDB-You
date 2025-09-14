@@ -30,6 +30,7 @@ import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.LocalNavigator
+import day.vitayuzu.neodb.util.sharedBoundsTransition
 
 @Composable
 fun EntryMarkCard(
@@ -39,7 +40,7 @@ fun EntryMarkCard(
 ) {
     val appNavigator = LocalNavigator.current
     Card(
-        modifier = modifier,
+        modifier = modifier.sharedBoundsTransition(entry.uuid),
         onClick = { appNavigator goto AppNavigator.Detail(entry.category, entry.uuid) },
         colors = CardDefaults.cardColors(
             contentColor = MaterialTheme.colorScheme.onBackground,
