@@ -74,13 +74,13 @@ import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.model.Post
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.EntryType
-import day.vitayuzu.neodb.util.LocalModalSheetController
-import day.vitayuzu.neodb.util.ModalState
 import day.vitayuzu.neodb.util.sharedBoundsTransition
 import day.vitayuzu.neodb.util.toDateString
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+
+private enum class ModalState { Closed, Edit, New, Des }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
@@ -92,13 +92,17 @@ fun DetailPage(
         hiltViewModel<DetailViewModel, DetailViewModel.Factory> { it.create(type, uuid) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val modalSheetController = LocalModalSheetController.current
+
+    var modalState by remember { mutableStateOf(ModalState.Closed) }
 
     Scaffold(
         modifier = modifier.fillMaxSize().sharedBoundsTransition(uuid),
         contentWindowInsets = WindowInsets(),
         floatingActionButton = {
-            SharedFab(Modifier.navigationBarsPadding()) {
+            SharedFab(
+                Modifier.navigationBarsPadding(),
+                onClick = { modalState = ModalState.New },
+            ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add new mark for this entry",
@@ -145,8 +149,8 @@ fun DetailPage(
                 detail = detail,
                 mark = uiState.mark,
                 postList = uiState.postList.take(if (isShowAllReviews) Int.MAX_VALUE else 3),
-                onClick = { modalSheetController.status = ModalState.DES },
-                onEditMark = { modalSheetController.status = ModalState.EDIT },
+                onClick = { modalState = ModalState.Des },
+                onEditMark = { modalState = ModalState.Edit },
                 isShowingAll = isShowAllReviews,
                 showMore = {
                     isShowAllReviews = true
@@ -155,34 +159,30 @@ fun DetailPage(
             )
 
             // Modal sheet
-            when (modalSheetController.status) {
-                ModalState.NEW -> PostComposeModal(
+            when (modalState) {
+                ModalState.New -> PostComposeModal(
                     postDate = Instant.fromEpochMilliseconds(postDate),
                     onSend = viewModel::postMark,
                     onShowDatePicker = { isShowDatePicker = true },
-                    onDismiss = {
-                        modalSheetController.status = ModalState.CLOSED
-                    },
+                    onDismiss = { modalState = ModalState.Closed },
                 )
 
-                ModalState.EDIT -> PostComposeModal(
+                ModalState.Edit -> PostComposeModal(
                     postDate = Instant.fromEpochMilliseconds(postDate),
                     originMark = uiState.mark,
                     onSend = viewModel::postMark,
                     onShowDatePicker = { isShowDatePicker = true },
-                    onDismiss = {
-                        modalSheetController.status = ModalState.CLOSED
-                    },
+                    onDismiss = { modalState = ModalState.Closed },
                 )
 
                 // TODO: show other field.
-                ModalState.DES -> ModalBottomSheet(onDismissRequest = {
-                    modalSheetController.status = ModalState.CLOSED
+                ModalState.Des -> ModalBottomSheet(onDismissRequest = {
+                    modalState = ModalState.Closed
                 }) {
                     ShowAllInfoModalContent(des = detail.des ?: "")
                 }
 
-                ModalState.CLOSED -> {}
+                ModalState.Closed -> {}
             }
         }
     }

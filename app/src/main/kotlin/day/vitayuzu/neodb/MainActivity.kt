@@ -48,10 +48,8 @@ import day.vitayuzu.neodb.util.AppNavigator.Library
 import day.vitayuzu.neodb.util.AppNavigator.License
 import day.vitayuzu.neodb.util.AppNavigator.Settings
 import day.vitayuzu.neodb.util.AppNavigator.TopLevelDestination
-import day.vitayuzu.neodb.util.LocalModalSheetController
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.LocalSharedTransitionScope
-import day.vitayuzu.neodb.util.ModalSheetController
 import day.vitayuzu.neodb.util.SharedTransitionScopeProvider
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
@@ -90,10 +88,7 @@ class MainActivity : ComponentActivity() {
                         },
                     )
                 }
-                CompositionLocalProvider(
-                    LocalNavigator provides appNavigator,
-                    LocalModalSheetController provides remember { ModalSheetController() },
-                ) {
+                CompositionLocalProvider(LocalNavigator provides appNavigator) {
                     SharedTransitionLayout {
                         CompositionLocalProvider(
                             LocalSharedTransitionScope provides SharedTransitionScopeProvider(this),
