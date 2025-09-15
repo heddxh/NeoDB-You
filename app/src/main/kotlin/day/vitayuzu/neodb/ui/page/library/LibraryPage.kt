@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -37,22 +38,25 @@ import day.vitayuzu.neodb.util.ShelfType
 fun LibraryPage(modifier: Modifier = Modifier, viewModel: LibraryViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    PullToRefreshBox(
-        isRefreshing = uiState.isLoading,
-        onRefresh = viewModel::refresh,
+    val appNavigator = LocalNavigator.current
+    Scaffold(
         modifier = modifier,
-    ) {
-        val appNavigator = LocalNavigator.current
-
-        Scaffold(bottomBar = { SharedBottomBar() }, floatingActionButton = {
+        bottomBar = { SharedBottomBar() },
+        floatingActionButton = {
             SharedFab(onClick = { appNavigator goto AppNavigator.Search }) {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Perform search",
                 )
             }
-        }) { paddings ->
-            LazyColumn(Modifier.padding(paddings).consumeWindowInsets(paddings)) {
+        },
+    ) {
+        PullToRefreshBox(
+            isRefreshing = uiState.isLoading,
+            onRefresh = viewModel::refresh,
+            modifier = Modifier.padding(it).consumeWindowInsets(it),
+        ) {
+            LazyColumn(Modifier.fillMaxSize()) {
                 stickyHeader {
                     // FIXME: In some locale like Chinese we don't need scrollable row
                     //  so it is not centered.

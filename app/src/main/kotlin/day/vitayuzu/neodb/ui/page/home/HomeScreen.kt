@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -53,28 +53,27 @@ fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel = hiltVie
     val appNavigator = LocalNavigator.current
 
     // TODO: show fetched data immediately
-    PullToRefreshBox(
-        isRefreshing = uiState.isLoading,
-        onRefresh = { viewModel.updateTrending() },
+    Scaffold(
         modifier = modifier,
+        bottomBar = { SharedBottomBar() },
+        floatingActionButton = {
+            SharedFab(onClick = { appNavigator goto AppNavigator.Search }) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Perform search",
+                )
+            }
+        },
     ) {
-        Scaffold(
-            bottomBar = { SharedBottomBar() },
-            floatingActionButton = {
-                SharedFab(onClick = { appNavigator goto AppNavigator.Search }) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Perform search",
-                    )
-                }
-            },
+        PullToRefreshBox(
+            isRefreshing = uiState.isLoading,
+            onRefresh = { viewModel.updateTrending() },
+            modifier = Modifier.padding(it).consumeWindowInsets(it),
         ) {
             Column(
-                modifier = Modifier
-                    .padding(it)
-                    .consumeWindowInsets(it)
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
+                // PullToRefresh relies on child scroll event to detect scroll gestures,
+                // so make sure child composable has enough height.
+                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
             ) {
                 // Book
