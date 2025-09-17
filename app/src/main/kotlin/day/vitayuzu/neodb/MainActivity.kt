@@ -10,13 +10,18 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.togetherWith
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entry
@@ -33,6 +38,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.data.UpdateRepository
+import day.vitayuzu.neodb.ui.component.SharedBottomBar
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
@@ -106,17 +112,51 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainNavDisplay(modifier: Modifier = Modifier) {
     val appNavigator = LocalNavigator.current
 
     val libraries by rememberLibraries(R.raw.aboutlibraries)
 
+    val sharedXAxisTransitionMetadata = remember {
+        NavDisplay.transitionSpec {
+            sharedXAxisTransition(
+                MotionHorizontallyDirection.Forward,
+            )
+        } + NavDisplay.popTransitionSpec {
+            sharedXAxisTransition(
+                MotionHorizontallyDirection.Backward,
+            )
+        } + NavDisplay.predictivePopTransitionSpec {
+            sharedXAxisTransition(
+                MotionHorizontallyDirection.Backward,
+            )
+        }
+    }
+
+    /**
+     * Hoisted persistent bottom bar shows in top level destinations,
+     * see [SharedBottomBar] for details.
+     */
+    val movableBottomBar = remember {
+        movableContentOf {
+            NavigationBar {
+                AppNavigator.TopLevelDestinations.forEach { destination ->
+                    NavigationBarItem(
+                        icon = { Icon(destination.icon, null) },
+                        label = { Text(stringResource(destination.name)) },
+                        selected = appNavigator.current == destination,
+                        onClick = { appNavigator goto destination },
+                    )
+                }
+            }
+        }
+    }
+
     NavDisplay(
+        modifier = modifier,
         backStack = appNavigator.backStack,
         onBack = { appNavigator.back() },
-        modifier = modifier,
         entryDecorators = listOf(
             rememberSceneSetupNavEntryDecorator(),
             rememberSavedStateNavEntryDecorator(),
@@ -140,35 +180,27 @@ private fun MainNavDisplay(modifier: Modifier = Modifier) {
         },
         entryProvider = entryProvider {
             entry<Home> {
-                HomeScreen()
+                HomeScreen {
+                    SharedBottomBar { movableBottomBar() }
+                }
             }
             entry<Library> {
-                LibraryPage()
+                LibraryPage {
+                    SharedBottomBar { movableBottomBar() }
+                }
             }
             entry<Settings> {
-                SettingsPage()
+                SettingsPage {
+                    SharedBottomBar { movableBottomBar() }
+                }
             }
-            entry<AppNavigator.Search>(
-                metadata = NavDisplay.transitionSpec {
-                    sharedXAxisTransition(
-                        MotionHorizontallyDirection.Forward,
-                    )
-                } + NavDisplay.popTransitionSpec {
-                    sharedXAxisTransition(
-                        MotionHorizontallyDirection.Backward,
-                    )
-                } + NavDisplay.predictivePopTransitionSpec {
-                    sharedXAxisTransition(
-                        MotionHorizontallyDirection.Backward,
-                    )
-                },
-            ) {
+            entry<AppNavigator.Search>(metadata = sharedXAxisTransitionMetadata) {
                 SearchPage()
             }
             entry<Detail> {
                 DetailPage(it.type, it.uuid)
             }
-            entry<License> {
+            entry<License>(metadata = sharedXAxisTransitionMetadata) {
                 LibrariesContainer(libraries)
             }
         },

@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import day.vitayuzu.neodb.ui.component.EntryMarkCard
-import day.vitayuzu.neodb.ui.component.SharedBottomBar
 import day.vitayuzu.neodb.ui.component.SharedFab
 import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.EntryType
@@ -35,13 +34,17 @@ import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.ShelfType
 
 @Composable
-fun LibraryPage(modifier: Modifier = Modifier, viewModel: LibraryViewModel = hiltViewModel()) {
+fun LibraryPage(
+    modifier: Modifier = Modifier,
+    viewModel: LibraryViewModel = hiltViewModel(),
+    bottomBar: @Composable () -> Unit,
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val appNavigator = LocalNavigator.current
     Scaffold(
         modifier = modifier,
-        bottomBar = { SharedBottomBar() },
+        bottomBar = bottomBar,
         floatingActionButton = {
             SharedFab(onClick = { appNavigator goto AppNavigator.Search }) {
                 Icon(

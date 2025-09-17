@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import day.vitayuzu.neodb.ui.component.SharedBottomBar
 import day.vitayuzu.neodb.ui.component.SharedFab
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.util.AppNavigator
@@ -48,14 +47,18 @@ import day.vitayuzu.neodb.util.sharedBoundsTransition
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel = hiltViewModel(),
+    bottomBar: @Composable () -> Unit,
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val appNavigator = LocalNavigator.current
 
     // TODO: show fetched data immediately
     Scaffold(
         modifier = modifier,
-        bottomBar = { SharedBottomBar() },
+        bottomBar = bottomBar,
         floatingActionButton = {
             SharedFab(onClick = { appNavigator goto AppNavigator.Search }) {
                 Icon(

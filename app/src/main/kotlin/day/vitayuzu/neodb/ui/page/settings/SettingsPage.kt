@@ -61,16 +61,19 @@ import day.vitayuzu.neodb.BuildConfig
 import day.vitayuzu.neodb.OauthActivity
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.data.AppSettings
-import day.vitayuzu.neodb.ui.component.SharedBottomBar
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.LocalNavigator
 
 @Composable
-fun SettingsPage(modifier: Modifier = Modifier, viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsPage(
+    modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = hiltViewModel(),
+    bottomBar: @Composable () -> Unit,
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Scaffold(modifier, bottomBar = { SharedBottomBar() }) {
+    Scaffold(modifier, bottomBar = bottomBar) {
         // WORKAROUND: Only add 8dp padding to UserProfilePart to avoid left button wrapping in English locale
         Column(
             modifier = Modifier
