@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
+import day.vitayuzu.neodb.util.AppNavigator
+import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.sharedElementTransition
 
 /**
@@ -25,7 +27,9 @@ import day.vitayuzu.neodb.util.sharedElementTransition
 @Composable
 fun SharedBottomBar(modifier: Modifier = Modifier, movableContent: @Composable () -> Unit) {
     Box(modifier.sharedElementTransition(SharedBottomBarKey)) {
-        if (LocalNavAnimatedContentScope.current.transition.targetState != EnterExitState.Visible) {
+        if (LocalNavAnimatedContentScope.current.transition.targetState != EnterExitState.Visible &&
+            LocalNavigator.current.current is AppNavigator.TopLevelDestination
+        ) {
             Box(Modifier.fillMaxWidth()) // placeholder
         } else {
             movableContent()
