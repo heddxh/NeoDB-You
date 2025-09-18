@@ -37,4 +37,9 @@
     <string name="settings_about_developer">开发者</string>
     <string name="settings_about_license">许可证</string>
     <string name="settings_title_about">关于 APP</string>
+    <string name="settings_title_experimental">实验性</string>
+    <string name="settings_experimental_clearAuth">清除本地账号凭证</string>
+    <string name="settings_experimental_verbose">详细日志记录</string>
+    <string name="settings_experimental_verbose_supportText">详细日志记录包含敏感数据并且会降低性能</string>
+    <string name="settings_experimental_print">打印应用设置</string>
 </resources>

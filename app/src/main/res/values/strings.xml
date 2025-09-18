@@ -38,4 +38,9 @@
     <string name="settings_about_developer">Developer</string>
     <string name="settings_about_license">License</string>
     <string name="settings_title_about">About APP</string>
+    <string name="settings_title_experimental">Experimental</string>
+    <string name="settings_experimental_clearAuth">Clear local stored account credentials</string>
+    <string name="settings_experimental_verbose">Verbose logging</string>
+    <string name="settings_experimental_verbose_supportText">Verbose logs contain sensitive information and will reduce performance</string>
+    <string name="settings_experimental_print">Print APP settings</string>
 </resources>

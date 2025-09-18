@@ -314,7 +314,10 @@ private fun ExperimentalCard(
     onToggleVerboseLog: (Boolean) -> Unit = {},
 ) {
     Column(modifier = modifier) {
-        Text("Experimental", Modifier.alpha(.6f).padding(8.dp))
+        Text(
+            stringResource(R.string.settings_title_experimental),
+            Modifier.alpha(.6f).padding(8.dp),
+        )
         Card {
             val itemColors = ListItemDefaults.colors().copy(
                 containerColor = MaterialTheme.colorScheme.errorContainer,
@@ -324,17 +327,17 @@ private fun ExperimentalCard(
             ListItem(
                 colors = itemColors,
                 headlineContent = {
-                    Text("Clear local stored account credentials")
+                    Text(stringResource(R.string.settings_experimental_clearAuth))
                 },
                 modifier = Modifier.clickable(onClick = onClearAuthData),
             )
             ListItem(
                 colors = itemColors,
                 headlineContent = {
-                    Text("Verbose logging")
+                    Text(stringResource(R.string.settings_experimental_verbose))
                 },
                 supportingContent = {
-                    Text("Verbose logs contain sensitive information and will reduce performance")
+                    Text(stringResource(R.string.settings_experimental_verbose_supportText))
                 },
                 trailingContent = {
                     Switch(checked = appSettings.verboseLog, onCheckedChange = onToggleVerboseLog)
@@ -343,7 +346,7 @@ private fun ExperimentalCard(
             ListItem(
                 colors = itemColors,
                 headlineContent = {
-                    Text("Print app settings")
+                    Text(stringResource(R.string.settings_experimental_print))
                 },
                 modifier = Modifier.clickable {
                     Log.d("ExperimentalCard", appSettings.toString())
