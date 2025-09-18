@@ -9,10 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
@@ -27,8 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import day.vitayuzu.neodb.ui.component.EntryMarkCard
-import day.vitayuzu.neodb.ui.component.SharedFab
-import day.vitayuzu.neodb.util.AppNavigator
+import day.vitayuzu.neodb.ui.component.SharedSearchFab
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.ShelfType
@@ -41,18 +37,11 @@ fun LibraryPage(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val appNavigator = LocalNavigator.current
+    LocalNavigator.current
     Scaffold(
         modifier = modifier,
         bottomBar = bottomBar,
-        floatingActionButton = {
-            SharedFab(onClick = { appNavigator goto AppNavigator.Search }) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Perform search",
-                )
-            }
-        },
+        floatingActionButton = { SharedSearchFab() },
     ) {
         PullToRefreshBox(
             isRefreshing = uiState.isLoading,

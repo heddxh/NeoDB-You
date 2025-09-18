@@ -17,10 +17,7 @@ import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import day.vitayuzu.neodb.ui.component.SharedFab
+import day.vitayuzu.neodb.ui.component.SharedSearchFab
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.EntryType
@@ -53,20 +50,13 @@ fun HomeScreen(
     sharedBottomBar: @Composable () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val appNavigator = LocalNavigator.current
+    LocalNavigator.current
 
     // TODO: show fetched data immediately
     Scaffold(
         modifier = modifier,
         bottomBar = sharedBottomBar,
-        floatingActionButton = {
-            SharedFab(onClick = { appNavigator goto AppNavigator.Search }) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Perform search",
-                )
-            }
-        },
+        floatingActionButton = { SharedSearchFab() },
     ) {
         PullToRefreshBox(
             isRefreshing = uiState.isLoading,

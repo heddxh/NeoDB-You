@@ -27,6 +27,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import day.vitayuzu.neodb.R
@@ -52,12 +53,18 @@ fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltV
             exit = scaleOut() + fadeOut(),
         ),
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        val ime = LocalSoftwareKeyboardController.current
+        Column(
+            modifier = Modifier.safeDrawingPadding(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             SearchBarDefaults.InputField(
-                modifier = Modifier.safeDrawingPadding(),
                 textFieldState = textFieldState,
                 searchBarState = state,
-                onSearch = {},
+                onSearch = {
+                    ime?.hide()
+                    viewModel.onSearch(textFieldState.text.toString())
+                },
                 placeholder = { Text(stringResource(R.string.textfield_search)) },
                 leadingIcon = {
                     if (state.targetValue == SearchBarValue.Collapsed) {
@@ -83,9 +90,7 @@ fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltV
                 snapshotFlow { textFieldState.text }
                     .debounce(500)
                     .filterNot { it.isEmpty() }
-                    .collectLatest { query ->
-                        viewModel.onSearch(query.toString())
-                    }
+                    .collectLatest { viewModel.onSearch(it.toString()) }
             }
 
             LazyColumn(

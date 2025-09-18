@@ -4,6 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -68,6 +70,7 @@ import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.component.ExpandableText
 import day.vitayuzu.neodb.ui.component.SharedEntryCardKey
 import day.vitayuzu.neodb.ui.component.SharedFab
+import day.vitayuzu.neodb.ui.component.SharedFabKey
 import day.vitayuzu.neodb.ui.component.StarsWithScores
 import day.vitayuzu.neodb.ui.component.UserMarkCard
 import day.vitayuzu.neodb.ui.model.Detail
@@ -105,7 +108,11 @@ fun DetailPage(
         contentWindowInsets = WindowInsets(),
         floatingActionButton = {
             SharedFab(
-                Modifier.navigationBarsPadding(),
+                Modifier.navigationBarsPadding().sharedBoundsTransition(
+                    key = SharedFabKey,
+                    enter = scaleIn(),
+                    exit = fadeOut() + scaleOut(),
+                ),
                 onClick = { modalState = ModalState.New },
             ) {
                 Icon(
