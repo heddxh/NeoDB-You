@@ -12,6 +12,7 @@ import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import day.vitayuzu.neodb.data.AppSettingsManager
+import day.vitayuzu.neodb.data.AppSettingsManager.Companion.VERBOSE_LOG
 import day.vitayuzu.neodb.data.NeoDbApi
 import day.vitayuzu.neodb.data.createNeoDbApi
 import de.jensklingenberg.ktorfit.Ktorfit
@@ -33,6 +34,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -93,7 +95,13 @@ object NetworkModule {
                 baseUrl("https://$BASE_URL/api/") // using https://neodb.social/api as default
                 install(Logging) {
                     logger = Logger.ANDROID
-                    level = LogLevel.NONE
+                    runBlocking {
+                        level = if (preferenceSource.get(VERBOSE_LOG) == true) {
+                            LogLevel.ALL
+                        } else {
+                            LogLevel.NONE
+                        }
+                    }
                 }
                 defaultRequest {
                     headers.appendIfNameAndValueAbsent("Content-Type", "application/json")

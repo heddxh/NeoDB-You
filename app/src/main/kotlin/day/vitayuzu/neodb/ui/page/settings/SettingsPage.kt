@@ -100,7 +100,7 @@ fun SettingsPage(
                 checkUpdate = viewModel::checkUpdate,
             )
             ExperimentalCard(
-                Modifier.padding(horizontal = 8.dp),
+                Modifier.padding(horizontal = 8.dp).padding(bottom = 8.dp),
                 appSettings = uiState.appSettings,
                 onClearAuthData = viewModel::logout,
                 onToggleVerboseLog = viewModel::onToggleVerboseLog,
@@ -328,6 +328,9 @@ private fun ExperimentalCard(
                 colors = itemColors,
                 headlineContent = {
                     Text(stringResource(R.string.settings_experimental_clearAuth))
+                },
+                supportingContent = {
+                    Text(stringResource(R.string.settings_experimental_clearAuth_supportText))
                 },
                 modifier = Modifier.clickable(onClick = onClearAuthData),
             )

@@ -79,6 +79,7 @@ class AppSettingsManager @Inject constructor(private val dataStore: DataStore<Pr
         val ACCESS_TOKEN = stringPreferencesKey("access_token")
 
         // Settings
+        // TODO: Control global log level
         val VERBOSE_LOG = booleanPreferencesKey("verbose_log")
     }
 }
