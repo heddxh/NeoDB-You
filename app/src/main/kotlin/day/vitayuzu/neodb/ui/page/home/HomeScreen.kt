@@ -149,7 +149,7 @@ fun TrendingSection(
             key = { data[it].uuid },
         ) {
             val item = data[it]
-            Column(modifier = Modifier.sharedBoundsTransition(item.uuid)) {
+            Column(modifier = Modifier.sharedBoundsTransition(SharedTrendingItemKey(item.uuid))) {
                 AsyncImage(
                     model = item.coverUrl,
                     contentDescription = item.title,
@@ -171,6 +171,8 @@ fun TrendingSection(
         }
     }
 }
+
+data class SharedTrendingItemKey(val uuid: String)
 
 /**
  * Dimensions of cover for different types of entries.

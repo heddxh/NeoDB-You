@@ -66,12 +66,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.component.ExpandableText
+import day.vitayuzu.neodb.ui.component.SharedEntryCardKey
 import day.vitayuzu.neodb.ui.component.SharedFab
 import day.vitayuzu.neodb.ui.component.StarsWithScores
 import day.vitayuzu.neodb.ui.component.UserMarkCard
 import day.vitayuzu.neodb.ui.model.Detail
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.model.Post
+import day.vitayuzu.neodb.ui.page.home.SharedTrendingItemKey
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.sharedBoundsTransition
@@ -96,7 +98,10 @@ fun DetailPage(
     var modalState by remember { mutableStateOf(ModalState.Closed) }
 
     Scaffold(
-        modifier = modifier.fillMaxSize().sharedBoundsTransition(uuid),
+        modifier = modifier
+            .fillMaxSize()
+            .sharedBoundsTransition(SharedTrendingItemKey(uuid))
+            .sharedBoundsTransition(SharedEntryCardKey(uuid)),
         contentWindowInsets = WindowInsets(),
         floatingActionButton = {
             SharedFab(

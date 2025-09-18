@@ -40,7 +40,7 @@ fun EntryMarkCard(
 ) {
     val appNavigator = LocalNavigator.current
     Card(
-        modifier = modifier.sharedBoundsTransition(entry.uuid),
+        modifier = modifier.sharedBoundsTransition(SharedEntryCardKey(entry.uuid)),
         onClick = { appNavigator goto AppNavigator.Detail(entry.category, entry.uuid) },
         colors = CardDefaults.cardColors(
             contentColor = MaterialTheme.colorScheme.onBackground,
@@ -117,6 +117,8 @@ fun EntryMarkCard(
         }
     }
 }
+
+data class SharedEntryCardKey(val uuid: String)
 
 @Preview
 @Composable
