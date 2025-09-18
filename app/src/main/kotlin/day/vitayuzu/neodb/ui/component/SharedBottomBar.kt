@@ -1,13 +1,17 @@
 package day.vitayuzu.neodb.ui.component
 
 import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.NavigationBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.LocalNavigator
+import day.vitayuzu.neodb.util.LocalSharedTransitionScope
 import day.vitayuzu.neodb.util.sharedElementTransition
 
 /**
@@ -24,13 +28,30 @@ import day.vitayuzu.neodb.util.sharedElementTransition
  *
  * @param movableContent Composable wrapped by [androidx.compose.runtime.movableContentOf]
  */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedBottomBar(modifier: Modifier = Modifier, movableContent: @Composable () -> Unit) {
-    Box(modifier.sharedElementTransition(SharedBottomBarKey)) {
+    val renderInOverlayModifier =
+        with(LocalSharedTransitionScope.current!!.sharedTransitionScope) {
+            Modifier.renderInSharedTransitionScopeOverlay()
+        }
+    val animateModifier =
+        with(LocalNavAnimatedContentScope.current) {
+            Modifier.animateEnterExit(
+                enter = expandVertically(),
+                exit = shrinkVertically(),
+            )
+        }
+    Box(
+        modifier
+            .sharedElementTransition(SharedBottomBarKey)
+            .then(renderInOverlayModifier)
+            .then(animateModifier),
+    ) {
         if (LocalNavAnimatedContentScope.current.transition.targetState != EnterExitState.Visible &&
             LocalNavigator.current.current is AppNavigator.TopLevelDestination
         ) {
-            Box(Modifier.fillMaxWidth()) // placeholder
+            NavigationBar {} // Placeholder. Using 0-height box may lead problems.
         } else {
             movableContent()
         }

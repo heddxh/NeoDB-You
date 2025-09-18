@@ -145,7 +145,7 @@ private fun MainNavDisplay(modifier: Modifier = Modifier) {
                     NavigationBarItem(
                         icon = { Icon(destination.icon, null) },
                         label = { Text(stringResource(destination.name)) },
-                        selected = appNavigator.current == destination,
+                        selected = appNavigator.backStack.any { it == destination },
                         onClick = { appNavigator goto destination },
                     )
                 }
@@ -194,7 +194,7 @@ private fun MainNavDisplay(modifier: Modifier = Modifier) {
                     SharedBottomBar { movableBottomBar() }
                 }
             }
-            entry<AppNavigator.Search>(metadata = sharedXAxisTransitionMetadata) {
+            entry<AppNavigator.Search> {
                 SearchPage()
             }
             entry<Detail> {

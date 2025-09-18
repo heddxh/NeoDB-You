@@ -1,5 +1,8 @@
 package day.vitayuzu.neodb.ui.page.search
 
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.component.EntryMarkCard
+import day.vitayuzu.neodb.util.sharedBoundsTransition
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -41,7 +45,13 @@ fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltV
     val textFieldState = rememberTextFieldState()
     val scope = rememberCoroutineScope()
 
-    Surface(modifier = modifier.fillMaxSize().safeDrawingPadding()) {
+    Surface(
+        modifier = modifier.fillMaxSize().sharedBoundsTransition(
+            SearchPageKey,
+            enter = scaleIn(),
+            exit = scaleOut() + fadeOut(),
+        ),
+    ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             SearchBarDefaults.InputField(
                 modifier = Modifier.safeDrawingPadding(),
@@ -89,3 +99,5 @@ fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltV
         }
     }
 }
+
+data object SearchPageKey

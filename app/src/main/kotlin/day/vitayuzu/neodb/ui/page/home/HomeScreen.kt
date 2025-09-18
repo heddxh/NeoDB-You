@@ -50,7 +50,7 @@ import day.vitayuzu.neodb.util.sharedBoundsTransition
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
-    bottomBar: @Composable () -> Unit,
+    sharedBottomBar: @Composable () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val appNavigator = LocalNavigator.current
@@ -58,7 +58,7 @@ fun HomeScreen(
     // TODO: show fetched data immediately
     Scaffold(
         modifier = modifier,
-        bottomBar = bottomBar,
+        bottomBar = sharedBottomBar,
         floatingActionButton = {
             SharedFab(onClick = { appNavigator goto AppNavigator.Search }) {
                 Icon(
