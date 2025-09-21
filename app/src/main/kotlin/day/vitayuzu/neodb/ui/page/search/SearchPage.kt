@@ -4,10 +4,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,6 +25,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -44,6 +46,7 @@ import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.component.EntryMarkCard
 import day.vitayuzu.neodb.ui.component.EntryTypeFilterChipsRow
 import day.vitayuzu.neodb.ui.model.Entry
+import day.vitayuzu.neodb.util.BASE_URL
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.sharedBoundsTransition
@@ -55,7 +58,7 @@ import kotlinx.coroutines.flow.filterNot
 @OptIn(FlowPreview::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltViewModel()) {
-    Surface(
+    Scaffold(
         modifier = modifier.fillMaxSize().sharedBoundsTransition(
             key = SearchPageKey,
             enter = scaleIn(),
@@ -72,7 +75,7 @@ fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltV
                 .collectLatest { viewModel.onSearch(it.toString()) }
         }
 
-        Box(Modifier.fillMaxSize()) {
+        Box(Modifier.padding(it).consumeWindowInsets(it).fillMaxSize()) {
             if (viewModel.isSearching) {
                 LoadingIndicator(
                     Modifier.align(Alignment.Center).size(128.dp),
@@ -80,6 +83,7 @@ fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltV
             }
             SearchPageContent(
                 state = textFieldState,
+                instanceName = viewModel.instanceName,
                 result = viewModel.searchResult.toList(),
             )
         }
@@ -92,17 +96,19 @@ data object SearchPageKey
 private fun SearchPageContent(
     modifier: Modifier = Modifier,
     state: TextFieldState = rememberTextFieldState(),
+    instanceName: String = BASE_URL,
     result: List<Entry> = emptyList(),
 ) {
     val selectedEntryTypes = remember { mutableStateSetOf<EntryType>() }
 
     LazyColumn(
-        modifier = modifier.safeDrawingPadding(),
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         item {
             SearchBarInputField(
                 state = state,
+                instanceName = instanceName,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp)
@@ -135,20 +141,27 @@ private fun SearchPageContent(
 private fun SearchBarInputField(
     modifier: Modifier = Modifier,
     state: TextFieldState = rememberTextFieldState(),
+    instanceName: String = BASE_URL,
 ) {
     val appNavigator = LocalNavigator.current
     val imeController = LocalSoftwareKeyboardController.current
+    val focus = LocalFocusManager.current
     OutlinedTextField(
         state = state,
         modifier = modifier,
         lineLimits = TextFieldLineLimits.SingleLine,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-        onKeyboardAction = { imeController?.hide() },
+        onKeyboardAction = {
+            imeController?.hide()
+            focus.clearFocus()
+        },
         shape = MaterialTheme.shapes.small,
-        // TODO: string resource and instance name
-//        placeholder = { Text("Explore neodb.social", maxLines = 1) },
-//        supportingText = { Text(stringResource(R.string.textfield_search)) },
-        placeholder = { Text(stringResource(R.string.textfield_search)) },
+        placeholder = {
+            Text(
+                stringResource(R.string.textfield_search, instanceName),
+                maxLines = 1,
+            )
+        },
         leadingIcon = {
             IconButton(onClick = {
                 imeController?.hide()

@@ -23,7 +23,7 @@
     <string name="visibility_displayname_public">Public</string>
     <string name="visibility_displayname_unlisted">Unlisted</string>
     <string name="visibility_displayname_followers">Followers only</string>
-    <string name="textfield_search">Search by name or supported external link…</string>
+    <string name="textfield_search_supportText">Search by name or supported external link…</string>
     <string name="textfield_instanceUrl">Instance domain</string>
     <string name="welcome_firstline">Welcome!</string>
     <string name="welcome_secondline">Enter your NeoDB instance domain to log in</string>
@@ -44,4 +44,5 @@
     <string name="settings_experimental_verbose_supportText">Verbose logs contain sensitive information and will reduce performance. Need restart APP.</string>
     <string name="settings_experimental_print">Print APP settings</string>
     <string name="settings_experimental_clearAuth_supportText">Will log out your account</string>
+    <string name="textfield_search">Explore %1$s</string>
 </resources>

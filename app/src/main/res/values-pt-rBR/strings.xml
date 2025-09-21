@@ -22,7 +22,7 @@
     <string name="visibility_displayname_public">Público</string>
     <string name="visibility_displayname_unlisted">Não listado</string>
     <string name="visibility_displayname_followers">Somente seguidores</string>
-    <string name="textfield_search">Pesquisar por nome ou link externo suportado…</string>
+    <string name="textfield_search_supportText">Pesquisar por nome ou link externo suportado…</string>
     <string name="textfield_instanceUrl">Domínio da instância</string>
     <string name="welcome_firstline">Bem-vindo!</string>
     <string name="welcome_secondline">Digite o domínio da sua instância NeoDB para fazer login</string>

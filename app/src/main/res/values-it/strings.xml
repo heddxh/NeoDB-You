@@ -22,7 +22,7 @@
     <string name="toggle_postToFedi">Condividi nel Fediverso</string>
     <string name="visibility_displayname_public">Pubblico</string>
     <string name="visibility_displayname_followers">Solo seguaci</string>
-    <string name="textfield_search">Cerca tramite nome o link esterno supportato…</string>
+    <string name="textfield_search_supportText">Cerca tramite nome o link esterno supportato…</string>
     <string name="textfield_instanceUrl">Dominio dell’istanza</string>
     <string name="welcome_firstline">Salve!</string>
     <string name="welcome_secondline">Inserisci il dominio della tua istanza NeoDB per accedere</string>
