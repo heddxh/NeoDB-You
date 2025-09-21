@@ -7,6 +7,8 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
@@ -17,12 +19,12 @@ class SharedTransitionScopeProvider(
     val sharedTransitionScope: SharedTransitionScope,
 )
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun Modifier.sharedBoundsTransition(
     key: Any,
-    enter: EnterTransition = fadeIn(),
-    exit: ExitTransition = fadeOut(),
+    enter: EnterTransition = fadeIn(MaterialTheme.motionScheme.defaultEffectsSpec()),
+    exit: ExitTransition = fadeOut(MaterialTheme.motionScheme.defaultEffectsSpec()),
 ) = with(LocalSharedTransitionScope.current?.sharedTransitionScope) {
     if (this == null) {
         Modifier
