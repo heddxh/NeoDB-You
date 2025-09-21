@@ -1,15 +1,11 @@
 package day.vitayuzu.neodb.ui.page.library
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
@@ -24,8 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import day.vitayuzu.neodb.ui.component.EntryMarkCard
+import day.vitayuzu.neodb.ui.component.EntryTypeFilterChipsRow
 import day.vitayuzu.neodb.ui.component.SharedSearchFab
-import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.ShelfType
 
@@ -65,9 +61,10 @@ fun LibraryPage(
                         }
                     }
                     EntryTypeFilterChipsRow(
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface),
                         selectedEntryTypes = uiState.selectedEntryTypes,
                         onClick = viewModel::toggleSelectedEntryType,
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+                        onClearFilter = viewModel::resetEntryType,
                     )
                 }
                 item { HeatMap(uiState.heatMap) }
@@ -77,29 +74,6 @@ fun LibraryPage(
                 ) {
                     EntryMarkCard(entry = it.entry, mark = it)
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun EntryTypeFilterChipsRow(
-    modifier: Modifier = Modifier,
-    selectedEntryTypes: Set<EntryType> = emptySet(),
-    onClick: (EntryType) -> Unit = {},
-) {
-    LazyRow(
-        modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        for (type in EntryType.entries) {
-            item {
-                FilterChip(
-                    label = { Text(stringResource(type.toR())) },
-                    selected = type in selectedEntryTypes,
-                    onClick = { onClick(type) },
-                )
             }
         }
     }

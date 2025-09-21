@@ -77,7 +77,6 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun resetEntryType() {
-        println("Long pressed")
         _uiState.update { it.copy(selectedEntryTypes = emptySet()) }
         refreshDisplayedMarks()
     }
