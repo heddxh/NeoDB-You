@@ -5,10 +5,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import day.vitayuzu.neodb.R
@@ -37,6 +43,21 @@ class AppNavigator(
 
     val animationDirection: MotionHorizontallyDirection
         get() = previous?.directionTo(current) ?: MotionHorizontallyDirection.Forward
+
+    val bottomBarContent = @Composable {
+        NavigationBar {
+            TopLevelDestinations.forEach { destination ->
+                NavigationBarItem(
+                    icon = { Icon(destination.icon, null) },
+                    label = { Text(stringResource(destination.name)) },
+                    selected = backStack.any { it == destination },
+                    onClick = { goto(destination) },
+                )
+            }
+        }
+    }
+
+    val bottomBar = movableContentOf { bottomBarContent() }
 
     infix fun goto(destination: AppDestination) {
         if (destination is RequireLogin && !checkLogin()) {

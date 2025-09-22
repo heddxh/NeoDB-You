@@ -10,18 +10,12 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.togetherWith
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
@@ -140,25 +134,6 @@ private fun MainNavDisplay(modifier: Modifier = Modifier) {
         }
     }
 
-    /**
-     * Hoisted persistent bottom bar shows in top level destinations,
-     * see [SharedBottomBar] for details.
-     */
-    val movableBottomBar = remember {
-        movableContentOf {
-            NavigationBar {
-                AppNavigator.TopLevelDestinations.forEach { destination ->
-                    NavigationBarItem(
-                        icon = { Icon(destination.icon, null) },
-                        label = { Text(stringResource(destination.name)) },
-                        selected = appNavigator.backStack.any { it == destination },
-                        onClick = { appNavigator goto destination },
-                    )
-                }
-            }
-        }
-    }
-
     NavDisplay(
         modifier = modifier,
         backStack = appNavigator.backStack,
@@ -187,17 +162,17 @@ private fun MainNavDisplay(modifier: Modifier = Modifier) {
         entryProvider = entryProvider {
             entry<Home> {
                 HomeScreen {
-                    SharedBottomBar { movableBottomBar() }
+                    appNavigator.SharedBottomBar()
                 }
             }
             entry<Library> {
                 LibraryPage {
-                    SharedBottomBar { movableBottomBar() }
+                    appNavigator.SharedBottomBar()
                 }
             }
             entry<Settings> {
                 SettingsPage {
-                    SharedBottomBar { movableBottomBar() }
+                    appNavigator.SharedBottomBar()
                 }
             }
             entry<AppNavigator.Search> {
