@@ -48,7 +48,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -98,7 +98,7 @@ fun DetailPage(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    var modalState by remember { mutableStateOf(ModalState.Closed) }
+    var modalState by rememberSaveable { mutableStateOf(ModalState.Closed) }
 
     Scaffold(
         modifier = modifier
@@ -122,18 +122,9 @@ fun DetailPage(
             }
         },
     ) { paddings ->
-        // Date Picker
-        // FIXME: try to avoid composition everytime toggle the pick
-        var isShowDatePicker by remember { mutableStateOf(false) }
+        var isShowDatePicker by rememberSaveable { mutableStateOf(false) }
         val currentTimeLong = Clock.System.now().toEpochMilliseconds()
-        var postDate by remember { mutableLongStateOf(currentTimeLong) }
-
-        if (isShowDatePicker) {
-            DatePickerModal(
-                onConfirm = { postDate = it ?: currentTimeLong },
-                onDismiss = { isShowDatePicker = false },
-            )
-        }
+        var postDate by rememberSaveable { mutableLongStateOf(currentTimeLong) }
 
         // Main UI with background image.
         AnimatedVisibility(
@@ -153,7 +144,7 @@ fun DetailPage(
             )
 
             // Content
-            var isShowAllReviews by remember { mutableStateOf(false) }
+            var isShowAllReviews by rememberSaveable { mutableStateOf(false) }
 
             BackHandler(enabled = isShowAllReviews) { isShowAllReviews = false }
 
@@ -195,6 +186,15 @@ fun DetailPage(
                 }
 
                 ModalState.Closed -> {}
+            }
+
+            // FIXME: try to avoid composition everytime toggle the pick
+            // Draw the date picker last to ensure it appears on top.
+            if (isShowDatePicker) {
+                DatePickerModal(
+                    onConfirm = { postDate = it ?: currentTimeLong },
+                    onDismiss = { isShowDatePicker = false },
+                )
             }
         }
     }

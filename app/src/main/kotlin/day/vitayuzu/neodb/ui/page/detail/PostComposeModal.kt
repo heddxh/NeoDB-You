@@ -47,8 +47,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -114,14 +114,14 @@ private fun ComposeModalContent(
     onShowDatePicker: () -> Unit = {},
 ) {
     val shelfTypes = ShelfType.entries
-    var selectedShelfTypeIndex by remember { mutableIntStateOf(2) }
+    var selectedShelfTypeIndex by rememberSaveable { mutableIntStateOf(2) }
 
     val commentState = rememberTextFieldState()
-    var ratingSliderValue by remember { mutableFloatStateOf(0f) }
+    var ratingSliderValue by rememberSaveable { mutableFloatStateOf(0f) }
 
-    var isShowMoreSettings by remember { mutableStateOf(false) }
-    var isPostToFedi by remember { mutableStateOf(false) }
-    var postVisibility by remember { mutableStateOf(Visibility.Public) }
+    var isShowMoreSettings by rememberSaveable { mutableStateOf(false) }
+    var isPostToFedi by rememberSaveable { mutableStateOf(false) }
+    var postVisibility by rememberSaveable { mutableStateOf(Visibility.Public) }
 
     // Backfill original data for edit existing mark.
     LaunchedEffect(originMark) {
@@ -274,7 +274,7 @@ private fun MoreSettingsContent(
                 Text(stringResource(R.string.toggle_postToFedi))
             }
             // Set visibility
-            var isShowVisibilityMenu by remember { mutableStateOf(false) }
+            var isShowVisibilityMenu by rememberSaveable { mutableStateOf(false) }
             Box {
                 AnimatedContent(targetState = postVisibility) {
                     OutlinedButton(onClick = { isShowVisibilityMenu = true }) {

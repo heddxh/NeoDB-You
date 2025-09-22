@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -86,7 +87,7 @@ fun ExpandableText(
             textMeasurer.measure(text, style, constraints = this.constraints, maxLines = maxLines)
         }.size.height
 
-        var state by remember {
+        var state by rememberSaveable {
             mutableStateOf(
                 if (expandedHeightMeasuredSize > collapsedHeightMeasuredSize) {
                     ExpandableTextState.Collapsed
@@ -100,10 +101,10 @@ fun ExpandableText(
         var targetRotation by remember { mutableFloatStateOf(0f) }
 
         LaunchedEffect(state) {
-            if (state is ExpandableTextState.Expanded) {
+            if (state == ExpandableTextState.Expanded) {
                 targetHeight = expandedHeightMeasuredSize
                 targetRotation = 180f
-            } else if (state is ExpandableTextState.Collapsed) {
+            } else if (state == ExpandableTextState.Collapsed) {
                 targetHeight = collapsedHeightMeasuredSize
                 targetRotation = 0f
             }
@@ -118,10 +119,10 @@ fun ExpandableText(
         Column(
             modifier = Modifier
                 .clip(MaterialTheme.shapes.extraSmall)
-                .clickable(enabled = state !is ExpandableTextState.None) {
-                    if (state is ExpandableTextState.Expanded) {
+                .clickable(enabled = state != ExpandableTextState.None) {
+                    if (state == ExpandableTextState.Expanded) {
                         state = ExpandableTextState.Collapsed
-                    } else if (state is ExpandableTextState.Collapsed) {
+                    } else if (state == ExpandableTextState.Collapsed) {
                         state = ExpandableTextState.Expanded
                     }
                 },
@@ -156,7 +157,7 @@ fun ExpandableText(
                     },
             )
             // "Show More" indicator.
-            if (state !is ExpandableTextState.None) {
+            if (state != ExpandableTextState.None) {
                 val baseModifier = Modifier
                     .height(16.dp)
                     .fillMaxWidth()
@@ -170,7 +171,7 @@ fun ExpandableText(
                     contentDescription = "Show more",
                     modifier = baseModifier
                         .then(
-                            if (state is ExpandableTextState.Collapsed) {
+                            if (state == ExpandableTextState.Collapsed) {
                                 backgroundModifier
                             } else {
                                 Modifier
@@ -184,13 +185,7 @@ fun ExpandableText(
     }
 }
 
-private sealed interface ExpandableTextState {
-    object None : ExpandableTextState
-
-    object Expanded : ExpandableTextState
-
-    object Collapsed : ExpandableTextState
-}
+private enum class ExpandableTextState { None, Expanded, Collapsed, }
 
 @Preview
 @Composable

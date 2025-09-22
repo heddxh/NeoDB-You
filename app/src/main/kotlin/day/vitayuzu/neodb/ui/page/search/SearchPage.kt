@@ -31,7 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateSetOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -99,7 +99,7 @@ private fun SearchPageContent(
     instanceName: String = BASE_URL,
     result: List<Entry> = emptyList(),
 ) {
-    val selectedEntryTypes = remember { mutableStateSetOf<EntryType>() }
+    val selectedEntryTypes = rememberSaveable { mutableStateSetOf<EntryType>() }
 
     LazyColumn(
         modifier = modifier,
