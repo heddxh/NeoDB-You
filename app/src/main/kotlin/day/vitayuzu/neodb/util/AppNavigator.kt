@@ -5,23 +5,34 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.theme.MotionHorizontallyDirection
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.serializer
 
 /**
  * Navi: さくらふたば
  */
-class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}) {
-
-    val backStack = mutableStateListOf<AppDestination>(Home)
+class AppNavigator(
+    backStack: NavBackStack<AppDestination> = NavBackStack(Home),
+    previous: AppDestination? = null,
+    val checkLogin: () -> Boolean = { true },
+    val gotoLogin: () -> Unit = {},
+) {
+    private val _backStack = backStack
+    val backStack: List<AppDestination> // expose read-only observable list
+        get() = _backStack.toList()
 
     val current: AppDestination
-        get() = backStack.last()
+        get() = _backStack.last()
 
-    var previous: AppDestination? = null
+    var previous: AppDestination? = previous
         private set
 
     val animationDirection: MotionHorizontallyDirection
@@ -32,22 +43,22 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
             gotoLogin()
         } else if (destination is TopLevelDestination) {
             previous = current
-            backStack.clear()
-            backStack.add(destination)
+            _backStack.clear()
+            _backStack.add(destination)
         } else {
             previous = current
-            backStack.add(destination)
+            _backStack.add(destination)
         }
     }
 
     fun back() {
-        previous = backStack.lastOrNull()
-        backStack.removeLastOrNull()
+        previous = _backStack.lastOrNull()
+        _backStack.removeLastOrNull()
     }
 
     private sealed interface RequireLogin
 
-    sealed interface AppDestination {
+    sealed interface AppDestination : NavKey {
         fun directionTo(destination: AppDestination): MotionHorizontallyDirection
     }
 
@@ -56,6 +67,7 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
         val name: Int
     }
 
+    @Serializable
     data object Home : TopLevelDestination {
         override val icon = Icons.Default.Home
 
@@ -64,6 +76,7 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
         override fun directionTo(destination: AppDestination) = MotionHorizontallyDirection.Forward
     }
 
+    @Serializable
     data object Library : RequireLogin, TopLevelDestination {
         override val icon = Icons.Default.DateRange
 
@@ -76,6 +89,7 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
         }
     }
 
+    @Serializable
     data object Settings : TopLevelDestination {
         override val icon = Icons.Default.Settings
 
@@ -88,6 +102,7 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
         }
     }
 
+    @Serializable
     data object Search : AppDestination {
         override fun directionTo(destination: AppDestination) = if (destination is Detail) {
             MotionHorizontallyDirection.Forward
@@ -96,10 +111,12 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
         }
     }
 
+    @Serializable
     data class Detail(val type: EntryType, val uuid: String) : AppDestination, RequireLogin {
         override fun directionTo(destination: AppDestination) = MotionHorizontallyDirection.Forward
     }
 
+    @Serializable
     data object License : AppDestination {
         override fun directionTo(destination: AppDestination) = MotionHorizontallyDirection.Forward
     }
@@ -109,6 +126,11 @@ class AppNavigator(val checkLogin: () -> Boolean, val gotoLogin: () -> Unit = {}
     }
 }
 
-val LocalNavigator = staticCompositionLocalOf {
-    AppNavigator({ true }, {})
-}
+val LocalNavigator = staticCompositionLocalOf { AppNavigator() }
+
+/**
+ * Modified from [androidx.navigation3.runtime.rememberNavBackStack].
+ */
+@Composable
+inline fun <reified T : NavKey> rememberNavBackStack(vararg elements: T): NavBackStack<T> =
+    rememberSerializable(serializer = serializer()) { NavBackStack(*elements) }

@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
@@ -48,6 +49,7 @@ import day.vitayuzu.neodb.ui.theme.MotionHorizontallyDirection
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.ui.theme.sharedXAxisTransition
 import day.vitayuzu.neodb.util.AppNavigator
+import day.vitayuzu.neodb.util.AppNavigator.AppDestination
 import day.vitayuzu.neodb.util.AppNavigator.Detail
 import day.vitayuzu.neodb.util.AppNavigator.Home
 import day.vitayuzu.neodb.util.AppNavigator.Library
@@ -57,6 +59,7 @@ import day.vitayuzu.neodb.util.AppNavigator.TopLevelDestination
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.LocalSharedTransitionScope
 import day.vitayuzu.neodb.util.SharedTransitionScopeProvider
+import day.vitayuzu.neodb.util.rememberNavBackStack
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -86,12 +89,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NeoDBYouTheme {
+                // Save and restore navigation back stack.
+                val backStack: NavBackStack<AppDestination> = rememberNavBackStack(Home)
+                val previous = rememberNavBackStack<AppDestination>()
                 val appNavigator = remember {
                     AppNavigator(
+                        backStack = backStack,
+                        previous = previous.firstOrNull(),
                         checkLogin = { authRepository.accountStatus.value.isLogin },
-                        gotoLogin = {
-                            this.startActivity(Intent(this, OauthActivity::class.java))
-                        },
+                        gotoLogin = { this.startActivity(Intent(this, OauthActivity::class.java)) },
                     )
                 }
                 CompositionLocalProvider(LocalNavigator provides appNavigator) {
