@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
@@ -72,6 +73,7 @@ import day.vitayuzu.neodb.ui.component.SharedEntryCardKey
 import day.vitayuzu.neodb.ui.component.SharedFab
 import day.vitayuzu.neodb.ui.component.SharedFabKey
 import day.vitayuzu.neodb.ui.component.StarsWithScores
+import day.vitayuzu.neodb.ui.component.StatusBarProtection
 import day.vitayuzu.neodb.ui.component.UserMarkCard
 import day.vitayuzu.neodb.ui.model.Detail
 import day.vitayuzu.neodb.ui.model.Mark
@@ -212,7 +214,9 @@ private fun DetailContent(
     isShowingAll: Boolean = false,
     showMore: () -> Unit = {},
 ) {
+    val lazyListState = rememberLazyListState()
     LazyColumn(
+        state = lazyListState,
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
@@ -284,6 +288,8 @@ private fun DetailContent(
             }
         }
     }
+
+    StatusBarProtection(lazyListState)
 }
 
 @Composable

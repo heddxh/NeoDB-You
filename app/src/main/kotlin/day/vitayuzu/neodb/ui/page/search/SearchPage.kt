@@ -4,13 +4,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
@@ -45,6 +46,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.component.EntryMarkCard
 import day.vitayuzu.neodb.ui.component.EntryTypeFilterChipsRow
+import day.vitayuzu.neodb.ui.component.StatusBarProtection
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.util.BASE_URL
 import day.vitayuzu.neodb.util.EntryType
@@ -64,7 +66,7 @@ fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltV
             enter = scaleIn(),
             exit = scaleOut() + fadeOut(),
         ),
-    ) {
+    ) { padding ->
         val textFieldState = rememberTextFieldState()
 
         // Perform search request
@@ -75,14 +77,15 @@ fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltV
                 .collectLatest { viewModel.onSearch(it.toString()) }
         }
 
-        Box(Modifier.padding(it).consumeWindowInsets(it).fillMaxSize()) {
+        Box(Modifier.fillMaxSize()) {
             if (viewModel.isSearching) {
                 LoadingIndicator(
                     Modifier.align(Alignment.Center).size(128.dp),
                 )
             }
             SearchPageContent(
-                state = textFieldState,
+                windowInsetsPadding = padding,
+                textFieldState = textFieldState,
                 instanceName = viewModel.instanceName,
                 result = viewModel.searchResult.toList(),
             )
@@ -95,19 +98,23 @@ data object SearchPageKey
 @Composable
 private fun SearchPageContent(
     modifier: Modifier = Modifier,
-    state: TextFieldState = rememberTextFieldState(),
+    windowInsetsPadding: PaddingValues = PaddingValues(),
+    textFieldState: TextFieldState = rememberTextFieldState(),
     instanceName: String = BASE_URL,
     result: List<Entry> = emptyList(),
 ) {
     val selectedEntryTypes = rememberSaveable { mutableStateSetOf<EntryType>() }
+    val lazyListState = rememberLazyListState()
 
     LazyColumn(
         modifier = modifier,
+        state = lazyListState,
         horizontalAlignment = Alignment.CenterHorizontally,
+        contentPadding = windowInsetsPadding,
     ) {
         item {
             SearchBarInputField(
-                state = state,
+                state = textFieldState,
                 instanceName = instanceName,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -135,6 +142,8 @@ private fun SearchPageContent(
             EntryMarkCard(entry = it, mark = null)
         }
     }
+
+    StatusBarProtection(lazyListState)
 }
 
 @Composable

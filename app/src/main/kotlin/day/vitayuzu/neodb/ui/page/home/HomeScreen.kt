@@ -36,6 +36,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import day.vitayuzu.neodb.ui.component.SharedSearchFab
+import day.vitayuzu.neodb.ui.component.StatusBarProtection
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.EntryType
@@ -50,23 +51,27 @@ fun HomeScreen(
     sharedBottomBar: @Composable () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    LocalNavigator.current
+
+    val scrollState = rememberScrollState()
 
     // TODO: show fetched data immediately
     Scaffold(
         modifier = modifier,
         bottomBar = sharedBottomBar,
         floatingActionButton = { SharedSearchFab() },
-    ) {
+    ) { padding ->
         PullToRefreshBox(
             isRefreshing = uiState.isLoading,
             onRefresh = { viewModel.updateTrending() },
-            modifier = Modifier.padding(it).consumeWindowInsets(it),
         ) {
             Column(
                 // PullToRefresh relies on child scroll event to detect scroll gestures,
                 // so make sure child composable has enough height.
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(padding)
+                    .consumeWindowInsets(padding),
                 verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
             ) {
                 // Book
@@ -102,6 +107,8 @@ fun HomeScreen(
             }
         }
     }
+
+    StatusBarProtection(scrollState)
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
