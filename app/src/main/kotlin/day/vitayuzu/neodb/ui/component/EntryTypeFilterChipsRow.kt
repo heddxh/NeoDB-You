@@ -23,7 +23,7 @@ import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -31,7 +31,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import day.vitayuzu.neodb.util.EntryType
-import kotlinx.coroutines.launch
 
 @Composable
 fun EntryTypeFilterChipsRow(
@@ -41,9 +40,21 @@ fun EntryTypeFilterChipsRow(
     onClearFilter: () -> Unit = {},
 ) {
     val state = rememberLazyListState()
-    val scope = rememberCoroutineScope()
+
+    // Selected type first
+    val sortedEntryTypes = buildList {
+        addAll(selectedEntryTypes)
+        addAll(EntryType.entries - selectedEntryTypes)
+    }
+
+    // Scroll to top when selected type changes.
+    // Using side effect instead of inside onClick callback to avoid race condition between animateItem and animateScrollToItem.
+    LaunchedEffect(sortedEntryTypes.firstOrNull()) {
+        state.animateScrollToItem(0)
+    }
 
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        // Clear filters
         AnimatedVisibility(
             visible = selectedEntryTypes.isNotEmpty(),
             modifier = Modifier.height(FilterChipDefaults.Height),
@@ -54,33 +65,24 @@ fun EntryTypeFilterChipsRow(
                 FilledIconButton(
                     modifier = Modifier.padding(start = 8.dp),
                     shape = FilterChipDefaults.shape,
-                    onClick = {
-                        scope.launch { state.animateScrollToItem(0) }
-                        onClearFilter()
-                    },
+                    onClick = onClearFilter,
                 ) {
                     Icon(Icons.Filled.Clear, "clear")
                 }
             }
         }
+        // Filters
         LazyRow(
             state = state,
             contentPadding = PaddingValues(horizontal = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            val types = buildList {
-                addAll(selectedEntryTypes)
-                addAll(EntryType.entries - selectedEntryTypes)
-            }
-            items(types, key = { it.name }) { type ->
+            items(sortedEntryTypes, key = { it.name }) { type ->
                 FilterChip(
                     modifier = Modifier.animateItem(),
                     label = { Text(stringResource(type.toR())) },
                     selected = type in selectedEntryTypes,
-                    onClick = {
-                        scope.launch { state.animateScrollToItem(0) }
-                        onClick(type)
-                    },
+                    onClick = { onClick(type) },
                 )
             }
         }
