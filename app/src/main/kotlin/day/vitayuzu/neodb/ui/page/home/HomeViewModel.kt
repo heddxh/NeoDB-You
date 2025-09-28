@@ -13,8 +13,8 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.chunked
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.flow.update
@@ -47,31 +47,39 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             refreshJob?.cancelAndJoin()
             // Should after job cancellation since it will toggle it to false
-            _uiState.update { it.copy(isLoading = true) }
-            refreshJob = neoDBRepository.serverTrending
-                .onEach { result ->
-                    result.forEach { (type, list) ->
-                        _uiState.update { curr ->
-                            when (type) {
-                                EntryType.book -> curr.copy(book = list.map { Entry(it) })
-                                EntryType.movie -> curr.copy(movie = list.map { Entry(it) })
-                                EntryType.tv -> curr.copy(tv = list.map { Entry(it) })
-                                EntryType.music -> curr.copy(music = list.map { Entry(it) })
-                                EntryType.game -> curr.copy(game = list.map { Entry(it) })
-                                EntryType.podcast -> curr.copy(podcast = list.map { Entry(it) })
-                                else -> curr
+            _uiState.update { it.copy(isLoading = true, data = emptyMap()) }
+            refreshJob = viewModelScope.launch {
+                val enabledTrendingType =
+                    listOf(
+                        EntryType.book,
+                        EntryType.movie,
+                        EntryType.tv,
+                        EntryType.music,
+                        EntryType.game,
+                        EntryType.podcast,
+                    )
+                enabledTrendingType.forEach { type ->
+                    neoDBRepository
+                        .fetchTrendingByEntryType(type)
+                        .onEach { schemaList ->
+                            _uiState.update { curr ->
+                                curr.copy(
+                                    data = curr.data + mapOf(
+                                        type to schemaList.map { Entry(it) },
+                                    ),
+                                )
                             }
-                        }
-                    }
-                }.onCompletion {
-                    _uiState.update { it.copy(isLoading = false) }
-                }.launchIn(viewModelScope)
+                        }.collect()
+                }
+            }
+            refreshJob?.invokeOnCompletion { _uiState.update { it.copy(isLoading = false) } }
         }
     }
 }
 
 data class HomeUiState(
     val isLoading: Boolean = false,
+    val data: Map<EntryType, List<Entry>> = emptyMap(),
     val book: List<Entry> = emptyList(),
     val movie: List<Entry> = emptyList(),
     val tv: List<Entry> = emptyList(),

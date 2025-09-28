@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
@@ -28,16 +27,7 @@ class NeoDBRepository @Inject constructor(private val remoteSource: RemoteSource
             fetchMyShelfByShelfType(it)
         }
 
-    // Concurrently fetch all trending, return a map of type to trending
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val serverTrending = flowOf(*EntryType.entries.take(6).toTypedArray())
-        .flatMapMerge { type ->
-            fetchTrendingByEntryType(type).map {
-                mapOf(type to it)
-            }
-        }
-
-    private fun fetchTrendingByEntryType(type: EntryType): Flow<List<TrendingItemSchema>> = flow {
+    fun fetchTrendingByEntryType(type: EntryType): Flow<List<TrendingItemSchema>> = flow {
         emit(remoteSource.fetchTrending(type))
     }.log(type.toString())
 

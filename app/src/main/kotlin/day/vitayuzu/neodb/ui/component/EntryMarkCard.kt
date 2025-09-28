@@ -16,10 +16,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -81,11 +79,7 @@ fun EntryMarkCard(
                             modifier = Modifier.weight(1f),
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = stringResource(entry.category.toR()),
-                            style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.alpha(0.5f),
-                        )
+                        EntryTypeText(entry.category)
                     }
                     if (entry.rating != null) {
                         Spacer(modifier = Modifier.width(4.dp))

@@ -1,6 +1,8 @@
 package day.vitayuzu.neodb.ui.page.home
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -29,12 +32,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import day.vitayuzu.neodb.ui.component.EntryTypeText
 import day.vitayuzu.neodb.ui.component.SharedSearchFab
 import day.vitayuzu.neodb.ui.component.StatusBarProtection
 import day.vitayuzu.neodb.ui.model.Entry
@@ -43,7 +47,6 @@ import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.sharedBoundsTransition
 
-@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -54,7 +57,6 @@ fun HomeScreen(
 
     val scrollState = rememberScrollState()
 
-    // TODO: show fetched data immediately
     Scaffold(
         modifier = modifier,
         bottomBar = sharedBottomBar,
@@ -74,36 +76,10 @@ fun HomeScreen(
                     .consumeWindowInsets(padding),
                 verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
             ) {
-                // Book
-                TrendingSection(
-                    data = uiState.book,
-                    type = EntryType.book,
-                )
-                // Game
-                TrendingSection(
-                    data = uiState.game,
-                    type = EntryType.game,
-                )
-                // Movie
-                TrendingSection(
-                    data = uiState.movie,
-                    type = EntryType.movie,
-                )
-                // TV
-                TrendingSection(
-                    data = uiState.tv,
-                    type = EntryType.tv,
-                )
-                // Music
-                TrendingSection(
-                    data = uiState.music,
-                    type = EntryType.music,
-                )
-                // Podcast
-                TrendingSection(
-                    data = uiState.podcast,
-                    type = EntryType.podcast,
-                )
+                EntryType.entries.forEach {
+                    val entries = uiState.data[it] ?: emptyList()
+                    TrendingSection(entries, it)
+                }
             }
         }
     }
@@ -111,65 +87,78 @@ fun HomeScreen(
     StatusBarProtection(scrollState)
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun TrendingSection(
-    data: List<Entry>,
+private fun TrendingSection(
+    entries: List<Entry>,
     type: EntryType,
     modifier: Modifier = Modifier,
 ) {
     val appNavigator = LocalNavigator.current
-    if (data.isEmpty()) return // return in advance if no data
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start,
+    AnimatedVisibility(
+        visible = entries.isNotEmpty(),
+        enter = fadeIn(),
+        exit = fadeOut(),
     ) {
-        Text(
-            text = stringResource(type.toR()),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 8.dp).alpha(.8f),
-        )
-        Spacer(modifier = Modifier.height(4.dp))
+        Column(modifier = modifier) {
+            ProvideTextStyle(MaterialTheme.typography.titleLarge) {
+                EntryTypeText(type, Modifier.padding(horizontal = 8.dp))
+            }
+            Spacer(modifier = Modifier.height(4.dp))
 
-        val pagerState = rememberPagerState { data.size }
-        val flingBehavior = PagerDefaults.flingBehavior(
-            state = pagerState,
-            pagerSnapDistance = PagerSnapDistance.atMost(3),
-        )
-        HorizontalPager(
-            state = pagerState,
-            contentPadding = PaddingValues(horizontal = 8.dp),
-            pageSize = PageSize.Fixed(type.coverDimension.first.dp),
-            pageSpacing = 8.dp,
-            flingBehavior = flingBehavior,
-            key = { data[it].uuid },
-        ) {
-            val item = data[it]
-            Column(modifier = Modifier.sharedBoundsTransition(SharedTrendingItemKey(item.uuid))) {
-                AsyncImage(
-                    model = item.coverUrl,
-                    contentDescription = item.title,
-                    contentScale = ContentScale.FillHeight,
-                    modifier = Modifier
-                        .height(type.coverDimension.second.dp)
-                        .clip(MaterialTheme.shapes.small)
-                        .clickable { appNavigator goto AppNavigator.Detail(type, item.uuid) },
-                )
-                // FIXME: may show 2 lines at most without mess the layout
-                Text(
-                    text = item.title,
-                    style = MaterialTheme.typography.labelMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.alpha(.6f),
-                )
+            val pagerState = rememberPagerState { entries.size }
+            val flingBehavior = PagerDefaults.flingBehavior(
+                state = pagerState,
+                pagerSnapDistance = PagerSnapDistance.atMost(3),
+            )
+            HorizontalPager(
+                state = pagerState,
+                contentPadding = PaddingValues(horizontal = 8.dp),
+                pageSize = PageSize.Fixed(type.coverDimension.first.dp),
+                pageSpacing = 8.dp,
+                flingBehavior = flingBehavior,
+            ) {
+                val item = entries[it]
+                Column(
+                    modifier = Modifier.sharedBoundsTransition(SharedTrendingItemKey(item.uuid)),
+                ) {
+                    AsyncImage(
+                        model = item.coverUrl,
+                        contentDescription = item.title,
+                        contentScale = ContentScale.FillHeight,
+                        modifier = Modifier
+                            .height(type.coverDimension.second.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .clickable { appNavigator goto AppNavigator.Detail(type, item.uuid) },
+                    )
+                    // FIXME: may show 2 lines at most without mess the layout
+                    Text(
+                        text = item.title,
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.alpha(.6f),
+                    )
+                }
             }
         }
     }
 }
 
 data class SharedTrendingItemKey(val uuid: String)
+
+@Preview
+@Composable
+private fun PreviewTrendingSection() {
+    val data = buildList {
+        repeat(10) { add(Entry.TEST) }
+    }
+    val type = EntryType.movie
+    TrendingSection(
+        entries = data,
+        type = type,
+    )
+}
 
 /**
  * Dimensions of cover for different types of entries.
