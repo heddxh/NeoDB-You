@@ -27,13 +27,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -106,6 +112,9 @@ private fun TrendingSection(
             }
             Spacer(modifier = Modifier.height(4.dp))
 
+            // WORKAROUND: Make all items in pager with different lines of text have the same height
+            var pagerItemHeight by remember { mutableIntStateOf(0) }
+
             val pagerState = rememberPagerState { entries.size }
             val flingBehavior = PagerDefaults.flingBehavior(
                 state = pagerState,
@@ -116,11 +125,24 @@ private fun TrendingSection(
                 contentPadding = PaddingValues(horizontal = 8.dp),
                 pageSize = PageSize.Fixed(type.coverDimension.first.dp),
                 pageSpacing = 8.dp,
+                verticalAlignment = Alignment.Top,
                 flingBehavior = flingBehavior,
+                modifier = Modifier.height(
+                    if (pagerItemHeight > 0) {
+                        with(LocalDensity.current) { pagerItemHeight.toDp() }
+                    } else {
+                        Dp.Unspecified
+                    },
+                ),
             ) {
                 val item = entries[it]
                 Column(
-                    modifier = Modifier.sharedBoundsTransition(SharedTrendingItemKey(item.uuid)),
+                    modifier = Modifier
+                        .sharedBoundsTransition(
+                            SharedTrendingItemKey(item.uuid),
+                        ).onSizeChanged {
+                            if (it.height > pagerItemHeight) pagerItemHeight = it.height
+                        },
                 ) {
                     AsyncImage(
                         model = item.coverUrl,
@@ -131,11 +153,10 @@ private fun TrendingSection(
                             .clip(MaterialTheme.shapes.small)
                             .clickable { appNavigator goto AppNavigator.Detail(type, item.uuid) },
                     )
-                    // FIXME: may show 2 lines at most without mess the layout
                     Text(
                         text = item.title,
                         style = MaterialTheme.typography.labelMedium,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.alpha(.6f),
                     )
