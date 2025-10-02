@@ -43,7 +43,7 @@ object NetworkHiltModule {
                 install(Logging) {
                     logger = Logger.ANDROID
                     runBlocking {
-                        level = if (preferenceSource.get(VERBOSE_LOG) == true) {
+                        level = if (preferenceSource.getAuthData(VERBOSE_LOG) == true) {
                             LogLevel.ALL
                         } else {
                             LogLevel.NONE
@@ -73,7 +73,8 @@ object NetworkHiltModule {
                         loadTokens {
                             // Will be cached until process die, use clearToken() to refresh.
                             // See: AuthRepository.kt
-                            val token = preferenceSource.get(AppSettingsManager.ACCESS_TOKEN)
+                            val token =
+                                preferenceSource.getAuthData(AppSettingsManager.ACCESS_TOKEN)
                             if (token != null) {
                                 // No expire time, no need to refresh
                                 BearerTokens(token, null)

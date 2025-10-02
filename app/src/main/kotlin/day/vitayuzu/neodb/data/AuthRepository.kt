@@ -71,8 +71,8 @@ class AuthRepository @Inject constructor(
      * @return `Pair<ClientId, ClientSecret>` if successfully registered.
      */
     suspend fun registerClientIfNeeded(instanceUrl: String): Result<Pair<String, String>> {
-        val clientId = appSettingsManager.get(CLIENT_ID)
-        val clientSecret = appSettingsManager.get(CLIENT_SECRET)
+        val clientId = appSettingsManager.getAuthData(CLIENT_ID)
+        val clientSecret = appSettingsManager.getAuthData(CLIENT_SECRET)
 
         if (clientId != null &&
             clientSecret != null &&
@@ -126,8 +126,8 @@ class AuthRepository @Inject constructor(
 
     suspend fun updateAccountStatus() {
         Log.d("AuthRepository", "Updating account status...")
-        val token = appSettingsManager.get(ACCESS_TOKEN)
-        val instanceUrl = appSettingsManager.get(INSTANCE_URL)
+        val token = appSettingsManager.getAuthData(ACCESS_TOKEN)
+        val instanceUrl = appSettingsManager.getAuthData(INSTANCE_URL)
         if (token == null || instanceUrl == null) {
             _accountStatus.update { AccountStatus() }
         } else {

@@ -17,6 +17,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import day.vitayuzu.neodb.AppScope
 import day.vitayuzu.neodb.util.EntryType
+import day.vitayuzu.neodb.util.ShelfType
 import day.vitayuzu.neodb.util.USER_PREFERENCES
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
@@ -48,8 +49,10 @@ class AppSettingsManager @Inject constructor(
             Log.e("LocalSettingsManager", "Error while reading preferences", e)
         }.map { preferences ->
             val homeTrendingTypes = getAsList<EntryType>(HOME_TRENDING_TYPES)
+            val libraryShelfType =
+                ShelfType.valueOf(preferences[LIBRARY_SHELF_TYPE] ?: ShelfType.progress.name)
             val verboseLog = preferences[VERBOSE_LOG] ?: false
-            AppSettings(homeTrendingTypes, verboseLog)
+            AppSettings(homeTrendingTypes, libraryShelfType, verboseLog)
         }.stateIn(
             scope = scope,
             started = WhileSubscribed(5000),
@@ -68,18 +71,30 @@ class AppSettingsManager @Inject constructor(
         }
     }
 
-    // Utility functions, only IOException will be caught.
-    suspend fun <T> get(key: Preferences.Key<T>) = dataStore.data
+    // Helper functions to get auth data.
+    suspend fun <T> getAuthData(key: Preferences.Key<T>) = dataStore.data
         .map { it[key] }
         .catch {
 //            if (it !is IOException) throw it // rethrow all but IOException
             Log.e("AuthRepository", "Error while reading preferences ${key.name}", it)
         }.firstOrNull()
 
-    suspend inline fun <reified T> getAsList(key: Preferences.Key<String>): List<T> = dataStore.data
-        .map { Json.decodeFromString<List<T>>(it[key] ?: "[]") }
-        .catch { Log.e("AuthRepository", "Error while reading preferences ${key.name}", it) }
-        .first()
+    /**
+     * Helper function to get all auth data from local storage,
+     * or null if some of them are missing.
+     */
+    suspend fun getAllAuthData() = listOfNotNull(
+        getAuthData(INSTANCE_URL),
+        getAuthData(CLIENT_ID),
+        getAuthData(CLIENT_SECRET),
+        getAuthData(ACCESS_TOKEN),
+    ).let { if (it.size == 4) it else null }
+
+    private suspend inline fun <reified T> getAsList(key: Preferences.Key<String>): List<T> =
+        dataStore.data
+            .map { Json.decodeFromString<List<T>>(it[key] ?: "[]") }
+            .catch { Log.e("AuthRepository", "Error while reading preferences ${key.name}", it) }
+            .first()
 
     suspend fun <T> store(key: Preferences.Key<T>, value: T) {
         runCatching {
@@ -102,17 +117,6 @@ class AppSettingsManager @Inject constructor(
         }
     }
 
-    /**
-     * Helper function to get all auth data from local storage,
-     * or null if some of them are missing.
-     */
-    suspend fun getAllAuthData() = listOfNotNull(
-        get(INSTANCE_URL),
-        get(CLIENT_ID),
-        get(CLIENT_SECRET),
-        get(ACCESS_TOKEN),
-    ).let { if (it.size == 4) it else null }
-
     companion object {
         val INSTANCE_URL = stringPreferencesKey("instance_url")
         val CLIENT_ID = stringPreferencesKey("client_id")
@@ -120,14 +124,18 @@ class AppSettingsManager @Inject constructor(
         val ACCESS_TOKEN = stringPreferencesKey("access_token")
 
         // Settings
+        val HOME_TRENDING_TYPES = stringPreferencesKey("home_trending_types")
+        val LIBRARY_SHELF_TYPE = stringPreferencesKey("library_shelf_type")
+
         // TODO: Control global log level
         val VERBOSE_LOG = booleanPreferencesKey("verbose_log")
-        val HOME_TRENDING_TYPES = stringPreferencesKey("home_trending_types")
     }
 }
 
+@Suppress("ktlint:standard:max-line-length")
 data class AppSettings(
-    val homeTrendingTypes: List<EntryType> = emptyList(),
+    val homeTrendingTypes: List<EntryType> = emptyList(), // enabled trending types for home
+    val libraryShelfType: ShelfType = ShelfType.wishlist, // preferred/default shelf type for library
     val verboseLog: Boolean = false,
 )
 
