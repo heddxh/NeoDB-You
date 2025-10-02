@@ -1,5 +1,6 @@
 package day.vitayuzu.neodb.data
 
+import day.vitayuzu.neodb.AppIoDispatcher
 import day.vitayuzu.neodb.data.schema.AuthClientIdentify
 import day.vitayuzu.neodb.data.schema.GithubLatestReleaseSchema
 import day.vitayuzu.neodb.data.schema.InstanceSchema
@@ -16,7 +17,6 @@ import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.util.APP_NAME
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
 import day.vitayuzu.neodb.util.EntryType
-import day.vitayuzu.neodb.util.IoDispatcher
 import day.vitayuzu.neodb.util.ShelfType
 import day.vitayuzu.neodb.util.WEBSITE
 import de.jensklingenberg.ktorfit.http.Body
@@ -37,7 +37,7 @@ import javax.inject.Inject
 
 class RemoteSource @Inject constructor(
     private val api: NeoDbApi,
-    @IoDispatcher private val dispatcher: CoroutineDispatcher,
+    @AppIoDispatcher private val dispatcher: CoroutineDispatcher,
 ) {
     // =====================================< Auth Start >================================
 

@@ -1,20 +1,12 @@
-package day.vitayuzu.neodb.util
+package day.vitayuzu.neodb.data
 
-import android.app.Application
-import android.content.Context
 import android.util.Log
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.preferencesDataStoreFile
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.HiltAndroidApp
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import day.vitayuzu.neodb.data.AppSettingsManager
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.VERBOSE_LOG
-import day.vitayuzu.neodb.data.NeoDbApi
-import day.vitayuzu.neodb.data.createNeoDbApi
+import day.vitayuzu.neodb.util.BASE_URL
 import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.ktorfit
 import io.ktor.client.HttpClient
@@ -30,58 +22,13 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.appendIfNameAndValueAbsent
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
-import javax.inject.Qualifier
 import javax.inject.Singleton
 
-@HiltAndroidApp
-class NeoDBYouApp : Application()
-
 @Module
 @InstallIn(SingletonComponent::class)
-object DataStoreModule {
-    @Singleton
-    @Provides
-    fun providerDataStore(
-        @ApplicationContext context: Context,
-    ) = PreferenceDataStoreFactory.create(
-        produceFile = { context.preferencesDataStoreFile(USER_PREFERENCES) },
-    )
-}
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class IoDispatcher
-
-@Module
-@InstallIn(SingletonComponent::class)
-object DispatcherModule {
-    @Provides
-    @Singleton
-    @IoDispatcher
-    fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
-}
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class ExternalScope
-
-@Module
-@InstallIn(SingletonComponent::class)
-object CoroutineScopeModule {
-    @Provides @Singleton @ExternalScope
-    fun provideExternalScope(): CoroutineScope =
-        CoroutineScope(SupervisorJob() + Dispatchers.Default)
-}
-
-@Module
-@InstallIn(SingletonComponent::class)
-object NetworkModule {
+object NetworkHiltModule {
 
     @Singleton
     @Provides

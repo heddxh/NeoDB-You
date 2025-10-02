@@ -1,17 +1,34 @@
 package day.vitayuzu.neodb.data
 
+import android.content.Context
 import android.util.Log
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
-import kotlinx.coroutines.flow.Flow
+import androidx.datastore.preferences.preferencesDataStoreFile
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import day.vitayuzu.neodb.AppScope
+import day.vitayuzu.neodb.util.EntryType
+import day.vitayuzu.neodb.util.USER_PREFERENCES
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Local storage for user preferences, powered by [DataStore].
@@ -19,16 +36,27 @@ import javax.inject.Inject
  * get function will return null if error occurred.
  * NOTE: [DataStore] has used `Dispatchers.IO` under the hood.
  */
-class AppSettingsManager @Inject constructor(private val dataStore: DataStore<Preferences>) {
+@Singleton
+class AppSettingsManager @Inject constructor(
+    val dataStore: DataStore<Preferences>,
+    @AppScope private val scope: CoroutineScope,
+) {
 
-    val settingsFlow: Flow<AppSettings> = dataStore.data
+    val appSettings: StateFlow<AppSettings> = dataStore.data
         .catch { e ->
             emit(emptyPreferences())
             Log.e("LocalSettingsManager", "Error while reading preferences", e)
         }.map { preferences ->
+            val homeTrendingTypes = getAsList<EntryType>(HOME_TRENDING_TYPES).ifEmpty {
+                EntryType.entries.take(6)
+            }
             val verboseLog = preferences[VERBOSE_LOG] ?: false
-            AppSettings(verboseLog)
-        }
+            AppSettings(homeTrendingTypes, verboseLog)
+        }.stateIn(
+            scope = scope,
+            started = WhileSubscribed(5000),
+            initialValue = AppSettings(),
+        )
 
     /**
      * Delete all local authentication.
@@ -50,6 +78,11 @@ class AppSettingsManager @Inject constructor(private val dataStore: DataStore<Pr
             Log.e("AuthRepository", "Error while reading preferences ${key.name}", it)
         }.firstOrNull()
 
+    suspend inline fun <reified T> getAsList(key: Preferences.Key<String>): List<T> = dataStore.data
+        .map { Json.decodeFromString<List<T>>(it[key] ?: "[]") }
+        .catch { Log.e("AuthRepository", "Error while reading preferences ${key.name}", it) }
+        .first()
+
     suspend fun <T> store(key: Preferences.Key<T>, value: T) {
         runCatching {
             dataStore.edit {
@@ -57,6 +90,16 @@ class AppSettingsManager @Inject constructor(private val dataStore: DataStore<Pr
             }
         }.onFailure {
 //            if (it !is IOException) throw it // rethrow all but IOException
+            Log.e("AuthRepository", "Error while editing preferences ${key.name}", it)
+        }
+    }
+
+    suspend fun store(key: Preferences.Key<String>, value: List<Any>) {
+        runCatching {
+            dataStore.edit {
+                it[key] = Json.encodeToString(value)
+            }
+        }.onFailure {
             Log.e("AuthRepository", "Error while editing preferences ${key.name}", it)
         }
     }
@@ -81,7 +124,23 @@ class AppSettingsManager @Inject constructor(private val dataStore: DataStore<Pr
         // Settings
         // TODO: Control global log level
         val VERBOSE_LOG = booleanPreferencesKey("verbose_log")
+        val HOME_TRENDING_TYPES = stringPreferencesKey("home_trending_types")
     }
 }
 
-data class AppSettings(val verboseLog: Boolean = false)
+data class AppSettings(
+    val homeTrendingTypes: List<EntryType> = emptyList(),
+    val verboseLog: Boolean = false,
+)
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DataStoreModule {
+    @Singleton
+    @Provides
+    fun providerDataStore(
+        @ApplicationContext context: Context,
+    ): DataStore<Preferences> = PreferenceDataStoreFactory.create(
+        produceFile = { context.preferencesDataStoreFile(USER_PREFERENCES) },
+    )
+}

@@ -16,7 +16,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entry
@@ -54,6 +53,7 @@ import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.LocalSharedTransitionScope
 import day.vitayuzu.neodb.util.SharedTransitionScopeProvider
 import day.vitayuzu.neodb.util.rememberNavBackStack
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -66,6 +66,8 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var updateRepository: UpdateRepository
 
+    @Inject @AppScope lateinit var appScope: CoroutineScope
+
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,8 +79,8 @@ class MainActivity : ComponentActivity() {
                 .build()
         }
 
-        lifecycleScope.launch { authRepository.updateAccountStatus() }
-        updateRepository.checkUpdateFlow.launchIn(lifecycleScope)
+        appScope.launch { authRepository.updateAccountStatus() }
+        updateRepository.checkUpdateFlow.launchIn(appScope)
 
         enableEdgeToEdge()
         setContent {

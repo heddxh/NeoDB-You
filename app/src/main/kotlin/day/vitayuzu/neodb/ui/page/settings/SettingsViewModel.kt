@@ -29,7 +29,7 @@ class SettingsViewModel @Inject constructor(
     val uiState: StateFlow<SettingsUiState> = combine(
         authRepo.accountStatus,
         updateRepo.checkUpdateFlow.onStart { emit(null) }, // Start combination asap.
-        appSettingsManager.settingsFlow,
+        appSettingsManager.appSettings,
     ) { (isLogin, _, schema), appVersionData, appSettings ->
         if (isLogin && schema != null) {
             SettingsUiState(

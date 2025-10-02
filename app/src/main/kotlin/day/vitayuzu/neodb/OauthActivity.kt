@@ -10,15 +10,16 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import day.vitayuzu.neodb.ui.page.login.LoginPage
 import day.vitayuzu.neodb.ui.page.login.LoginViewModel
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * This Activity initiates the authentication flow and handles the OAuth callback.
@@ -39,6 +40,8 @@ import kotlinx.coroutines.launch
  */
 @AndroidEntryPoint
 class OauthActivity : ComponentActivity() {
+    @Inject @AppScope lateinit var appScope: CoroutineScope
+
     private val viewModel: LoginViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,7 +82,7 @@ class OauthActivity : ComponentActivity() {
         if (url != null && url.toString().startsWith(AUTH_CALLBACK)) {
             val authCode = url.getQueryParameter("code")
             if (!authCode.isNullOrBlank()) {
-                lifecycleScope.launch {
+                appScope.launch {
                     Log.d("OauthActivity", "Auth code received")
                     viewModel
                         .handleAuthCode(authCode)
