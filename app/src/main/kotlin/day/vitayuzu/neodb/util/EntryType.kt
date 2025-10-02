@@ -8,11 +8,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Keep // Maybe removed by R8
 enum class EntryType {
+    game,
     book,
     movie,
     tv,
     music,
-    game,
     podcast,
     performance,
 

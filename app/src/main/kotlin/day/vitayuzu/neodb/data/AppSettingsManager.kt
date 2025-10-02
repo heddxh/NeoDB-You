@@ -47,9 +47,7 @@ class AppSettingsManager @Inject constructor(
             emit(emptyPreferences())
             Log.e("LocalSettingsManager", "Error while reading preferences", e)
         }.map { preferences ->
-            val homeTrendingTypes = getAsList<EntryType>(HOME_TRENDING_TYPES).ifEmpty {
-                EntryType.entries.take(6)
-            }
+            val homeTrendingTypes = getAsList<EntryType>(HOME_TRENDING_TYPES)
             val verboseLog = preferences[VERBOSE_LOG] ?: false
             AppSettings(homeTrendingTypes, verboseLog)
         }.stateIn(

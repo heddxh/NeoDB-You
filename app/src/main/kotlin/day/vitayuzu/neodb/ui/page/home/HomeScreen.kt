@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -71,20 +72,21 @@ fun HomeScreen(
         PullToRefreshBox(
             isRefreshing = uiState.isLoading,
             onRefresh = { viewModel.updateTrending() },
+            modifier = Modifier.padding(padding).consumeWindowInsets(padding).fillMaxSize(),
         ) {
-            Column(
-                // PullToRefresh relies on child scroll event to detect scroll gestures,
-                // so make sure child composable has enough height.
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(padding)
-                    .consumeWindowInsets(padding),
-                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
-            ) {
-                EntryType.entries.forEach {
-                    val entries = uiState.data[it] ?: emptyList()
-                    TrendingSection(entries, it)
+            // PullToRefresh relies on child scroll event to detect scroll gestures,
+            // so make sure child composable has enough height.
+            Box(Modifier.fillMaxSize().verticalScroll(scrollState)) {
+                AnimatedVisibility(
+                    visible = !uiState.isLoading,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top)) {
+                        uiState.data.forEach { (type, data) ->
+                            TrendingSection(data, type)
+                        }
+                    }
                 }
             }
         }
@@ -101,66 +103,60 @@ private fun TrendingSection(
     modifier: Modifier = Modifier,
 ) {
     val appNavigator = LocalNavigator.current
-    AnimatedVisibility(
-        visible = entries.isNotEmpty(),
-        enter = fadeIn(),
-        exit = fadeOut(),
-    ) {
-        Column(modifier = modifier) {
-            ProvideTextStyle(MaterialTheme.typography.titleLarge) {
-                EntryTypeText(type, Modifier.padding(horizontal = 8.dp))
-            }
-            Spacer(modifier = Modifier.height(4.dp))
+    Column(modifier = modifier) {
+        ProvideTextStyle(MaterialTheme.typography.titleLarge) {
+            EntryTypeText(type, Modifier.padding(horizontal = 8.dp))
+        }
+        Spacer(modifier = Modifier.height(4.dp))
 
-            // WORKAROUND: Make all items in pager with different lines of text have the same height
-            var pagerItemHeight by remember { mutableIntStateOf(0) }
+        // WORKAROUND: Make all items in pager with different lines of text have the same height
+        var pagerItemHeight by remember { mutableIntStateOf(0) }
 
-            val pagerState = rememberPagerState { entries.size }
-            val flingBehavior = PagerDefaults.flingBehavior(
-                state = pagerState,
-                pagerSnapDistance = PagerSnapDistance.atMost(3),
-            )
-            HorizontalPager(
-                state = pagerState,
-                contentPadding = PaddingValues(horizontal = 8.dp),
-                pageSize = PageSize.Fixed(type.coverDimension.first.dp),
-                pageSpacing = 8.dp,
-                verticalAlignment = Alignment.Top,
-                flingBehavior = flingBehavior,
-                modifier = Modifier.height(
-                    if (pagerItemHeight > 0) {
-                        with(LocalDensity.current) { pagerItemHeight.toDp() }
-                    } else {
-                        Dp.Unspecified
+        val pagerState = rememberPagerState { entries.size }
+        val flingBehavior = PagerDefaults.flingBehavior(
+            state = pagerState,
+            pagerSnapDistance = PagerSnapDistance.atMost(3),
+        )
+        HorizontalPager(
+            state = pagerState,
+            contentPadding = PaddingValues(horizontal = 8.dp),
+            pageSize = PageSize.Fixed(type.coverDimension.first.dp),
+            pageSpacing = 8.dp,
+            verticalAlignment = Alignment.Top,
+            flingBehavior = flingBehavior,
+            modifier = Modifier.height(
+                if (pagerItemHeight > 0) {
+                    with(LocalDensity.current) { pagerItemHeight.toDp() }
+                } else {
+                    Dp.Unspecified
+                },
+            ),
+        ) {
+            val item = entries[it]
+            Column(
+                modifier = Modifier
+                    .sharedBoundsTransition(
+                        SharedTrendingItemKey(item.uuid),
+                    ).onSizeChanged {
+                        if (it.height > pagerItemHeight) pagerItemHeight = it.height
                     },
-                ),
             ) {
-                val item = entries[it]
-                Column(
+                AsyncImage(
+                    model = item.coverUrl,
+                    contentDescription = item.title,
+                    contentScale = ContentScale.FillHeight,
                     modifier = Modifier
-                        .sharedBoundsTransition(
-                            SharedTrendingItemKey(item.uuid),
-                        ).onSizeChanged {
-                            if (it.height > pagerItemHeight) pagerItemHeight = it.height
-                        },
-                ) {
-                    AsyncImage(
-                        model = item.coverUrl,
-                        contentDescription = item.title,
-                        contentScale = ContentScale.FillHeight,
-                        modifier = Modifier
-                            .height(type.coverDimension.second.dp)
-                            .clip(MaterialTheme.shapes.small)
-                            .clickable { appNavigator goto AppNavigator.Detail(type, item.uuid) },
-                    )
-                    Text(
-                        text = item.title,
-                        style = MaterialTheme.typography.labelMedium,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.alpha(.6f),
-                    )
-                }
+                        .height(type.coverDimension.second.dp)
+                        .clip(MaterialTheme.shapes.small)
+                        .clickable { appNavigator goto AppNavigator.Detail(type, item.uuid) },
+                )
+                Text(
+                    text = item.title,
+                    style = MaterialTheme.typography.labelMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.alpha(.6f),
+                )
             }
         }
     }

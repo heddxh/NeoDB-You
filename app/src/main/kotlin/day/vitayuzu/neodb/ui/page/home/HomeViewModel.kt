@@ -3,20 +3,24 @@ package day.vitayuzu.neodb.ui.page.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import day.vitayuzu.neodb.data.AppSettingsManager
 import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.util.EntryType
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.chunked
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,6 +28,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val neoDBRepository: NeoDBRepository,
+    settingsManager: AppSettingsManager,
     authRepository: AuthRepository,
 ) : ViewModel() {
 
@@ -32,47 +37,47 @@ class HomeViewModel @Inject constructor(
 
     private var refreshJob: Job? = null
 
+    private var enabledTrendingTypes: List<EntryType> = EntryType.entries.take(6)
+
     init {
+        updateTrending()
+        // Refresh data when app settings change
+        settingsManager.appSettings
+            .map { it.homeTrendingTypes }
+            .distinctUntilChanged()
+            .filter { it.isNotEmpty() }
+            .onEach { enabledTrendingTypes = it }
+            .launchIn(viewModelScope)
         // Refresh data when login status changes.
-        @OptIn(ExperimentalCoroutinesApi::class)
         authRepository.accountStatus
-            .onSubscription { updateTrending() }
-            .chunked(2)
-            .onEach {
-                if (it.first().isLogin != it.last().isLogin) updateTrending()
-            }.launchIn(viewModelScope)
+            .distinctUntilChangedBy { it.isLogin }
+            .onEach { updateTrending() }
+            .launchIn(viewModelScope)
     }
 
     fun updateTrending() {
         viewModelScope.launch {
             refreshJob?.cancelAndJoin()
             // Should after job cancellation since it will toggle it to false
-            _uiState.update { it.copy(isLoading = true, data = emptyMap()) }
-            refreshJob = viewModelScope.launch {
-                val enabledTrendingType =
-                    listOf(
-                        EntryType.book,
-                        EntryType.movie,
-                        EntryType.tv,
-                        EntryType.music,
-                        EntryType.game,
-                        EntryType.podcast,
-                    )
-                enabledTrendingType.forEach { type ->
-                    neoDBRepository
-                        .fetchTrendingByEntryType(type)
-                        .onEach { schemaList ->
-                            _uiState.update { curr ->
-                                curr.copy(
-                                    data = curr.data + mapOf(
-                                        type to schemaList.map { Entry(it) },
-                                    ),
-                                )
-                            }
-                        }.collect()
+            _uiState.update { it.copy(isLoading = true) }
+            refreshJob = viewModelScope
+                .launch {
+                    val jobs = enabledTrendingTypes.map {
+                        async {
+                            neoDBRepository
+                                .fetchTrendingByEntryType(it)
+                                .first()
+                                .map { Entry(it) }
+                        }
+                    }
+                    _uiState.update {
+                        it.copy(
+                            data = enabledTrendingTypes.zip(jobs.awaitAll()).toMap(),
+                        )
+                    }
+                }.apply {
+                    invokeOnCompletion { _uiState.update { it.copy(isLoading = false) } }
                 }
-            }
-            refreshJob?.invokeOnCompletion { _uiState.update { it.copy(isLoading = false) } }
         }
     }
 }
@@ -80,10 +85,4 @@ class HomeViewModel @Inject constructor(
 data class HomeUiState(
     val isLoading: Boolean = false,
     val data: Map<EntryType, List<Entry>> = emptyMap(),
-    val book: List<Entry> = emptyList(),
-    val movie: List<Entry> = emptyList(),
-    val tv: List<Entry> = emptyList(),
-    val music: List<Entry> = emptyList(),
-    val game: List<Entry> = emptyList(),
-    val podcast: List<Entry> = emptyList(),
 )
