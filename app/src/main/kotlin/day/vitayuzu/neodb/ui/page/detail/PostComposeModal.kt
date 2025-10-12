@@ -52,6 +52,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -177,17 +179,22 @@ private fun ComposeModalContent(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            val haptic = LocalHapticFeedback.current
             AnimatedVisibility(visible = selectedShelfTypeIndex != 0) {
                 Slider(
                     value = ratingSliderValue,
                     valueRange = 0f..10f,
                     steps = 9,
-                    onValueChange = { ratingSliderValue = it },
+                    onValueChange = {
+                        haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                        ratingSliderValue = it
+                    },
                     track = {
                         StarsWithScores(
                             size = 36,
                             rating = ratingSliderValue,
                             showScores = false,
+                            starSpace = 4,
                         )
                     },
                     thumb = {}, // clear thumb on the bottom

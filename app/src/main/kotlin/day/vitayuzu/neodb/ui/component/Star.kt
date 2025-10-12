@@ -27,6 +27,7 @@ fun StarsWithScores(
     modifier: Modifier = Modifier,
     showScores: Boolean = true,
     size: Int = 16,
+    starSpace: Int = 2,
 ) {
     val ratingInFive = rating.div(2)
     Row(
@@ -38,6 +39,7 @@ fun StarsWithScores(
             full = ratingInFive.toInt(),
             half = ratingInFive > ratingInFive.toInt(),
             size = size,
+            space = starSpace,
         )
         if (showScores) {
             Text(
@@ -56,9 +58,10 @@ fun RatingStars(
     modifier: Modifier = Modifier,
     empty: Int = 5 - full - if (half) 1 else 0,
     size: Int = 16,
+    space: Int = 2,
 ) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.Start),
+        horizontalArrangement = Arrangement.spacedBy(space.dp, Alignment.Start),
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier,
     ) {
