@@ -79,6 +79,7 @@ class AppNavigator(
 
     private sealed interface RequireLogin
 
+    @Serializable
     sealed interface AppDestination : NavKey {
         fun directionTo(destination: AppDestination): MotionHorizontallyDirection
     }
