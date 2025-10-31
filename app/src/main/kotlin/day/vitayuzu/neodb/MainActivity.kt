@@ -18,15 +18,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
-import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.request.crossfade
-import com.mikepenz.aboutlibraries.ui.compose.android.rememberLibraries
+import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import dagger.hilt.android.AndroidEntryPoint
 import day.vitayuzu.neodb.data.AuthRepository
@@ -118,7 +116,7 @@ class MainActivity : ComponentActivity() {
 private fun MainNavDisplay(modifier: Modifier = Modifier) {
     val appNavigator = LocalNavigator.current
 
-    val libraries by rememberLibraries(R.raw.aboutlibraries)
+    val libraries by produceLibraries(R.raw.aboutlibraries)
 
     val sharedXAxisTransitionMetadata = remember {
         NavDisplay.transitionSpec {
@@ -141,8 +139,7 @@ private fun MainNavDisplay(modifier: Modifier = Modifier) {
         backStack = appNavigator.backStack,
         onBack = { appNavigator.back() },
         entryDecorators = listOf(
-            rememberSceneSetupNavEntryDecorator(),
-            rememberSavedStateNavEntryDecorator(),
+            rememberSaveableStateHolderNavEntryDecorator(),
             // Keep viewmodel of top level destinations.
             rememberViewModelStoreNavEntryDecorator {
                 appNavigator.previous !is TopLevelDestination

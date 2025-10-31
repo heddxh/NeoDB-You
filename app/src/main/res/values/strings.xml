@@ -48,4 +48,6 @@
     <string name="settings_preference_shelfType">Default mark status</string>
     <string name="settings_preference_title">Preferences</string>
     <string name="settings_preference_shelfType_support">Set default mark status showing in library page</string>
+    <string name="settings_preference_entryType">Home trending sections</string>
+    <string name="settings_preference_entryType_support">Set which sections you want to see in home page</string>
 </resources>

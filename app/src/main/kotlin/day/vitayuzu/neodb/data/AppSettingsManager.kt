@@ -107,7 +107,7 @@ class AppSettingsManager @Inject constructor(
         }
     }
 
-    suspend fun store(key: Preferences.Key<String>, value: List<Any>) {
+    suspend inline fun <reified T> store(key: Preferences.Key<String>, value: List<T>) {
         runCatching {
             dataStore.edit {
                 it[key] = Json.encodeToString(value)

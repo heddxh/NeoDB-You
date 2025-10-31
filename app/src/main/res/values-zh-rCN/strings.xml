@@ -47,4 +47,6 @@
     <string name="settings_preference_shelfType">默认标记状态</string>
     <string name="settings_preference_title">偏好设置</string>
     <string name="settings_preference_shelfType_support">设定标记页中默认显示的标记状态</string>
+    <string name="settings_preference_entryType">主页趋势</string>
+    <string name="settings_preference_entryType_support">设置希望显示在主页上的趋势类型</string>
 </resources>
