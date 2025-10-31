@@ -45,4 +45,7 @@
     <string name="settings_experimental_print">Print APP settings</string>
     <string name="settings_experimental_clearAuth_supportText">Will log out your account</string>
     <string name="textfield_search">Explore %1$s</string>
+    <string name="settings_preference_shelfType">Default mark status</string>
+    <string name="settings_preference_title">Preferences</string>
+    <string name="settings_preference_shelfType_support">Set default mark status showing in library page</string>
 </resources>

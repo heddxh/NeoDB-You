@@ -6,10 +6,12 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import day.vitayuzu.neodb.data.AppSettings
 import day.vitayuzu.neodb.data.AppSettingsManager
+import day.vitayuzu.neodb.data.AppSettingsManager.Companion.LIBRARY_SHELF_TYPE
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.VERBOSE_LOG
 import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.UpdateRepository
 import day.vitayuzu.neodb.data.schema.UserSchema
+import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -69,6 +71,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             appSettingsManager.store(VERBOSE_LOG, enabled)
         }
+    }
+
+    fun onChangeShelfType(shelfType: ShelfType) {
+        viewModelScope.launch { appSettingsManager.store(LIBRARY_SHELF_TYPE, shelfType.name) }
     }
 
     private companion object {

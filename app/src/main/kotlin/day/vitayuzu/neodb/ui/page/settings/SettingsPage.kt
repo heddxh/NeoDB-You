@@ -6,6 +6,7 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -25,12 +26,15 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -40,8 +44,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TonalToggleButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +56,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -61,9 +70,11 @@ import day.vitayuzu.neodb.BuildConfig
 import day.vitayuzu.neodb.OauthActivity
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.data.AppSettings
+import day.vitayuzu.neodb.ui.theme.AppShapeDefaults
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.LocalNavigator
+import day.vitayuzu.neodb.util.ShelfType
 
 @Composable
 fun SettingsPage(
@@ -94,6 +105,11 @@ fun SettingsPage(
             } else { // need login
                 LoginPart(Modifier.padding(horizontal = 8.dp))
             }
+            SettingsCard(
+                Modifier.padding(horizontal = 8.dp),
+                settings = uiState.appSettings,
+                onChangeShelfType = viewModel::onChangeShelfType,
+            )
             AboutCard(
                 Modifier.padding(horizontal = 8.dp),
                 newVersionUrl = uiState.newVersionUrl,
@@ -202,6 +218,73 @@ private fun UserProfilePart(
                     Icon(Icons.AutoMirrored.Filled.ExitToApp, null)
                     Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                     Text(stringResource(R.string.settings_account_logOut))
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Preview
+@Composable
+private fun SettingsCard(
+    modifier: Modifier = Modifier,
+    settings: AppSettings = AppSettings(),
+    onChangeShelfType: (ShelfType) -> Unit = {},
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = stringResource(R.string.settings_preference_title),
+            modifier = Modifier.alpha(.6f).padding(8.dp),
+        )
+        val itemColors = ListItemDefaults.colors().copy(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        )
+        Card(shape = AppShapeDefaults.topListItemShape) {
+            val selectedType = settings.libraryShelfType
+            ListItem(
+                leadingContent = { Icon(Icons.Default.DateRange, null) },
+                headlineContent = { Text(stringResource(R.string.settings_preference_shelfType)) },
+                supportingContent = {
+                    Text(stringResource(R.string.settings_preference_shelfType_support))
+                },
+                colors = itemColors,
+            )
+            val types = ShelfType.entries
+            val scrollState = rememberScrollState()
+            LaunchedEffect(scrollState, selectedType) {
+                if (selectedType == types.first()) {
+                    scrollState.animateScrollTo(0)
+                } else if (selectedType == types.last()) {
+                    scrollState.animateScrollTo(scrollState.maxValue)
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(scrollState)
+                    .background(itemColors.containerColor)
+                    .padding(start = 56.dp, end = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(
+                    ButtonGroupDefaults.ConnectedSpaceBetween,
+                ),
+            ) {
+                types.forEachIndexed { index, type ->
+                    TonalToggleButton(
+                        checked = selectedType == type,
+                        onCheckedChange = { onChangeShelfType(type) },
+                        modifier = Modifier.semantics { role = Role.RadioButton },
+                        shapes =
+                            when (index) {
+                                0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                types.lastIndex ->
+                                    ButtonGroupDefaults.connectedTrailingButtonShapes()
+
+                                else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                            },
+                    ) {
+                        Text(stringResource(type.toR()))
+                    }
                 }
             }
         }
