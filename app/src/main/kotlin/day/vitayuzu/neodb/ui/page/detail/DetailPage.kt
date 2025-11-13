@@ -1,12 +1,12 @@
 package day.vitayuzu.neodb.ui.page.detail
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -161,23 +161,14 @@ fun DetailPage(
             )
 
             // Content
-            var isShowAllReviews by rememberSaveable { mutableStateOf(false) }
-
-            BackHandler(enabled = isShowAllReviews) { isShowAllReviews = false }
-
             DetailContent(
                 detail = detail,
                 mark = uiState.mark,
-                postList = uiState.postList.take(if (isShowAllReviews) Int.MAX_VALUE else 3),
+                postList = uiState.postList,
                 onClick = { modalState = ModalState.Des },
                 onEditMark = { modalState = ModalState.Edit },
                 onDeleteMark = { showConfirmDialog = true },
                 isLoadingMark = uiState.isLoadingMark,
-                isShowingAll = isShowAllReviews,
-                onShowMore = {
-                    isShowAllReviews = true
-                    viewModel.refreshPosts(Int.MAX_VALUE)
-                },
             )
 
             // Modal sheet
@@ -246,10 +237,12 @@ private fun DetailContent(
     onEditMark: () -> Unit = {},
     onDeleteMark: () -> Unit = {},
     isLoadingMark: Boolean = false,
-    isShowingAll: Boolean = false,
-    onShowMore: () -> Unit = {},
 ) {
     val lazyListState = rememberLazyListState()
+
+    val lessReviewsNumber = 3
+    var showAllReviews by rememberSaveable { mutableStateOf(false) }
+
     LazyColumn(
         state = lazyListState,
         modifier = modifier
@@ -291,7 +284,7 @@ private fun DetailContent(
 
         // Review cards list
         items(
-            items = postList,
+            items = postList.take(if (showAllReviews) Int.MAX_VALUE else lessReviewsNumber),
             key = { it.hashCode() },
         ) {
             // TODO: show human readable date, see [Instant.toReadableString]
@@ -308,12 +301,16 @@ private fun DetailContent(
 
         // See all reviews
         item {
-            AnimatedVisibility(postList.isNotEmpty() && !isShowingAll, enter = fadeIn()) {
+            AnimatedVisibility(
+                postList.size > lessReviewsNumber && !showAllReviews,
+                enter = fadeIn(),
+                exit = slideOutVertically(),
+            ) {
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    Button(onClick = onShowMore) {
+                    Button(onClick = { showAllReviews = true }) {
                         Text(stringResource(R.string.detail_show_all_reviews))
                         Spacer(Modifier.width(ButtonDefaults.IconSpacing))
                         Icon(Icons.AutoMirrored.Filled.ArrowForward, null)
