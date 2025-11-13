@@ -60,6 +60,10 @@ class NeoDBRepository @Inject constructor(private val remoteSource: RemoteSource
         emit(remoteSource.postMark(uuid, data))
     }.validate().log("post mark in $uuid")
 
+    fun deleteMark(uuid: String) = flow {
+        emit(remoteSource.deleteMark(uuid))
+    }.validate().log("delete mark in $uuid")
+
     fun searchWithKeyword(keywords: String) = pagedRequest {
         remoteSource.searchWithKeywords(keywords, null, it)
     }.log("search with keyword $keywords")

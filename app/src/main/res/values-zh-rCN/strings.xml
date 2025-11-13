@@ -49,4 +49,7 @@
     <string name="settings_preference_shelfType_support">设定标记页中默认显示的标记状态</string>
     <string name="settings_preference_entryType">主页趋势</string>
     <string name="settings_preference_entryType_support">设置希望显示在主页上的趋势类型</string>
+    <string name="detail_delete_mark">删除标记</string>
+    <string name="detail_delete_mark_confirm">确认删除标记？</string>
+    <string name="confirm">确定</string>
 </resources>

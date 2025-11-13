@@ -18,6 +18,7 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
@@ -49,17 +50,25 @@ class DetailViewModel @AssistedInject constructor(
     private fun refreshDetail() {
         viewModelScope.launch {
             repo.fetchDetail(type, uuid).collect { detailSchema ->
-                _uiState.update { it.copy(detailSchema.toDetail()) }
+                _uiState.update { it.copy(detail = detailSchema.toDetail()) }
             }
         }
     }
 
     private fun refreshUserMark() {
-        viewModelScope.launch {
-            repo.fetchItemUserMark(uuid).collect { markSchema ->
-                _uiState.update { it.copy(mark = Mark(markSchema)) }
+        _uiState.update { it.copy(isLoadingMark = true) }
+        viewModelScope
+            .launch {
+                repo
+                    .fetchItemUserMark(uuid)
+                    .onEmpty {
+                        _uiState.update { it.copy(mark = null) }
+                    }.collect { markSchema ->
+                        _uiState.update { it.copy(mark = Mark(markSchema)) }
+                    }
+            }.invokeOnCompletion {
+                _uiState.update { it.copy(isLoadingMark = false) }
             }
-        }
     }
 
     @OptIn(ExperimentalTime::class)
@@ -106,11 +115,20 @@ class DetailViewModel @AssistedInject constructor(
             refreshUserMark()
         }
     }
+
+    fun deleteMark() {
+        _uiState.update { it.copy(isLoadingMark = true) }
+        viewModelScope.launch {
+            repo.deleteMark(uuid).collect()
+            refreshUserMark()
+        }
+    }
 }
 
 data class DetailUiState(
     val detail: Detail? = null,
     val mark: Mark? = null,
+    val isLoadingMark: Boolean = false,
     val isLoadingPost: Boolean = false,
     val hasMorePost: Boolean = false,
     val postList: List<Post> = emptyList(),

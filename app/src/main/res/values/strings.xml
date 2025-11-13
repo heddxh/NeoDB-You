@@ -50,4 +50,7 @@
     <string name="settings_preference_shelfType_support">Set default mark status showing in library page</string>
     <string name="settings_preference_entryType">Home trending sections</string>
     <string name="settings_preference_entryType_support">Set which sections you want to see in home page</string>
+    <string name="detail_delete_mark">Delete mark</string>
+    <string name="detail_delete_mark_confirm">Are you sure to delete this mark?</string>
+    <string name="confirm">Confirm</string>
 </resources>

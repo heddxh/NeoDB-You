@@ -20,6 +20,7 @@ import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
 import day.vitayuzu.neodb.util.WEBSITE
 import de.jensklingenberg.ktorfit.http.Body
+import de.jensklingenberg.ktorfit.http.DELETE
 import de.jensklingenberg.ktorfit.http.Field
 import de.jensklingenberg.ktorfit.http.FormUrlEncoded
 import de.jensklingenberg.ktorfit.http.GET
@@ -124,6 +125,10 @@ class RemoteSource @Inject constructor(
         api.postMark(uuid, data)
     }
 
+    suspend fun deleteMark(uuid: String): ResultSchema = withContext(dispatcher) {
+        api.deleteMark(uuid)
+    }
+
     suspend fun searchWithKeywords(
         keywords: String,
         category: EntryType?,
@@ -222,6 +227,11 @@ interface NeoDbApi {
     suspend fun postMark(
         @Path("uuid") uuid: String,
         @Body data: MarkInSchema,
+    ): ResultSchema
+
+    @DELETE("me/shelf/item/{uuid}")
+    suspend fun deleteMark(
+        @Path("uuid") uuid: String,
     ): ResultSchema
 
     @GET("catalog/search")

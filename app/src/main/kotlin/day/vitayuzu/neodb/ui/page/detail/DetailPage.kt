@@ -1,15 +1,17 @@
 package day.vitayuzu.neodb.ui.page.detail
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,6 +32,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -36,16 +42,22 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -57,7 +69,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -124,7 +138,8 @@ fun DetailPage(
             }
         },
     ) { paddings ->
-        var isShowDatePicker by rememberSaveable { mutableStateOf(false) }
+        var showDatePicker by rememberSaveable { mutableStateOf(false) }
+        var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
         val currentTimeLong = Clock.System.now().toEpochMilliseconds()
         var postDate by rememberSaveable { mutableLongStateOf(currentTimeLong) }
 
@@ -156,8 +171,10 @@ fun DetailPage(
                 postList = uiState.postList.take(if (isShowAllReviews) Int.MAX_VALUE else 3),
                 onClick = { modalState = ModalState.Des },
                 onEditMark = { modalState = ModalState.Edit },
+                onDeleteMark = { showConfirmDialog = true },
+                isLoadingMark = uiState.isLoadingMark,
                 isShowingAll = isShowAllReviews,
-                showMore = {
+                onShowMore = {
                     isShowAllReviews = true
                     viewModel.refreshPosts(Int.MAX_VALUE)
                 },
@@ -168,7 +185,7 @@ fun DetailPage(
                 ModalState.New -> PostComposeModal(
                     postDate = Instant.fromEpochMilliseconds(postDate),
                     onSend = viewModel::postMark,
-                    onShowDatePicker = { isShowDatePicker = true },
+                    onShowDatePicker = { showDatePicker = true },
                     onDismiss = { modalState = ModalState.Closed },
                 )
 
@@ -176,7 +193,7 @@ fun DetailPage(
                     postDate = Instant.fromEpochMilliseconds(postDate),
                     originMark = uiState.mark,
                     onSend = viewModel::postMark,
-                    onShowDatePicker = { isShowDatePicker = true },
+                    onShowDatePicker = { showDatePicker = true },
                     onDismiss = { modalState = ModalState.Closed },
                 )
 
@@ -192,10 +209,26 @@ fun DetailPage(
 
             // FIXME: try to avoid composition everytime toggle the pick
             // Draw the date picker last to ensure it appears on top.
-            if (isShowDatePicker) {
+            if (showDatePicker) {
                 DatePickerModal(
                     onConfirm = { postDate = it ?: currentTimeLong },
-                    onDismiss = { isShowDatePicker = false },
+                    onDismiss = { showDatePicker = false },
+                )
+            }
+
+            if (showConfirmDialog) {
+                AlertDialog(
+                    onDismissRequest = { showConfirmDialog = false },
+                    title = { Text(stringResource(R.string.detail_delete_mark)) },
+                    text = { Text(stringResource(R.string.detail_delete_mark_confirm)) },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            viewModel.deleteMark()
+                            showConfirmDialog = false
+                        }) {
+                            Text(stringResource(R.string.confirm))
+                        }
+                    },
                 )
             }
         }
@@ -211,8 +244,10 @@ private fun DetailContent(
     postList: List<Post> = emptyList(),
     onClick: () -> Unit = {},
     onEditMark: () -> Unit = {},
+    onDeleteMark: () -> Unit = {},
+    isLoadingMark: Boolean = false,
     isShowingAll: Boolean = false,
-    showMore: () -> Unit = {},
+    onShowMore: () -> Unit = {},
 ) {
     val lazyListState = rememberLazyListState()
     LazyColumn(
@@ -224,7 +259,7 @@ private fun DetailContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = WindowInsets.statusBars.asPaddingValues(),
     ) {
-        item {
+        item("Heading") {
             DetailHeadingItem(
                 title = detail.title,
                 coverUrl = detail.coverUrl,
@@ -242,15 +277,14 @@ private fun DetailContent(
         }
 
         // User mark
-        item {
-            if (mark != null) {
-                UserMarkCard(
+        if (mark != null) {
+            item("Mark") {
+                DetailUserMarkItem(
                     mark,
-                    modifier = Modifier.combinedClickable(
-                        onClick = {},
-                        // Edit mark
-                        onLongClick = onEditMark,
-                    ),
+                    modifier = Modifier.animateItem(),
+                    isLoadingMark = isLoadingMark,
+                    onDeleteMark = onDeleteMark,
+                    onEditMark = onEditMark,
                 )
             }
         }
@@ -279,7 +313,7 @@ private fun DetailContent(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    Button(onClick = showMore) {
+                    Button(onClick = onShowMore) {
                         Text(stringResource(R.string.detail_show_all_reviews))
                         Spacer(Modifier.width(ButtonDefaults.IconSpacing))
                         Icon(Icons.AutoMirrored.Filled.ArrowForward, null)
@@ -290,6 +324,84 @@ private fun DetailContent(
     }
 
     StatusBarProtection(lazyListState)
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun DetailUserMarkItem(
+    mark: Mark,
+    modifier: Modifier = Modifier,
+    isLoadingMark: Boolean = false,
+    onDeleteMark: () -> Unit = {},
+    onEditMark: () -> Unit = {},
+) {
+    val swipeState = rememberSwipeToDismissBoxState()
+    val haptic = LocalHapticFeedback.current
+
+    with(swipeState) {
+        LaunchedEffect(settledValue, onEditMark, onDeleteMark) {
+            when (settledValue) {
+                SwipeToDismissBoxValue.EndToStart -> {
+                    onDeleteMark()
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                    reset()
+                }
+
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                    onEditMark()
+                    reset()
+                }
+
+                else -> {}
+            }
+        }
+    }
+
+    AnimatedContent(isLoadingMark, modifier) { isLoadingMark: Boolean ->
+        if (isLoadingMark) {
+            LoadingIndicator(Modifier.fillMaxWidth())
+        } else {
+            SwipeToDismissBox(
+                state = swipeState,
+                backgroundContent = {
+                    if (swipeState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(MaterialTheme.shapes.small)
+                                .background(MaterialTheme.colorScheme.error)
+                                .padding(end = 12.dp),
+                            contentAlignment = Alignment.CenterEnd,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "delete mark",
+                                tint = MaterialTheme.colorScheme.onError,
+                            )
+                        }
+                    } else if (swipeState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(MaterialTheme.shapes.small)
+                                .background(MaterialTheme.colorScheme.primary)
+                                .padding(start = 12.dp),
+                            contentAlignment = Alignment.CenterStart,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "edit mark",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                            )
+                        }
+                    }
+                },
+            ) {
+                UserMarkCard(mark, modifier = Modifier.sizeIn(minHeight = 50.dp))
+            }
+        }
+    }
 }
 
 @Composable
