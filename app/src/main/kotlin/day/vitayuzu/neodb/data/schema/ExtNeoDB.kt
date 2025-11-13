@@ -7,7 +7,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 
 @Serializable
 data class ExtNeoDB(
-    val tag: List<ExtNeoDBTag>?,
+//    val tag: List<ExtNeoDBTag>?,
     val relatedWith: List<BaseRelatedWithItem>,
 )
 
