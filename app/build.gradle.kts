@@ -88,6 +88,13 @@ android {
 
     @Suppress("UnstableApiUsage")
     androidResources.generateLocaleConfig = true
+
+    // https://developer.android.com/build/dependencies#dependency-info-play
+    // For RB in Fdroid. Don't know why Izzy doesn't need this.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
 }
 
 dependencies {
