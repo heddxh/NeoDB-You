@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -95,13 +96,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun OnboardingScreen(
     onSkip: () -> Unit,
-    paddingValues: PaddingValues = PaddingValues(),
     modifier: Modifier = Modifier,
     viewModel: OnboardingViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     AnimatedContent(
+        modifier = modifier.statusBarsPadding(),
         targetState = uiState.currentPage,
         transitionSpec = {
             if (targetState > initialState) {

@@ -1,5 +1,6 @@
 package day.vitayuzu.neodb
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -42,6 +43,7 @@ class OauthActivity : ComponentActivity() {
 
     private val viewModel: OnboardingViewModel by viewModels()
 
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter") // No thanks, no topbar here
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -50,7 +52,6 @@ class OauthActivity : ComponentActivity() {
                 Scaffold {
                     OnboardingScreen(
                         onSkip = { finish() },
-                        paddingValues = it,
                         viewModel = viewModel,
                     )
                 }

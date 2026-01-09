@@ -1,6 +1,7 @@
 .idea/*
 !.idea/copyright/
 !.idea/dictionaries/
+.kotlin/
 
 # Sign config
 keystore.properties
