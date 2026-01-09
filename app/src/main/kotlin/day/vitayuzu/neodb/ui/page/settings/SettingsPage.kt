@@ -240,7 +240,7 @@ private fun SettingsCard(
             text = stringResource(R.string.settings_preference_title),
             modifier = Modifier.alpha(.6f).padding(8.dp),
         )
-        val itemColors = ListItemDefaults.colors().copy(
+        val itemColors = ListItemDefaults.colors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
         )
         SelectablePreference(
@@ -339,7 +339,7 @@ private fun AboutCard(
         Text(stringResource(R.string.settings_title_about), Modifier.alpha(.6f).padding(8.dp))
         // Main Card
         Card {
-            val itemColors = ListItemDefaults.colors().copy(
+            val itemColors = ListItemDefaults.colors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
             )
             // Version
@@ -436,7 +436,7 @@ private fun ExperimentalCard(
             Modifier.alpha(.6f).padding(8.dp),
         )
         Card {
-            val itemColors = ListItemDefaults.colors().copy(
+            val itemColors = ListItemDefaults.colors(
                 containerColor = MaterialTheme.colorScheme.errorContainer,
                 leadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
                 headlineColor = MaterialTheme.colorScheme.onErrorContainer,

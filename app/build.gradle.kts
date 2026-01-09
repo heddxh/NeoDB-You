@@ -15,6 +15,9 @@ plugins {
     alias(libs.plugins.aboutlibraries.android)
 }
 
+private val isInIdeaSync
+    get() = System.getProperty("idea.sync.active").toBoolean()
+
 kotlin {
     compilerOptions {
         jvmToolchain(21)
@@ -24,6 +27,10 @@ kotlin {
         jvmTarget = JvmTarget.JVM_21
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
         freeCompilerArgs.add("-Xexplicit-backing-fields")
+        // WORKAROUND: https://youtrack.jetbrains.com/issue/KT-83265/How-to-disable-Explicit-Backing-Fields-compiler-warning
+        if (isInIdeaSync) {
+            freeCompilerArgs.add("-XXLanguage:+ExplicitBackingFields")
+        }
     }
 }
 

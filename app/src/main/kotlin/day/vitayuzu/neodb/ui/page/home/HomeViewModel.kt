@@ -13,7 +13,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
@@ -32,8 +32,8 @@ class HomeViewModel @Inject constructor(
     authRepository: AuthRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(HomeUiState())
-    val uiState = _uiState.asStateFlow()
+    val uiState: StateFlow<HomeUiState>
+        field = MutableStateFlow(HomeUiState())
 
     private var refreshJob: Job? = null
 
@@ -59,7 +59,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             refreshJob?.cancelAndJoin()
             // Should after job cancellation since it will toggle it to false
-            _uiState.update { it.copy(isLoading = true) }
+            uiState.update { it.copy(isLoading = true) }
             refreshJob = viewModelScope
                 .launch {
                     val jobs = enabledTrendingTypes.map {
@@ -70,13 +70,13 @@ class HomeViewModel @Inject constructor(
                                 .map { Entry(it) }
                         }
                     }
-                    _uiState.update {
+                    uiState.update {
                         it.copy(
                             data = enabledTrendingTypes.zip(jobs.awaitAll()).toMap(),
                         )
                     }
                 }.apply {
-                    invokeOnCompletion { _uiState.update { it.copy(isLoading = false) } }
+                    invokeOnCompletion { uiState.update { it.copy(isLoading = false) } }
                 }
         }
     }
