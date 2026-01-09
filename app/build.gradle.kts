@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import java.io.FileInputStream
 import java.util.Properties
@@ -12,22 +13,23 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.google.hilt.android)
     alias(libs.plugins.aboutlibraries.android)
-    // Ensure KSP version is compatible with Kotlin version
-    require(
-        libs.versions.ksp
-            .get()
-            .startsWith(libs.versions.kotlin.get()),
-    )
 }
 
 kotlin {
     compilerOptions {
         jvmToolchain(21)
-        languageVersion = KotlinVersion.KOTLIN_2_2
-        apiVersion = KotlinVersion.KOTLIN_2_2
+        languageVersion = KotlinVersion.KOTLIN_2_3
+        apiVersion = KotlinVersion.KOTLIN_2_3
         progressiveMode = true
+        jvmTarget = JvmTarget.JVM_21
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
+        freeCompilerArgs.add("-Xexplicit-backing-fields")
     }
+}
+
+ktorfit {
+    // WORKAROUND: https://github.com/Foso/Ktorfit/issues/1010
+    compilerPluginVersion = "2.3.3"
 }
 
 android {
@@ -90,7 +92,7 @@ android {
     androidResources.generateLocaleConfig = true
 
     // https://developer.android.com/build/dependencies#dependency-info-play
-    // For RB in Fdroid. Don't know why Izzy doesn't need this.
+    // https://gitlab.com/fdroid/fdroiddata/-/merge_requests/31338#note_2985399646
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
@@ -124,6 +126,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.datetime)
     // Hilt
+    // WORKAROUND: https://github.com/google/dagger/issues/5001
+    ksp("org.jetbrains.kotlin:kotlin-metadata-jvm:2.3.0")
     implementation(libs.google.hilt.android)
     ksp(libs.google.hilt.compiler)
     implementation(libs.androidx.hilt.viewmodel)
