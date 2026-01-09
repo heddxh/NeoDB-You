@@ -7,12 +7,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
-import day.vitayuzu.neodb.ui.page.login.LoginPage
-import day.vitayuzu.neodb.ui.page.login.LoginViewModel
+import day.vitayuzu.neodb.ui.page.onboarding.OnboardingScreen
+import day.vitayuzu.neodb.ui.page.onboarding.OnboardingViewModel
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.AUTH_CALLBACK
 import kotlinx.coroutines.CoroutineScope
@@ -42,7 +40,7 @@ import javax.inject.Inject
 class OauthActivity : ComponentActivity() {
     @Inject @AppScope lateinit var appScope: CoroutineScope
 
-    private val viewModel: LoginViewModel by viewModels()
+    private val viewModel: OnboardingViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,7 +48,11 @@ class OauthActivity : ComponentActivity() {
         setContent {
             NeoDBYouTheme {
                 Scaffold {
-                    LoginPage(modifier = Modifier.padding(it), viewModel = viewModel)
+                    OnboardingScreen(
+                        onSkip = { finish() },
+                        paddingValues = it,
+                        viewModel = viewModel,
+                    )
                 }
             }
         }
@@ -65,8 +67,8 @@ class OauthActivity : ComponentActivity() {
         ) {
             return
         }
-        Log.d("OauthActivity", "Resume without oauth callback, show textfield")
-        viewModel.reShowTextField()
+        Log.d("OauthActivity", "Resume without oauth callback, reset oauth state")
+        viewModel.resetOauthState()
     }
 
     /**
@@ -88,8 +90,11 @@ class OauthActivity : ComponentActivity() {
                         .handleAuthCode(authCode)
                         .onCompletion {
                             // Finish when successfully exchanged access token.
-                            // If failed, remain at this activity.
-                            if (it == null) finish()
+                            // If failed(it != null), remain at this activity.
+                            if (it == null) {
+                                viewModel.completeOnboarding()
+                                finish()
+                            }
                         }.collect()
                 }
             } else {

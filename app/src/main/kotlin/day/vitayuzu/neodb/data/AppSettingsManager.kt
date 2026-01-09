@@ -129,6 +129,9 @@ class AppSettingsManager @Inject constructor(
 
         // TODO: Control global log level
         val VERBOSE_LOG = booleanPreferencesKey("verbose_log")
+
+        // Onboarding
+        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
     }
 }
 

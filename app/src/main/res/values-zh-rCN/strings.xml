@@ -52,4 +52,20 @@
     <string name="detail_delete_mark">删除标记</string>
     <string name="detail_delete_mark_confirm">确认删除标记？</string>
     <string name="confirm">确定</string>
+    <string name="onboarding_welcome_title">欢迎使用 NeoDB You</string>
+    <string name="onboarding_welcome_subtitle">轻松管理你的书影音游收藏。</string>
+    <string name="onboarding_feature_track_title">追踪您的收藏</string>
+    <string name="onboarding_feature_track_desc">记录您读过、看过、玩过和听过的内容。</string>
+    <string name="onboarding_feature_review_title">评分与评论</string>
+    <string name="onboarding_feature_review_desc">分享您的想法，发现更多推荐。</string>
+    <string name="onboarding_feature_fediverse_title">联邦宇宙的一员</string>
+    <string name="onboarding_feature_fediverse_desc">加入去中心化的社区。</string>
+    <string name="onboarding_get_started">开始使用</string>
+    <string name="onboarding_skip">暂时跳过</string>
+    <string name="onboarding_select_instance_title">选择实例</string>
+    <string name="onboarding_select_instance_subtitle">NeoDB 是联邦式服务。选择一个服务器来创建账号或登录。</string>
+    <string name="onboarding_instance_input_hint">或输入自定义实例地址</string>
+    <string name="onboarding_popular_instances">热门实例</string>
+    <string name="onboarding_tap_to_login">点击登录</string>
+    <string name="onboarding_back">返回</string>
 </resources>

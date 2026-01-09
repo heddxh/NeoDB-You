@@ -67,6 +67,7 @@ object NetworkHiltModule {
                         // Skip auth header
                         sendWithoutRequest {
                             !it.url.host.contains("api.github.com") &&
+                                !it.url.host.contains("api.neodb.app") &&
                                 !it.url.encodedPath.contains("api/v1") &&
                                 !it.url.encodedPath.contains("oauth/")
                         }

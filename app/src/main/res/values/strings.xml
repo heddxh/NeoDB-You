@@ -26,7 +26,7 @@
     <string name="textfield_search_supportText">Search by name or supported external link…</string>
     <string name="textfield_instanceUrl">Instance domain</string>
     <string name="welcome_firstline">Welcome!</string>
-    <string name="welcome_secondline">Enter your NeoDB instance domain to log in</string>
+    <string name="welcome_secondline">Enter your NeoDB instance domain to log in.</string>
     <string name="detail_show_all_reviews">Show all reviews</string>
     <string name="common_ok">OK</string>
     <string name="common_cancel">Cancel</string>
@@ -43,14 +43,32 @@
     <string name="settings_experimental_verbose">Verbose logging</string>
     <string name="settings_experimental_verbose_supportText">Verbose logs contain sensitive information and will reduce performance. Need restart APP.</string>
     <string name="settings_experimental_print">Print APP settings</string>
-    <string name="settings_experimental_clearAuth_supportText">Will log out your account</string>
+    <string name="settings_experimental_clearAuth_supportText">Will log out your account.</string>
     <string name="textfield_search">Explore %1$s</string>
     <string name="settings_preference_shelfType">Default mark status</string>
     <string name="settings_preference_title">Preferences</string>
-    <string name="settings_preference_shelfType_support">Set default mark status showing in library page</string>
+    <string name="settings_preference_shelfType_support">Set default mark status showing in library page.</string>
     <string name="settings_preference_entryType">Home trending sections</string>
-    <string name="settings_preference_entryType_support">Set which sections you want to see in home page</string>
+    <string name="settings_preference_entryType_support">Set which sections you want to see in home page.</string>
     <string name="detail_delete_mark">Delete mark</string>
     <string name="detail_delete_mark_confirm">Are you sure to delete this mark?</string>
     <string name="confirm">Confirm</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">Welcome to NeoDB You</string>
+    <string name="onboarding_welcome_subtitle">Your personal collection manager for books, movies, music, games and more.</string>
+    <string name="onboarding_feature_track_title">Track Your Collections</string>
+    <string name="onboarding_feature_track_desc">Keep track of what you\'ve read, watched, played and listened to.</string>
+    <string name="onboarding_feature_review_title">Rate and Review</string>
+    <string name="onboarding_feature_review_desc">Share your thoughts and discover recommendations.</string>
+    <string name="onboarding_feature_fediverse_title">Part of the Fediverse</string>
+    <string name="onboarding_feature_fediverse_desc">Connect with a decentralized community.</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_skip">Skip for now</string>
+    <string name="onboarding_select_instance_title">Choose Your Instance</string>
+    <string name="onboarding_select_instance_subtitle">NeoDB is a federated service. Select a server to create your account or sign in.</string>
+    <string name="onboarding_instance_input_hint">Or enter a custom instance URL</string>
+    <string name="onboarding_popular_instances">Popular Instances</string>
+    <string name="onboarding_tap_to_login">Tap to sign in</string>
+    <string name="onboarding_back">Back</string>
 </resources>

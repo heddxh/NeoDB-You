@@ -8,6 +8,7 @@ import day.vitayuzu.neodb.data.schema.MarkInSchema
 import day.vitayuzu.neodb.data.schema.MarkSchema
 import day.vitayuzu.neodb.data.schema.PagedMarkSchema
 import day.vitayuzu.neodb.data.schema.PaginatedPostList
+import day.vitayuzu.neodb.data.schema.PublicInstanceSchema
 import day.vitayuzu.neodb.data.schema.ResultSchema
 import day.vitayuzu.neodb.data.schema.SearchResult
 import day.vitayuzu.neodb.data.schema.TokenSchema
@@ -137,9 +138,17 @@ class RemoteSource @Inject constructor(
         api.searchWithKeywords(keywords, category, page)
     }
 
+    // ===========================================< Others >=======================================
     suspend fun getLatestVersionFromGithub() = withContext(dispatcher) {
         api.getLatestVersionFromGithub()
 //        GithubLatestReleaseSchema.TEST
+    }
+
+    /**
+     * Fetch list of public NeoDB instances from api.neodb.app.
+     */
+    suspend fun fetchPublicInstances(): List<PublicInstanceSchema> = withContext(dispatcher) {
+        api.fetchPublicInstances()
     }
 }
 
@@ -244,4 +253,7 @@ interface NeoDbApi {
     @GET("https://api.github.com/repos/heddxh/NeoDB-You/releases/latest")
     @Headers("Accept: application/vnd.github+json", "X-GitHub-Api-Version: 2022-11-28")
     suspend fun getLatestVersionFromGithub(): GithubLatestReleaseSchema
+
+    @GET("https://api.neodb.app/servers")
+    suspend fun fetchPublicInstances(): List<PublicInstanceSchema>
 }

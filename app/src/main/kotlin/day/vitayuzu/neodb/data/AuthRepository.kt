@@ -43,8 +43,10 @@ class AuthRepository @Inject constructor(
 
     init {
         ktorfit.httpClient.plugin(HttpSend).intercept { request ->
-            // Bypass other requests or github will return 403
-            if (request.url.host.contains("api.github.com")) {
+            // Bypass other requests or github/neodb-api will return errors
+            if (request.url.host.contains("api.github.com") ||
+                request.url.host.contains("api.neodb.app")
+            ) {
                 return@intercept execute(request)
             }
             // Intercept request host if user has logged.

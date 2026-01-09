@@ -10,7 +10,7 @@ import day.vitayuzu.neodb.data.AppSettingsManager.Companion.HOME_TRENDING_TYPES
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.LIBRARY_SHELF_TYPE
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.VERBOSE_LOG
 import day.vitayuzu.neodb.data.AuthRepository
-import day.vitayuzu.neodb.data.UpdateRepository
+import day.vitayuzu.neodb.data.OtherRepository
 import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
@@ -26,13 +26,13 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val authRepo: AuthRepository,
-    private val updateRepo: UpdateRepository,
+    private val otherRepo: OtherRepository,
     private val appSettingsManager: AppSettingsManager,
 ) : ViewModel() {
 
     val uiState: StateFlow<SettingsUiState> = combine(
         authRepo.accountStatus,
-        updateRepo.checkUpdateFlow.onStart { emit(null) }, // Start combination asap.
+        otherRepo.checkUpdateFlow.onStart { emit(null) }, // Start combination asap.
         appSettingsManager.appSettings,
     ) { (isLogin, _, schema), appVersionData, appSettings ->
         if (isLogin && schema != null) {
@@ -66,7 +66,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun checkUpdate() {
-        viewModelScope.launch { updateRepo.checkUpdateFlow.collect() }
+        viewModelScope.launch { otherRepo.checkUpdateFlow.collect() }
     }
 
     fun onToggleVerboseLog(enabled: Boolean) {

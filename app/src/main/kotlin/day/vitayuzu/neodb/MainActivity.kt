@@ -27,9 +27,10 @@ import coil3.request.crossfade
 import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import dagger.hilt.android.AndroidEntryPoint
+import day.vitayuzu.neodb.data.AppSettingsManager
+import day.vitayuzu.neodb.data.AppSettingsManager.Companion.ONBOARDING_COMPLETED
 import day.vitayuzu.neodb.data.AuthRepository
-import day.vitayuzu.neodb.data.NeoDBRepository
-import day.vitayuzu.neodb.data.UpdateRepository
+import day.vitayuzu.neodb.data.OtherRepository
 import day.vitayuzu.neodb.ui.component.SharedBottomBar
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
@@ -58,11 +59,11 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @Inject lateinit var neoDBRepository: NeoDBRepository
-
     @Inject lateinit var authRepository: AuthRepository
 
-    @Inject lateinit var updateRepository: UpdateRepository
+    @Inject lateinit var updateRepository: OtherRepository
+
+    @Inject lateinit var appSettingsManager: AppSettingsManager
 
     @Inject @AppScope lateinit var appScope: CoroutineScope
 
@@ -79,6 +80,14 @@ class MainActivity : ComponentActivity() {
 
         appScope.launch { authRepository.updateAccountStatus() }
         updateRepository.checkUpdateFlow.launchIn(appScope)
+
+        // Check if onboarding is completed
+        appScope.launch {
+            val onboardingCompleted = appSettingsManager.getAuthData(ONBOARDING_COMPLETED) ?: false
+            if (!onboardingCompleted) {
+                startActivity(Intent(this@MainActivity, OauthActivity::class.java))
+            }
+        }
 
         enableEdgeToEdge()
         setContent {
