@@ -68,4 +68,5 @@
     <string name="onboarding_popular_instances">热门实例</string>
     <string name="onboarding_tap_to_login">点击登录</string>
     <string name="onboarding_back">返回</string>
+    <string name="settings_preference_update">自动检查更新</string>
 </resources>

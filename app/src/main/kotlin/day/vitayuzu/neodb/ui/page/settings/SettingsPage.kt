@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -111,6 +112,7 @@ fun SettingsPage(
                 settings = uiState.appSettings,
                 onChangeShelfType = viewModel::onChangeShelfType,
                 onChangeEntryType = viewModel::onChangeEntryTypes,
+                onToggleCheckUpdate = viewModel::onToggleCheckUpdate,
             )
             AboutCard(
                 Modifier.padding(horizontal = 8.dp),
@@ -234,6 +236,7 @@ private fun SettingsCard(
     settings: AppSettings = AppSettings(),
     onChangeShelfType: (ShelfType) -> Unit = {},
     onChangeEntryType: (List<EntryType>) -> Unit = {},
+    onToggleCheckUpdate: (Boolean) -> Unit = {},
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(
@@ -252,9 +255,7 @@ private fun SettingsCard(
                 ListItem(
                     leadingContent = { Icon(Icons.Default.DateRange, null) },
                     headlineContent = {
-                        Text(
-                            stringResource(R.string.settings_preference_shelfType),
-                        )
+                        Text(stringResource(R.string.settings_preference_shelfType))
                     },
                     supportingContent = {
                         Text(stringResource(R.string.settings_preference_shelfType_support))
@@ -266,7 +267,7 @@ private fun SettingsCard(
                 Text(stringResource(ShelfType.entries[it].toR()))
             },
         )
-        Card(shape = AppShapeDefaults.bottomListItemShape) {
+        Card(shape = AppShapeDefaults.middleListItemShape) {
             val selectedTypes =
                 remember {
                     mutableStateListOf<EntryType>().apply {
@@ -321,6 +322,20 @@ private fun SettingsCard(
                     )
                 }
             }
+        }
+        // Check Update Switch
+        Card(shape = AppShapeDefaults.bottomListItemShape) {
+            ListItem(
+                colors = itemColors,
+                leadingContent = { Icon(Icons.Default.Refresh, null) },
+                headlineContent = { Text(stringResource(R.string.settings_preference_update)) },
+                trailingContent = {
+                    Switch(
+                        checked = settings.checkUpdate,
+                        onCheckedChange = onToggleCheckUpdate,
+                    )
+                },
+            )
         }
     }
 }

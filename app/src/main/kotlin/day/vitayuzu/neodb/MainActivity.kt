@@ -30,7 +30,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import day.vitayuzu.neodb.data.AppSettingsManager
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.ONBOARDING_COMPLETED
 import day.vitayuzu.neodb.data.AuthRepository
-import day.vitayuzu.neodb.data.OtherRepository
 import day.vitayuzu.neodb.ui.component.SharedBottomBar
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
@@ -53,15 +52,12 @@ import day.vitayuzu.neodb.util.LocalSharedTransitionScope
 import day.vitayuzu.neodb.util.SharedTransitionScopeProvider
 import day.vitayuzu.neodb.util.rememberNavBackStack
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject lateinit var authRepository: AuthRepository
-
-    @Inject lateinit var updateRepository: OtherRepository
 
     @Inject lateinit var appSettingsManager: AppSettingsManager
 
@@ -79,7 +75,6 @@ class MainActivity : ComponentActivity() {
         }
 
         appScope.launch { authRepository.updateAccountStatus() }
-        updateRepository.checkUpdateFlow.launchIn(appScope)
 
         // Check if onboarding is completed
         appScope.launch {

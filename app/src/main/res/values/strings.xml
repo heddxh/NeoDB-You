@@ -71,4 +71,5 @@
     <string name="onboarding_popular_instances">Popular Instances</string>
     <string name="onboarding_tap_to_login">Tap to sign in</string>
     <string name="onboarding_back">Back</string>
+    <string name="settings_preference_update">Auto check for updates</string>
 </resources>

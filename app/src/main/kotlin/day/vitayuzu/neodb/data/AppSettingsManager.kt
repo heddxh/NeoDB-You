@@ -23,7 +23,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -52,7 +51,8 @@ class AppSettingsManager @Inject constructor(
             val libraryShelfType =
                 ShelfType.valueOf(preferences[LIBRARY_SHELF_TYPE] ?: ShelfType.progress.name)
             val verboseLog = preferences[VERBOSE_LOG] ?: false
-            AppSettings(homeTrendingTypes, libraryShelfType, verboseLog)
+            val checkUpdate = preferences[CHECK_UPDATE] ?: false
+            AppSettings(homeTrendingTypes, libraryShelfType, verboseLog, checkUpdate)
         }.stateIn(
             scope = scope,
             started = WhileSubscribed(5000),
@@ -94,7 +94,7 @@ class AppSettingsManager @Inject constructor(
         dataStore.data
             .map { Json.decodeFromString<List<T>>(it[key] ?: "[]") }
             .catch { Log.e("AuthRepository", "Error while reading preferences ${key.name}", it) }
-            .first()
+            .firstOrNull() ?: emptyList()
 
     suspend fun <T> store(key: Preferences.Key<T>, value: T) {
         runCatching {
@@ -129,6 +129,7 @@ class AppSettingsManager @Inject constructor(
 
         // TODO: Control global log level
         val VERBOSE_LOG = booleanPreferencesKey("verbose_log")
+        val CHECK_UPDATE = booleanPreferencesKey("check_update")
 
         // Onboarding
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
@@ -140,6 +141,7 @@ data class AppSettings(
     val homeTrendingTypes: List<EntryType> = emptyList(), // enabled trending types for home
     val libraryShelfType: ShelfType = ShelfType.wishlist, // preferred/default shelf type for library
     val verboseLog: Boolean = false,
+    val checkUpdate: Boolean = false, // disabled by default
 )
 
 @Module

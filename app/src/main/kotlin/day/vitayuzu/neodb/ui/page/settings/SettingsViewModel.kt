@@ -16,9 +16,7 @@ import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,9 +30,13 @@ class SettingsViewModel @Inject constructor(
 
     val uiState: StateFlow<SettingsUiState> = combine(
         authRepo.accountStatus,
-        otherRepo.checkUpdateFlow.onStart { emit(null) }, // Start combination asap.
         appSettingsManager.appSettings,
-    ) { (isLogin, _, schema), appVersionData, appSettings ->
+    ) { (isLogin, _, schema), appSettings ->
+        // Check update
+        if (appSettings.checkUpdate) {
+            checkUpdate()
+        }
+
         if (isLogin && schema != null) {
             SettingsUiState(
                 isLogin = true,
@@ -42,13 +44,11 @@ class SettingsViewModel @Inject constructor(
                 avatar = schema.avatar,
                 username = schema.displayName,
                 fediAccount = schema.getFediAccount(),
-                newVersionUrl = appVersionData?.htmlUrl,
                 appSettings = appSettings,
             )
         } else {
             SettingsUiState(
                 isLogin = false,
-                newVersionUrl = appVersionData?.htmlUrl,
                 appSettings = appSettings,
             )
         }
@@ -66,7 +66,17 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun checkUpdate() {
-        viewModelScope.launch { otherRepo.checkUpdateFlow.collect() }
+        viewModelScope.launch {
+            otherRepo.checkUpdateFlow.collect {
+                uiState.value.copy(newVersionUrl = it?.htmlUrl)
+            }
+        }
+    }
+
+    fun onToggleCheckUpdate(enabled: Boolean) {
+        viewModelScope.launch {
+            appSettingsManager.store(AppSettingsManager.CHECK_UPDATE, enabled)
+        }
     }
 
     fun onToggleVerboseLog(enabled: Boolean) {
