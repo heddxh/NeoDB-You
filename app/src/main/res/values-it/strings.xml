@@ -25,7 +25,7 @@
     <string name="textfield_search_supportText">Cerca tramite nome o link esterno supportato…</string>
     <string name="textfield_instanceUrl">Dominio dell’istanza</string>
     <string name="welcome_firstline">Salve!</string>
-    <string name="welcome_secondline">Inserisci il dominio della tua istanza NeoDB per accedere</string>
+    <string name="welcome_secondline">Inserisci il dominio della tua istanza NeoDB per accedere.</string>
     <string name="home_title">Home</string>
     <string name="detail_show_all_reviews">Mostra tutte le recensioni</string>
     <string name="common_ok">OK</string>
@@ -36,4 +36,12 @@
     <string name="settings_about_developer">Sviluppatore</string>
     <string name="settings_about_license">Licenza</string>
     <string name="settings_logincard_welcomewords">Accedi per godere dei tuoi libri, film, della tua musica e di altre collezioni su NeoDB.</string>
+    <string name="settings_title_about">Riguardo l\'APP</string>
+    <string name="settings_title_experimental">Sperimentale</string>
+    <string name="settings_experimental_clearAuth">Cancella le credenziali memorizzate localmente</string>
+    <string name="settings_experimental_print">Stampa le impostazioni dell\'APP</string>
+    <string name="textfield_search">Esplora %1$s</string>
+    <string name="settings_experimental_verbose">Accesso dettagliato</string>
+    <string name="settings_experimental_verbose_supportText">I log dettagliati contengono informazioni sensibili e ridurranno la prestazione. Necessario riavviare APP.</string>
+    <string name="settings_experimental_clearAuth_supportText">Uscirai dal tuo account.</string>
 </resources>

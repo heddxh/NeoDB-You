@@ -25,7 +25,7 @@
     <string name="textfield_search_supportText">搜索名称或支持的外部链接……</string>
     <string name="textfield_instanceUrl">实例域名</string>
     <string name="welcome_firstline">欢迎！</string>
-    <string name="welcome_secondline">请输入您的 NeoDB 实例地址以登录</string>
+    <string name="welcome_secondline">请输入您的 NeoDB 实例地址以登录。</string>
     <string name="detail_show_all_reviews">查看所有评论</string>
     <string name="common_ok">确认</string>
     <string name="common_cancel">取消</string>
@@ -42,13 +42,13 @@
     <string name="settings_experimental_verbose">详细日志记录</string>
     <string name="settings_experimental_verbose_supportText">详细日志记录包含敏感数据并且会降低性能。需要重启应用。</string>
     <string name="settings_experimental_print">打印应用设置</string>
-    <string name="settings_experimental_clearAuth_supportText">将会登出</string>
+    <string name="settings_experimental_clearAuth_supportText">将会登出。</string>
     <string name="textfield_search">探索 %1$s</string>
     <string name="settings_preference_shelfType">默认标记状态</string>
     <string name="settings_preference_title">偏好设置</string>
-    <string name="settings_preference_shelfType_support">设定标记页中默认显示的标记状态</string>
+    <string name="settings_preference_shelfType_support">设定标记页中默认显示的标记状态。</string>
     <string name="settings_preference_entryType">主页趋势</string>
-    <string name="settings_preference_entryType_support">设置希望显示在主页上的趋势类型</string>
+    <string name="settings_preference_entryType_support">设置希望显示在主页上的趋势类型。</string>
     <string name="detail_delete_mark">删除标记</string>
     <string name="detail_delete_mark_confirm">确认删除标记？</string>
     <string name="confirm">确定</string>
