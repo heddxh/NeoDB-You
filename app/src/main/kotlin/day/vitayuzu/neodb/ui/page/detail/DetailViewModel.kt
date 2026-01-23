@@ -16,7 +16,7 @@ import day.vitayuzu.neodb.util.EntryType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.update
@@ -35,8 +35,8 @@ class DetailViewModel @AssistedInject constructor(
         fun create(type: EntryType, uuid: String): DetailViewModel
     }
 
-    private val _uiState = MutableStateFlow(DetailUiState())
-    val uiState = _uiState.asStateFlow()
+    val uiState: StateFlow<DetailUiState>
+        field = MutableStateFlow(DetailUiState())
 
     // Keep reference to the job loading reviews to able to cancel it when refreshing again.
     private var loadingReviewsJob: Job? = null
@@ -50,31 +50,31 @@ class DetailViewModel @AssistedInject constructor(
     private fun refreshDetail() {
         viewModelScope.launch {
             repo.fetchDetail(type, uuid).collect { detailSchema ->
-                _uiState.update { it.copy(detail = detailSchema.toDetail()) }
+                uiState.update { it.copy(detail = detailSchema.toDetail()) }
             }
         }
     }
 
     private fun refreshUserMark() {
-        _uiState.update { it.copy(isLoadingMark = true) }
+        uiState.update { it.copy(isLoadingMark = true) }
         viewModelScope
             .launch {
                 repo
                     .fetchItemUserMark(uuid)
                     .onEmpty {
-                        _uiState.update { it.copy(mark = null) }
+                        uiState.update { it.copy(mark = null) }
                     }.collect { markSchema ->
-                        _uiState.update { it.copy(mark = Mark(markSchema)) }
+                        uiState.update { it.copy(mark = Mark(markSchema)) }
                     }
             }.invokeOnCompletion {
-                _uiState.update { it.copy(isLoadingMark = false) }
+                uiState.update { it.copy(isLoadingMark = false) }
             }
     }
 
     @OptIn(ExperimentalTime::class)
     fun refreshPosts(limit: Int = 5) {
         // Reset ui state
-        _uiState.update {
+        uiState.update {
             it.copy(
                 isLoadingPost = true,
                 postList = emptyList(),
@@ -94,18 +94,18 @@ class DetailViewModel @AssistedInject constructor(
             repo
                 .fetchItemPosts(uuid)
                 ./*buffer().*/collect { postList ->
-                    _uiState.update { ui ->
+                    uiState.update { ui ->
                         val newPostList = ui.postList + postList.data.map { Post(it) }
                         ui.copy(
                             postList = newPostList.distinct(), // .sortedByDescending { it.date }
                         )
                     }
                     if (uiState.value.postList.size > limit) {
-                        _uiState.update { it.copy(hasMorePost = true) }
+                        uiState.update { it.copy(hasMorePost = true) }
                         return@collect
                     }
                 }
-            _uiState.update { it.copy(isLoadingPost = false) }
+            uiState.update { it.copy(isLoadingPost = false) }
         }
     }
 
@@ -117,7 +117,7 @@ class DetailViewModel @AssistedInject constructor(
     }
 
     fun deleteMark() {
-        _uiState.update { it.copy(isLoadingMark = true) }
+        uiState.update { it.copy(isLoadingMark = true) }
         viewModelScope.launch {
             repo.deleteMark(uuid).collect()
             refreshUserMark()

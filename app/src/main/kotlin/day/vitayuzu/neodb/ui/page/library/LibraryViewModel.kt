@@ -10,7 +10,7 @@ import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.launchIn
@@ -34,8 +34,8 @@ class LibraryViewModel @Inject constructor(
     authRepository: AuthRepository,
     settingsManager: AppSettingsManager,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(LibraryUiState())
-    val uiState = _uiState.asStateFlow()
+    val uiState: StateFlow<LibraryUiState>
+        field = MutableStateFlow(LibraryUiState())
 
     private val marks = mutableListOf<Mark>()
 
@@ -44,7 +44,7 @@ class LibraryViewModel @Inject constructor(
             .map { it.libraryShelfType }
             .distinctUntilChanged()
             .onEach { type ->
-                _uiState.update { it.copy(selectedShelfType = type) }
+                uiState.update { it.copy(selectedShelfType = type) }
             }.launchIn(viewModelScope)
         // Refresh data when login status changes.
         authRepository.accountStatus
@@ -54,7 +54,7 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun refresh() {
-        _uiState.update { it.copy(isLoading = true) }
+        uiState.update { it.copy(isLoading = true) }
         marks.clear()
         neoDBRepository.userShelf
             .onEach { pagedMarkSchemaFlow ->
@@ -63,12 +63,12 @@ class LibraryViewModel @Inject constructor(
             }.onCompletion {
                 refreshDisplayedMarks()
                 generateHeatMap()
-                _uiState.update { it.copy(isLoading = false) }
+                uiState.update { it.copy(isLoading = false) }
             }.launchIn(viewModelScope)
     }
 
     fun toggleSelectedEntryType(which: EntryType) {
-        _uiState.update {
+        uiState.update {
             it.copy(
                 selectedEntryTypes = if (which in it.selectedEntryTypes) {
                     it.selectedEntryTypes - which
@@ -81,14 +81,14 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun resetEntryType() {
-        _uiState.update { it.copy(selectedEntryTypes = emptySet()) }
+        uiState.update { it.copy(selectedEntryTypes = emptySet()) }
         refreshDisplayedMarks()
     }
 
     private fun refreshDisplayedMarks() {
         // Show all when no filters
-        if (_uiState.value.selectedEntryTypes.isEmpty()) {
-            _uiState.update { curr ->
+        if (uiState.value.selectedEntryTypes.isEmpty()) {
+            uiState.update { curr ->
                 curr.copy(
                     displayedMarks = marks.filter {
                         it.shelfType == curr.selectedShelfType
@@ -97,7 +97,7 @@ class LibraryViewModel @Inject constructor(
             }
             return
         }
-        _uiState.update { curr ->
+        uiState.update { curr ->
             curr.copy(
                 displayedMarks = marks.filter {
                     it.entry.category in curr.selectedEntryTypes &&
@@ -108,7 +108,7 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun switchShelfType(type: ShelfType) {
-        _uiState.update { it.copy(selectedShelfType = type) }
+        uiState.update { it.copy(selectedShelfType = type) }
         refreshDisplayedMarks()
     }
 
@@ -143,7 +143,7 @@ class LibraryViewModel @Inject constructor(
                     blocks = heatMapDaysByWeek[weekIndex] ?: emptyList(),
                 )
             }
-        _uiState.update { it.copy(heatMap = heatMap) }
+        uiState.update { it.copy(heatMap = heatMap) }
     }
 }
 

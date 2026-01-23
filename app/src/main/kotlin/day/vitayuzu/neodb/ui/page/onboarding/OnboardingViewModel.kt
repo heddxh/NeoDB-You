@@ -10,7 +10,7 @@ import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.OtherRepository
 import day.vitayuzu.neodb.data.schema.PublicInstanceSchema
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
@@ -27,8 +27,8 @@ class OnboardingViewModel @Inject constructor(
     private val appSettingsManager: AppSettingsManager,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(OnboardingUiState())
-    val uiState = _uiState.asStateFlow()
+    val uiState: StateFlow<OnboardingUiState>
+        field = MutableStateFlow(OnboardingUiState())
 
     init {
         fetchPublicInstances()
@@ -38,22 +38,22 @@ class OnboardingViewModel @Inject constructor(
         otherRepo.fetchPublicInstancesFlow
             .onEach {
                 val sorted = it.sortedByDescending { instance -> instance.totalUsers }
-                _uiState.update { it.copy(publicInstances = sorted) }
+                uiState.update { it.copy(publicInstances = sorted) }
             }.onStart {
-                _uiState.update { it.copy(isLoadingInstances = true) }
+                uiState.update { it.copy(isLoadingInstances = true) }
             }.onCompletion {
-                _uiState.update { it.copy(isLoadingInstances = false) }
+                uiState.update { it.copy(isLoadingInstances = false) }
             }.launchIn(viewModelScope)
     }
 
     fun fetchInstanceInfo(instanceUrl: String) {
-        _uiState.update { it.copy(isFetchingInstanceInfo = true) }
+        uiState.update { it.copy(isFetchingInstanceInfo = true) }
         viewModelScope.launch {
             val normalizedUrl = instanceUrl.toNormalizedUrl()
             authRepo
                 .validateInstanceUrl(normalizedUrl)
                 .onSuccess { instanceInfo ->
-                    _uiState.update {
+                    uiState.update {
                         it.copy(
                             isFetchingInstanceInfo = false,
                             selectedInstanceUrl = instanceInfo.uri,
@@ -64,13 +64,13 @@ class OnboardingViewModel @Inject constructor(
                     }
                 }.onFailure {
                     Log.e("OnboardingViewModel", "Failed to fetch instance info", it)
-                    _uiState.update { state -> state.copy(isFetchingInstanceInfo = false) }
+                    uiState.update { state -> state.copy(isFetchingInstanceInfo = false) }
                 }
         }
     }
 
     fun selectInstance(instance: PublicInstanceSchema) {
-        _uiState.update {
+        uiState.update {
             it.copy(
                 selectedInstanceUrl = instance.domain,
                 selectedInstanceName = instance.title,
@@ -81,7 +81,7 @@ class OnboardingViewModel @Inject constructor(
     }
 
     fun clearSelectedInstance() {
-        _uiState.update {
+        uiState.update {
             it.copy(
                 selectedInstanceUrl = "",
                 selectedInstanceName = "",
@@ -95,11 +95,11 @@ class OnboardingViewModel @Inject constructor(
      * Register client and return client id as flow.
      */
     fun getClientId() = flow {
-        _uiState.update { it.copy(isPreparingOauth = true) }
+        uiState.update { it.copy(isPreparingOauth = true) }
         authRepo.registerClientIfNeeded(uiState.value.selectedInstanceUrl).onSuccess {
             emit(it.first)
         }
-    }.onCompletion { _uiState.update { it.copy(isPreparingOauth = false) } }
+    }.onCompletion { uiState.update { it.copy(isPreparingOauth = false) } }
 
     fun handleAuthCode(code: String) = flow<Unit> {
         // Called from OauthActivity.
@@ -107,13 +107,13 @@ class OnboardingViewModel @Inject constructor(
         // the instance URL needs to be retrieved from the AuthRepository rather than the UI state.
         with(authRepo) {
             val instanceUrl = accountStatus.value.instanceUrl
-            _uiState.update { it.copy(isExchangingAccessToken = true) }
+            uiState.update { it.copy(isExchangingAccessToken = true) }
             registerClientIfNeeded(instanceUrl).onSuccess { (clientId, clientSecret) ->
                 exchangeAccessToken(clientId, clientSecret, code)
             }
         }
     }.onCompletion {
-        _uiState.update { it.copy(isExchangingAccessToken = false) }
+        uiState.update { it.copy(isExchangingAccessToken = false) }
     }
 
     fun completeOnboarding() {
@@ -123,15 +123,15 @@ class OnboardingViewModel @Inject constructor(
     }
 
     fun goToNextPage() {
-        _uiState.update { it.copy(currentPage = it.currentPage + 1) }
+        uiState.update { it.copy(currentPage = it.currentPage + 1) }
     }
 
     fun goToPreviousPage() {
-        _uiState.update { it.copy(currentPage = maxOf(0, it.currentPage - 1)) }
+        uiState.update { it.copy(currentPage = maxOf(0, it.currentPage - 1)) }
     }
 
     fun resetOauthState() {
-        _uiState.update { it.copy(isPreparingOauth = false) }
+        uiState.update { it.copy(isPreparingOauth = false) }
     }
 
     private companion object {
