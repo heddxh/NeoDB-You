@@ -3,6 +3,7 @@
     <string name="app_name" translatable="false">NeoDB You</string>
     <string name="home_title">Home</string>
     <string name="library_title">Library</string>
+    <string name="library_activity_title">%1$d Activity</string>
     <string name="settings_title">Settings</string>
     <string name="entry_displayname_book">Book</string>
     <string name="entry_displayname_movie">Movie</string>

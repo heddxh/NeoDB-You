@@ -1,17 +1,24 @@
 package day.vitayuzu.neodb.ui.page.library
 
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,7 +26,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.page.library.HeatMapBlockType.Double
 import day.vitayuzu.neodb.ui.page.library.HeatMapBlockType.None
 import day.vitayuzu.neodb.ui.page.library.HeatMapBlockType.Quadruple
@@ -27,31 +36,93 @@ import day.vitayuzu.neodb.ui.page.library.HeatMapBlockType.Single
 import day.vitayuzu.neodb.ui.page.library.HeatMapBlockType.Triple
 import day.vitayuzu.neodb.ui.theme.kindColors
 import day.vitayuzu.neodb.util.EntryType
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 @Composable
-fun HeatMap(weeks: List<HeatMapWeekUiState>, modifier: Modifier = Modifier) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
-        reverseLayout = true, // Newest week is at the end of the weeks, so reverse it
-        modifier = modifier,
+fun HeatMapCard(weeks: List<HeatMapWeekUiState>, modifier: Modifier = Modifier) {
+    val currentYear = Clock.System.todayIn(TimeZone.currentSystemDefault()).year
+
+    Card(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
     ) {
-        items(items = weeks, key = { it.index }) {
-            HeatMapWeekColumn(it.blocks)
-            Log.d("HeatMapWeeks", "${it.index}: ${it.blocks}")
+        Column(modifier = Modifier.padding(12.dp)) {
+            HeatMapHeader(year = currentYear)
+            Spacer(Modifier.size(8.dp))
+            HeatMapGrid(weeks)
+            Spacer(Modifier.size(8.dp))
+            HeatMapLegend()
         }
     }
 }
 
 @Composable
-fun HeatMapWeekColumn(blocks: List<HeatMapDayData>, modifier: Modifier = Modifier) {
-    val blockModifier =
-        Modifier
-            .size(24.dp)
-            .clip(MaterialTheme.shapes.extraSmall)
+private fun HeatMapHeader(year: Int, modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(R.string.library_activity_title, year),
+        style = MaterialTheme.typography.titleMedium,
+        modifier = modifier,
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun HeatMapLegend(modifier: Modifier = Modifier) {
+    FlowRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        EntryType.entries.forEach { type ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(MaterialTheme.shapes.extraSmall)
+                        .background(MaterialTheme.colorScheme.kindColors(type)),
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = stringResource(type.toR()),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HeatMapGrid(weeks: List<HeatMapWeekUiState>, modifier: Modifier = Modifier) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 0.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.End),
+        reverseLayout = true,
+        modifier = modifier,
+    ) {
+        items(items = weeks, key = { it.index }) {
+            HeatMapWeekColumn(it.blocks)
+        }
+    }
+}
+
+private const val BLOCK_SIZE = 14
+private const val BLOCK_GAP = 2
+
+@Composable
+private fun HeatMapWeekColumn(blocks: List<HeatMapDayData>, modifier: Modifier = Modifier) {
+    val blockModifier = Modifier
+        .size(BLOCK_SIZE.dp)
+        .clip(MaterialTheme.shapes.extraSmall)
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Top),
+        verticalArrangement = Arrangement.spacedBy(BLOCK_GAP.dp, Alignment.Top),
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier,
     ) {
@@ -98,128 +169,99 @@ fun HeatMapWeekColumn(blocks: List<HeatMapDayData>, modifier: Modifier = Modifie
 }
 
 @Composable
-fun DefaultHeatMapBlock(modifier: Modifier = Modifier) {
-    Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer))
+private fun DefaultHeatMapBlock(modifier: Modifier = Modifier) {
+    Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest))
 }
 
 @Composable
-fun SingleHeatMapBlock(modifier: Modifier = Modifier, kind: EntryType = EntryType.default) {
-    Box(
-        modifier =
-            modifier
-                .background(MaterialTheme.colorScheme.kindColors(kind))
-                .clickable { Log.d("HeatMap", kind.name) },
-    )
+private fun SingleHeatMapBlock(modifier: Modifier = Modifier, kind: EntryType = EntryType.default) {
+    Box(modifier = modifier.background(MaterialTheme.colorScheme.kindColors(kind)))
 }
 
 @Composable
-fun DoubleHeatMapBlock(
+private fun DoubleHeatMapBlock(
     topRight: EntryType,
     bottomLeft: EntryType,
     modifier: Modifier = Modifier,
 ) {
     val bottomLeftColor = MaterialTheme.colorScheme.kindColors(bottomLeft)
     Box(
-        modifier =
-            modifier
-                .clickable { Log.d("HeatMap", "${topRight.name} ${bottomLeft.name}") }
-                .background(MaterialTheme.colorScheme.kindColors(topRight)) // Top right
-                .drawWithCache {
-                    // Button left
-                    val path =
-                        Path().apply {
-                            moveTo(0f, 0f)
-                            lineTo(size.width, size.height)
-                            lineTo(0f, size.height)
-                            close()
-                        }
-                    onDrawBehind {
-                        drawPath(path, bottomLeftColor, style = Fill)
-                    }
-                },
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.kindColors(topRight))
+            .drawWithCache {
+                val path = Path().apply {
+                    moveTo(0f, 0f)
+                    lineTo(size.width, size.height)
+                    lineTo(0f, size.height)
+                    close()
+                }
+                onDrawBehind {
+                    drawPath(path, bottomLeftColor, style = Fill)
+                }
+            },
     )
 }
 
+private val tripleBlockWidth = (BLOCK_SIZE / 3f).dp
+private val quadBlockSize = (BLOCK_SIZE / 2f).dp
+
 @Composable
-fun TripleHeatMapBlock(
+private fun TripleHeatMapBlock(
     kind1: EntryType,
     kind2: EntryType,
     kind3: EntryType,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier =
-            modifier.clickable {
-                Log.d(
-                    "HeatMap",
-                    "${kind1.name} ${kind2.name} ${kind3.name}",
-                )
-            },
-    ) {
+    Row(modifier = modifier) {
         Box(
-            modifier =
-                Modifier
-                    .size(8.dp, 24.dp)
-                    .background(MaterialTheme.colorScheme.kindColors(kind1)),
+            modifier = Modifier
+                .size(tripleBlockWidth, BLOCK_SIZE.dp)
+                .background(MaterialTheme.colorScheme.kindColors(kind1)),
         )
         Box(
-            modifier =
-                Modifier
-                    .size(8.dp, 24.dp)
-                    .background(MaterialTheme.colorScheme.kindColors(kind2)),
+            modifier = Modifier
+                .size(tripleBlockWidth, BLOCK_SIZE.dp)
+                .background(MaterialTheme.colorScheme.kindColors(kind2)),
         )
         Box(
-            modifier =
-                Modifier
-                    .size(8.dp, 24.dp)
-                    .background(MaterialTheme.colorScheme.kindColors(kind3)),
+            modifier = Modifier
+                .size(tripleBlockWidth, BLOCK_SIZE.dp)
+                .background(MaterialTheme.colorScheme.kindColors(kind3)),
         )
     }
 }
 
 @Composable
-fun QuadrupleHeatMapBlock(
+private fun QuadrupleHeatMapBlock(
     kind1: EntryType,
     kind2: EntryType,
     kind3: EntryType,
     kind4: EntryType,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier =
-            modifier.clickable {
-                Log.d(
-                    "HeatMap",
-                    "${kind1.name} ${kind2.name} ${kind3.name} ${kind4.name}",
-                )
-            },
-    ) {
+    Column(modifier = modifier) {
         Row {
             Box(
-                modifier =
-                    Modifier
-                        .size(12.dp)
-                        .background(MaterialTheme.colorScheme.kindColors(kind1)),
+                modifier = Modifier
+                    .size(quadBlockSize)
+                    .background(MaterialTheme.colorScheme.kindColors(kind1)),
             )
             Box(
-                modifier =
-                    Modifier
-                        .size(12.dp)
-                        .background(MaterialTheme.colorScheme.kindColors(kind2)),
+                modifier = Modifier
+                    .size(quadBlockSize)
+                    .background(MaterialTheme.colorScheme.kindColors(kind2)),
             )
         }
         Row {
             Box(
-                modifier =
-                    Modifier
-                        .size(12.dp)
-                        .background(MaterialTheme.colorScheme.kindColors(kind3)),
+                modifier = Modifier
+                    .size(quadBlockSize)
+                    .background(MaterialTheme.colorScheme.kindColors(kind3)),
             )
             Box(
-                modifier =
-                    Modifier
-                        .size(12.dp)
-                        .background(MaterialTheme.colorScheme.kindColors(kind4)),
+                modifier = Modifier
+                    .size(quadBlockSize)
+                    .background(MaterialTheme.colorScheme.kindColors(kind4)),
             )
         }
     }

@@ -2,6 +2,7 @@
 <resources>
     <string name="home_title">Página Inicial</string>
     <string name="library_title">Biblioteca</string>
+    <string name="library_activity_title">Atividade de %1$d</string>
     <string name="settings_title">Configurações</string>
     <string name="entry_displayname_book">Livro</string>
     <string name="entry_displayname_movie">Filme</string>
