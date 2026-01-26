@@ -1,13 +1,17 @@
 package day.vitayuzu.neodb.ui.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -26,6 +31,7 @@ import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
+import day.vitayuzu.neodb.ui.theme.kindColors
 import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.sharedBoundsTransition
@@ -41,15 +47,23 @@ fun EntryMarkCard(
         modifier = modifier.sharedBoundsTransition(SharedEntryCardKey(entry.uuid)),
         onClick = { appNavigator goto AppNavigator.Detail(entry.category, entry.uuid) },
         colors = CardDefaults.cardColors(
-            contentColor = MaterialTheme.colorScheme.onBackground,
-            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
         ),
     ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
+            horizontalArrangement = Arrangement.spacedBy(0.dp, Alignment.Start),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.height(160.dp).padding(8.dp),
+            modifier = Modifier.height(160.dp),
         ) {
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                    .background(MaterialTheme.colorScheme.kindColors(entry.category)),
+            )
+            Spacer(Modifier.width(8.dp))
             AsyncImage(
                 model = entry.coverUrl,
                 contentDescription = "Cover image of ${entry.title}",
@@ -60,11 +74,11 @@ fun EntryMarkCard(
                 fallback = painterResource(R.drawable.image_placeholder),
                 error = painterResource(R.drawable.image_placeholder),
             )
-
+            Spacer(Modifier.width(16.dp))
             Column(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.Start,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().padding(vertical = 8.dp, horizontal = 8.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Row(
