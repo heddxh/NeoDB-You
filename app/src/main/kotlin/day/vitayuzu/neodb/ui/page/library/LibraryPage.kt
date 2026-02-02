@@ -145,7 +145,10 @@ private fun LibraryContent(
             }
         }
         item(contentType = "heatmap") {
-            HeatMapCard(uiState.heatMap.toImmutableList())
+            HeatMapCard(
+                weeks = uiState.heatMap.toImmutableList(),
+                isLoading = uiState.isLoading,
+            )
         }
         items(
             contentType = { "marks" },

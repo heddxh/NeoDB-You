@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,11 +25,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.valentinilk.shimmer.shimmer
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
@@ -44,12 +48,19 @@ import kotlin.time.ExperimentalTime
 private const val DAYS_PER_WEEK = 7
 private const val BLOCK_SIZE = 14
 private const val BLOCK_SPACING = 2
+private const val WEEK_HEIGHT = DAYS_PER_WEEK * BLOCK_SIZE + (DAYS_PER_WEEK - 1) * BLOCK_SPACING
 private val tripleBlockWidth = (BLOCK_SIZE / 3f).dp
 private val quadBlockSize = (BLOCK_SIZE / 2f).dp
 
+private const val SHIMMER_WEEKS = 24
+
 @OptIn(ExperimentalTime::class)
 @Composable
-fun HeatMapCard(weeks: ImmutableList<HeatMapWeekUiState>, modifier: Modifier = Modifier) {
+fun HeatMapCard(
+    weeks: ImmutableList<HeatMapWeekUiState>,
+    isLoading: Boolean,
+    modifier: Modifier = Modifier,
+) {
     val currentYear = Clock.System.todayIn(TimeZone.currentSystemDefault()).year
 
     Card(
@@ -63,8 +74,34 @@ fun HeatMapCard(weeks: ImmutableList<HeatMapWeekUiState>, modifier: Modifier = M
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             HeatMapHeader(currentYear)
-            HeatMapGrid(weeks)
+            if (isLoading) {
+                ShimmerHeatMapGrid()
+            } else {
+                HeatMapGrid(weeks)
+            }
             HeatMapLegend()
+        }
+    }
+}
+
+@Composable
+private fun ShimmerHeatMapGrid(modifier: Modifier = Modifier) {
+    val shimmerBlockModifier = Modifier
+        .size(BLOCK_SIZE.dp)
+        .clip(MaterialTheme.shapes.extraSmall)
+        .shimmer()
+        .background(Color.LightGray)
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(BLOCK_SPACING.dp, Alignment.End),
+        modifier = modifier.fillMaxWidth().height(WEEK_HEIGHT.dp),
+    ) {
+        repeat(SHIMMER_WEEKS) {
+            Column(verticalArrangement = Arrangement.spacedBy(BLOCK_SPACING.dp)) {
+                repeat(DAYS_PER_WEEK) {
+                    Box(shimmerBlockModifier)
+                }
+            }
         }
     }
 }
@@ -83,7 +120,7 @@ private fun HeatMapGrid(weeks: ImmutableList<HeatMapWeekUiState>, modifier: Modi
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(BLOCK_SPACING.dp, Alignment.End),
         reverseLayout = true,
-        modifier = modifier,
+        modifier = modifier.heightIn(min = WEEK_HEIGHT.dp),
     ) {
         items(items = weeks, key = { it.index }) { week ->
             HeatMapWeekColumn(week.blocks)
@@ -417,6 +454,6 @@ private fun PreviewHeatMapCard() {
         ),
     )
     NeoDBYouTheme {
-        HeatMapCard(weeks = sampleWeeks)
+        HeatMapCard(weeks = sampleWeeks, isLoading = false)
     }
 }
