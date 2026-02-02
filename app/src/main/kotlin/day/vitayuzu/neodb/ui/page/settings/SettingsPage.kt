@@ -247,6 +247,7 @@ private fun SettingsCard(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
         )
         SelectablePreference(
+            color = MaterialTheme.colorScheme.surfaceContainer,
             optionNumber = ShelfType.entries.size,
             selectedOption = ShelfType.entries.indexOf(settings.libraryShelfType),
             onSelectedChange = { onChangeShelfType(ShelfType.entries[it]) },
