@@ -14,6 +14,8 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,9 +32,14 @@ import day.vitayuzu.neodb.ui.component.EntryTypeFilterChipsRow
 import day.vitayuzu.neodb.ui.component.SharedSearchFab
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
+import day.vitayuzu.neodb.ui.theme.kindColors
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.EntryType.book
+import day.vitayuzu.neodb.util.EntryType.game
 import day.vitayuzu.neodb.util.EntryType.movie
+import day.vitayuzu.neodb.util.EntryType.music
+import day.vitayuzu.neodb.util.EntryType.performance
+import day.vitayuzu.neodb.util.EntryType.podcast
 import day.vitayuzu.neodb.util.EntryType.tv
 import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.collections.immutable.persistentSetOf
@@ -89,10 +96,25 @@ private fun LibraryContent(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center,
                 ) {
+                    // FIXME: Choose proper colors
+                    val color = listOf(
+                        MaterialTheme.colorScheme.kindColors(performance),
+                        MaterialTheme.colorScheme.kindColors(podcast),
+                        MaterialTheme.colorScheme.kindColors(music),
+                        MaterialTheme.colorScheme.kindColors(game),
+                    )
                     ConnectedButtonGroup(
                         optionNumber = ShelfType.entries.size,
                         selectedOption = ShelfType.entries.indexOf(uiState.selectedShelfType),
                         onSelectedChange = { onShelfTypeChange(ShelfType.entries[it]) },
+                        colors = { index ->
+                            ToggleButtonDefaults.tonalToggleButtonColors(
+                                checkedContainerColor = color[index],
+                                checkedContentColor = MaterialTheme.colorScheme.contentColorFor(
+                                    color[index],
+                                ),
+                            )
+                        },
                         optionContent = { index ->
                             Text(
                                 stringResource(ShelfType.entries[index].toR()),

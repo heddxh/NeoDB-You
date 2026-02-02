@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButtonColors
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TonalToggleButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -22,6 +24,9 @@ fun ConnectedButtonGroup(
     onSelectedChange: (Int) -> Unit,
     optionContent: @Composable (Int) -> Unit,
     modifier: Modifier = Modifier,
+    colors: @Composable (Int) -> ToggleButtonColors = {
+        ToggleButtonDefaults.tonalToggleButtonColors()
+    },
 ) {
     Row(
         modifier = modifier,
@@ -34,6 +39,7 @@ fun ConnectedButtonGroup(
                 checked = selectedOption == index,
                 onCheckedChange = { onSelectedChange(index) },
                 modifier = Modifier.semantics { role = Role.RadioButton },
+                colors = colors(index),
                 shapes =
                     when (index) {
                         0 -> {
