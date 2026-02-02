@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -56,11 +55,12 @@ fun EntryMarkCard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.height(160.dp),
         ) {
+            // Color indicator
             Box(
                 modifier = Modifier
-                    .width(4.dp)
+                    .width(6.dp)
                     .fillMaxHeight()
-                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                    .clip(CardDefaults.shape)
                     .background(MaterialTheme.colorScheme.kindColors(entry.category)),
             )
             Spacer(Modifier.width(8.dp))
@@ -68,17 +68,17 @@ fun EntryMarkCard(
                 model = entry.coverUrl,
                 contentDescription = "Cover image of ${entry.title}",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.width(114.dp),
+                modifier = Modifier.width(114.dp).padding(vertical = 4.dp),
                 alignment = Alignment.CenterStart,
                 placeholder = painterResource(R.drawable.image_placeholder),
                 fallback = painterResource(R.drawable.image_placeholder),
                 error = painterResource(R.drawable.image_placeholder),
             )
-            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.width(8.dp))
             Column(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.Start,
-                modifier = Modifier.fillMaxSize().padding(vertical = 8.dp, horizontal = 8.dp),
+                modifier = Modifier.fillMaxSize().padding(end = 8.dp).padding(vertical = 4.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Row(

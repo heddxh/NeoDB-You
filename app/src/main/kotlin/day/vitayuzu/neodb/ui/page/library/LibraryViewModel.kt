@@ -9,6 +9,8 @@ import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
+import kotlinx.collections.immutable.PersistentSet
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -23,6 +25,9 @@ import kotlinx.datetime.number
 import kotlinx.datetime.todayIn
 import java.util.GregorianCalendar
 import javax.inject.Inject
+import kotlin.collections.contains
+import kotlin.collections.remove
+import kotlin.sequences.contains
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -34,6 +39,7 @@ class LibraryViewModel @Inject constructor(
     authRepository: AuthRepository,
     settingsManager: AppSettingsManager,
 ) : ViewModel() {
+
     val uiState: StateFlow<LibraryUiState>
         field = MutableStateFlow(LibraryUiState())
 
@@ -45,6 +51,7 @@ class LibraryViewModel @Inject constructor(
             .distinctUntilChanged()
             .onEach { type ->
                 uiState.update { it.copy(selectedShelfType = type) }
+                refreshDisplayedMarks()
             }.launchIn(viewModelScope)
         // Refresh data when login status changes.
         authRepository.accountStatus
@@ -70,18 +77,20 @@ class LibraryViewModel @Inject constructor(
     fun toggleSelectedEntryType(which: EntryType) {
         uiState.update {
             it.copy(
-                selectedEntryTypes = if (which in it.selectedEntryTypes) {
-                    it.selectedEntryTypes - which
-                } else {
-                    it.selectedEntryTypes + which
-                },
+                selectedEntryTypes = (
+                    if (which in it.selectedEntryTypes) {
+                        it.selectedEntryTypes.remove(which)
+                    } else {
+                        it.selectedEntryTypes.add(which)
+                    }
+                ),
             )
         }
         refreshDisplayedMarks()
     }
 
     fun resetEntryType() {
-        uiState.update { it.copy(selectedEntryTypes = emptySet()) }
+        uiState.update { it.copy(selectedEntryTypes = persistentSetOf()) }
         refreshDisplayedMarks()
     }
 
@@ -157,12 +166,7 @@ class LibraryViewModel @Inject constructor(
 data class LibraryUiState(
     val isLoading: Boolean = false,
     val displayedMarks: List<Mark> = emptyList(),
-    val selectedEntryTypes: Set<EntryType> = emptySet(), // Filter chips
+    val selectedEntryTypes: PersistentSet<EntryType> = persistentSetOf(), // Filter chips
     val selectedShelfType: ShelfType = ShelfType.wishlist, // Tabs
     val heatMap: List<HeatMapWeekUiState> = emptyList(),
-)
-
-data class HeatMapWeekUiState(
-    val index: Int = 0,
-    val blocks: List<HeatMapDayData> = emptyList(),
 )

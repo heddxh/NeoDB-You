@@ -10,13 +10,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
@@ -38,11 +38,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import day.vitayuzu.neodb.ui.theme.kindColors
 import day.vitayuzu.neodb.util.EntryType
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 
 @Composable
 fun EntryTypeFilterChipsRow(
+    selectedEntryTypes: ImmutableSet<EntryType>,
     modifier: Modifier = Modifier,
-    selectedEntryTypes: Set<EntryType> = emptySet(),
     onClick: (EntryType) -> Unit = {},
     onClearFilter: () -> Unit = {},
 ) {
@@ -94,7 +96,7 @@ fun EntryTypeFilterChipsRow(
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme
                             .kindColors(type)
-                            .copy(alpha = 0.3f),
+                            .copy(alpha = 0.6f),
                         selectedLabelColor = MaterialTheme.colorScheme.onSurface,
                     ),
                     leadingIcon = {
@@ -124,5 +126,5 @@ fun EntryTypeFilterChipsRow(
 @Preview
 @Composable
 private fun PreviewEntryTypeFilterChipsRow() {
-    EntryTypeFilterChipsRow(selectedEntryTypes = setOf(EntryType.game))
+    EntryTypeFilterChipsRow(selectedEntryTypes = persistentSetOf(EntryType.game))
 }

@@ -52,6 +52,7 @@ import day.vitayuzu.neodb.util.BASE_URL
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.sharedBoundsTransition
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -124,7 +125,7 @@ private fun SearchPageContent(
         }
         item {
             EntryTypeFilterChipsRow(
-                selectedEntryTypes = selectedEntryTypes,
+                selectedEntryTypes = selectedEntryTypes.toImmutableSet(),
                 onClick = {
                     if (it in selectedEntryTypes) {
                         selectedEntryTypes.remove(it)

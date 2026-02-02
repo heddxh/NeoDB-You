@@ -20,7 +20,9 @@
 
 ## Building and Running
 
-**永远不要自己构建项目**。完成修改后，告诉我 "请构建项目以验证更改" 即可。
+对于较为简单的更改或者UI迭代，完成后获取IDE诊断作为验证即可，不需要构建项目来验证。
+
+对于大型更改和重构，需要构建来验证正确性。
 
 ## Architecture
 
@@ -128,6 +130,7 @@ suspend fun fetchMyShelf(@Path("type") type: ShelfType, @Query("page") page: Int
 - 所有用户可见字符串必须放入 `res/values/strings.xml`
 - 如果添加或修改字符串，**请在完成时告诉我**
 - 支持的语言: 英语(默认), 简体中文, 意大利语, 葡萄牙语(巴西)
+- 英语和简体中文可以自行添加，其他语言**不要提供翻译**
 
 ### 枚举命名
 
@@ -141,9 +144,39 @@ suspend fun fetchMyShelf(@Path("type") type: ShelfType, @Query("page") page: Int
 
 ## Git Workflow
 
-1. **分支命名**: `feature/xxx`, `fix/xxx`, `refactor/xxx`
-2. **Commits**: 使用 Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`)
-3. **不要直接提交到 main**
+### 分支策略
+
+- **主分支**: `main` 保持稳定可发布状态
+- **分支命名**: `feature/xxx`, `fix/xxx`, `refactor/xxx`, `chore/xxx`
+- **Non-trivial 更改必须新建分支**: 涉及多文件修改、新功能、重构等复杂更改时，先创建分支再开始工作
+
+### 提交规范
+
+- **Conventional Commits**: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `style:`, `test:`
+- **原子提交**: 每个提交应该是一个逻辑上完整的独立更改
+- **提交拆分原则**:
+  - 分离重构和功能更改
+  - Schema 更改单独提交
+  - UI 和业务逻辑分开提交
+  - 资源文件 (strings.xml) 可与相关代码一起提交
+
+### 最佳实践
+
+1. **开始工作前**: 对于复杂更改，先从 `main` 创建新分支
+2. **提交前**: 确保代码通过编译和 lint 检查
+3. **提交信息**: 简洁描述做了什么，必要时在 body 中说明为什么
+4. **完成后**: 等待用户确认后再合并到 `main`
+
+### 示例
+
+```bash
+# 新功能开发
+git checkout -b feature/add-search-history
+# ... 多次原子提交 ...
+git commit -m "feat(schema): add SearchHistorySchema"
+git commit -m "feat(repo): implement search history persistence"
+git commit -m "feat(ui): add search history dropdown"
+```
 
 ## Common Tasks Quick Reference
 
