@@ -90,8 +90,8 @@ private fun MyComponentPreview() {
 1. 找到需要预览的 Composable 函数
 2. 分析其参数，确定需要的 mock 数据
 3. 在函数下方创建 Preview 函数
-4. 用 `AppTheme` 包裹
-5. 根据需要添加多个 `@Preview` 变体（亮/暗主题、不同尺寸等）
+4. 用 `NeoDBYouTheme` 包裹
+5. 根据需要添加多个 `@Preview` 变体（亮/暗主题、不同尺寸等）,大多数情况下Preview不需要参数。
 
 ## 示例
 
