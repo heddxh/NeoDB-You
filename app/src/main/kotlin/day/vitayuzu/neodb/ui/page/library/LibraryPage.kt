@@ -96,7 +96,6 @@ private fun LibraryContent(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    // FIXME: Choose proper colors
                     val color = listOf(
                         MaterialTheme.colorScheme.kindColors(performance),
                         MaterialTheme.colorScheme.kindColors(podcast),

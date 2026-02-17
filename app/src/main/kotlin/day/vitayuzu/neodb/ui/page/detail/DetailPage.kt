@@ -68,7 +68,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -94,6 +97,7 @@ import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.model.Post
 import day.vitayuzu.neodb.ui.page.home.SharedTrendingItemKey
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
+import day.vitayuzu.neodb.ui.theme.kindColors
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.sharedBoundsTransition
 import day.vitayuzu.neodb.util.toDateString
@@ -151,6 +155,7 @@ fun DetailPage(
             exit = fadeOut(),
         ) {
             val detail = uiState.detail!!
+            val tintColor = MaterialTheme.colorScheme.kindColors(detail.type)
             // Background cover image
             AsyncImage(
                 model = detail.coverUrl,
@@ -158,6 +163,19 @@ fun DetailPage(
                 contentScale = ContentScale.Crop,
                 alpha = 0.2f,
                 modifier = Modifier.fillMaxSize().blur(12.dp),
+            )
+            // Gradient tint overlay
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .drawWithCache {
+                        val brush =
+                            Brush.radialGradient(
+                                center = Offset.Zero,
+                                colors = listOf(tintColor, tintColor.copy(alpha = 0.1f)),
+                            )
+                        onDrawBehind { drawRect(brush = brush) }
+                    },
             )
 
             // Content
@@ -173,26 +191,32 @@ fun DetailPage(
 
             // Modal sheet
             when (modalState) {
-                ModalState.New -> PostComposeModal(
-                    postDate = Instant.fromEpochMilliseconds(postDate),
-                    onSend = viewModel::postMark,
-                    onShowDatePicker = { showDatePicker = true },
-                    onDismiss = { modalState = ModalState.Closed },
-                )
+                ModalState.New -> {
+                    PostComposeModal(
+                        postDate = Instant.fromEpochMilliseconds(postDate),
+                        onSend = viewModel::postMark,
+                        onShowDatePicker = { showDatePicker = true },
+                        onDismiss = { modalState = ModalState.Closed },
+                    )
+                }
 
-                ModalState.Edit -> PostComposeModal(
-                    postDate = Instant.fromEpochMilliseconds(postDate),
-                    originMark = uiState.mark,
-                    onSend = viewModel::postMark,
-                    onShowDatePicker = { showDatePicker = true },
-                    onDismiss = { modalState = ModalState.Closed },
-                )
+                ModalState.Edit -> {
+                    PostComposeModal(
+                        postDate = Instant.fromEpochMilliseconds(postDate),
+                        originMark = uiState.mark,
+                        onSend = viewModel::postMark,
+                        onShowDatePicker = { showDatePicker = true },
+                        onDismiss = { modalState = ModalState.Closed },
+                    )
+                }
 
                 // TODO: show other field.
-                ModalState.Des -> ModalBottomSheet(onDismissRequest = {
-                    modalState = ModalState.Closed
-                }) {
-                    ShowAllInfoModalContent(des = detail.des ?: "")
+                ModalState.Des -> {
+                    ModalBottomSheet(onDismissRequest = {
+                        modalState = ModalState.Closed
+                    }) {
+                        ShowAllInfoModalContent(des = detail.des ?: "")
+                    }
                 }
 
                 ModalState.Closed -> {}
