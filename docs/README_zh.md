@@ -49,6 +49,9 @@
 <img alt="Get it on GitHub" height="96" 
 src="https://raw.githubusercontent.com/rubenpgrady/get-it-on-github/refs/heads/main/get-it-on-github.png"/>
 </a>
+<a href="https://f-droid.org/packages/day.vitayuzu.neodb">
+<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="96">
+</a>
 <a href="https://apt.izzysoft.de/packages/day.vitayuzu.neodb">
 <img height="96" alt="Git it on IzzyOnDroid" 
 src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" />
