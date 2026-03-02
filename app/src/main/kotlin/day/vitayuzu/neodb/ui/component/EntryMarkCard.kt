@@ -118,9 +118,9 @@ fun EntryMarkCard(
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodySmall,
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.weight(1f))
                 // User mark card
-                if (mark != null) UserMarkCard(mark, expandable = false)
+                if (mark != null) UserMarkCard(mark, compact = true, enableBorder = false)
             }
         }
     }

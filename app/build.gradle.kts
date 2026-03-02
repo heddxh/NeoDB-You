@@ -27,10 +27,12 @@ kotlin {
         jvmTarget = JvmTarget.JVM_21
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
         freeCompilerArgs.add("-Xexplicit-backing-fields")
-        // WORKAROUND: https://youtrack.jetbrains.com/issue/KT-83265/How-to-disable-Explicit-Backing-Fields-compiler-warning
         if (isInIdeaSync) {
+            // WORKAROUND: https://youtrack.jetbrains.com/issue/KT-83265/How-to-disable-Explicit-Backing-Fields-compiler-warning
             freeCompilerArgs.add("-XXLanguage:+ExplicitBackingFields")
         }
+        // WORKAROUND: https://issuetracker.google.com/issues/430526759
+        freeCompilerArgs.add("-Xlambdas=class")
     }
 }
 

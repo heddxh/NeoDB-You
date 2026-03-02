@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import day.vitayuzu.neodb.util.EntryType
+import day.vitayuzu.neodb.util.ShelfType
 
 private val DarkColorScheme =
     darkColorScheme(
@@ -54,6 +55,14 @@ fun ColorScheme.kindColors(kind: EntryType): Color = when (kind) {
     EntryType.default -> OtherColor
 }
 
+@Composable
+fun ColorScheme.statusColor(shelfType: ShelfType): Color = when (shelfType) {
+    ShelfType.wishlist -> PerformanceColor
+    ShelfType.progress -> PodcastColor
+    ShelfType.complete -> MusicColor
+    ShelfType.dropped -> GameColor
+}
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NeoDBYouTheme(
@@ -68,8 +77,13 @@ fun NeoDBYouTheme(
                 if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
             }
 
-            darkTheme -> DarkColorScheme
-            else -> LightColorScheme
+            darkTheme -> {
+                DarkColorScheme
+            }
+
+            else -> {
+                LightColorScheme
+            }
         }
 
     MaterialExpressiveTheme(

@@ -15,12 +15,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButtonDefaults
-import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -32,14 +32,10 @@ import day.vitayuzu.neodb.ui.component.EntryTypeFilterChipsRow
 import day.vitayuzu.neodb.ui.component.SharedSearchFab
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
-import day.vitayuzu.neodb.ui.theme.kindColors
+import day.vitayuzu.neodb.ui.theme.statusColor
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.EntryType.book
-import day.vitayuzu.neodb.util.EntryType.game
 import day.vitayuzu.neodb.util.EntryType.movie
-import day.vitayuzu.neodb.util.EntryType.music
-import day.vitayuzu.neodb.util.EntryType.performance
-import day.vitayuzu.neodb.util.EntryType.podcast
 import day.vitayuzu.neodb.util.EntryType.tv
 import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.collections.immutable.persistentSetOf
@@ -97,10 +93,10 @@ private fun LibraryContent(
                     contentAlignment = Alignment.Center,
                 ) {
                     val color = listOf(
-                        MaterialTheme.colorScheme.kindColors(performance),
-                        MaterialTheme.colorScheme.kindColors(podcast),
-                        MaterialTheme.colorScheme.kindColors(music),
-                        MaterialTheme.colorScheme.kindColors(game),
+                        MaterialTheme.colorScheme.statusColor(ShelfType.wishlist),
+                        MaterialTheme.colorScheme.statusColor(ShelfType.progress),
+                        MaterialTheme.colorScheme.statusColor(ShelfType.complete),
+                        MaterialTheme.colorScheme.statusColor(ShelfType.dropped),
                     )
                     ConnectedButtonGroup(
                         optionNumber = ShelfType.entries.size,
@@ -109,9 +105,7 @@ private fun LibraryContent(
                         colors = { index ->
                             ToggleButtonDefaults.tonalToggleButtonColors(
                                 checkedContainerColor = color[index],
-                                checkedContentColor = MaterialTheme.colorScheme.contentColorFor(
-                                    color[index],
-                                ),
+                                checkedContentColor = Color.White,
                             )
                         },
                         optionContent = { index ->
