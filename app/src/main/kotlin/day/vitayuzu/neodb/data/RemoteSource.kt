@@ -13,6 +13,7 @@ import day.vitayuzu.neodb.data.schema.ResultSchema
 import day.vitayuzu.neodb.data.schema.SearchResult
 import day.vitayuzu.neodb.data.schema.TokenSchema
 import day.vitayuzu.neodb.data.schema.TrendingItemSchema
+import day.vitayuzu.neodb.data.schema.UserPreferenceSchema
 import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.util.APP_NAME
@@ -116,6 +117,10 @@ class RemoteSource @Inject constructor(
         api.fetchSelfAccountInfo {
             url.set("https", instanceUrl, path = "api/me")
         }
+    }
+
+    suspend fun fetchSelfPreference(): UserPreferenceSchema = withContext(dispatcher) {
+        api.fetchSelfPreference()
     }
 
     suspend fun fetchItemUserMark(uuid: String): MarkSchema = withContext(dispatcher) {
@@ -226,6 +231,9 @@ interface NeoDbApi {
     suspend fun fetchSelfAccountInfo(
         @ReqBuilder ext: HttpRequestBuilder.() -> Unit = {},
     ): UserSchema
+
+    @GET("me/preference")
+    suspend fun fetchSelfPreference(): UserPreferenceSchema
 
     @GET("me/shelf/item/{uuid}")
     suspend fun fetchItemUserMark(
