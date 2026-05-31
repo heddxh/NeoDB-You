@@ -14,9 +14,16 @@ import day.vitayuzu.neodb.data.OtherRepository
 import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,15 +35,28 @@ class SettingsViewModel @Inject constructor(
     private val appSettingsManager: AppSettingsManager,
 ) : ViewModel() {
 
+    private val checkUpdateTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val newVersionUrlFlow: StateFlow<String?> = merge(
+        appSettingsManager.appSettings
+            .map { it.checkUpdate }
+            .distinctUntilChanged()
+            .filter { it }, // false -> true
+        checkUpdateTrigger,
+    ).flatMapLatest {
+        otherRepo.checkUpdateFlow.map { it?.htmlUrl }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = null,
+    )
+
     val uiState: StateFlow<SettingsUiState> = combine(
         authRepo.accountStatus,
         appSettingsManager.appSettings,
-    ) { (isLogin, _, schema), appSettings ->
-        // Check update
-        if (appSettings.checkUpdate) {
-            checkUpdate()
-        }
-
+        newVersionUrlFlow,
+    ) { (isLogin, _, schema), appSettings, newVersionUrl ->
         if (isLogin && schema != null) {
             SettingsUiState(
                 isLogin = true,
@@ -44,11 +64,13 @@ class SettingsViewModel @Inject constructor(
                 avatar = schema.avatar,
                 username = schema.displayName,
                 fediAccount = schema.getFediAccount(),
+                newVersionUrl = newVersionUrl,
                 appSettings = appSettings,
             )
         } else {
             SettingsUiState(
                 isLogin = false,
+                newVersionUrl = newVersionUrl,
                 appSettings = appSettings,
             )
         }
@@ -62,14 +84,6 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             authRepo.revoke()
             Log.d("SettingsViewModel", "Logout successfully")
-        }
-    }
-
-    fun checkUpdate() {
-        viewModelScope.launch {
-            otherRepo.checkUpdateFlow.collect {
-                uiState.value.copy(newVersionUrl = it?.htmlUrl)
-            }
         }
     }
 
@@ -93,6 +107,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             appSettingsManager.store(HOME_TRENDING_TYPES, types)
         }
+    }
+
+    fun checkUpdate() {
+        checkUpdateTrigger.tryEmit(Unit)
     }
 
     private companion object {

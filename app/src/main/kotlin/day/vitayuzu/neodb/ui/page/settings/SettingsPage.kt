@@ -77,6 +77,7 @@ import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.ShelfType
+import day.vitayuzu.neodb.util.toHttpUri
 
 @Composable
 fun SettingsPage(
@@ -199,7 +200,7 @@ private fun UserProfilePart(
             ) {
                 // Account Settings
                 Button(
-                    onClick = { intent.launchUrl(context, instanceUrl.toUri()) },
+                    onClick = { intent.launchUrl(context, instanceUrl.toUri().toHttpUri()) },
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors().copy(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -382,7 +383,7 @@ private fun AboutCard(
                 },
                 modifier = Modifier.clickable {
                     if (newVersionUrl != null) {
-                        intent.launchUrl(context, newVersionUrl.toUri())
+                        intent.launchUrl(context, newVersionUrl.toUri().toHttpUri())
                     } else {
                         checkUpdate()
                     }
