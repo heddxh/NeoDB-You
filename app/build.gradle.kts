@@ -6,7 +6,6 @@ import kotlin.io.encoding.Base64
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.ktorfit)
@@ -15,35 +14,20 @@ plugins {
     alias(libs.plugins.aboutlibraries.android)
 }
 
-private val isInIdeaSync
-    get() = System.getProperty("idea.sync.active").toBoolean()
-
 kotlin {
     compilerOptions {
         jvmToolchain(21)
         languageVersion = KotlinVersion.KOTLIN_2_3
         apiVersion = KotlinVersion.KOTLIN_2_3
-        progressiveMode = true
         jvmTarget = JvmTarget.JVM_21
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
         freeCompilerArgs.add("-Xexplicit-backing-fields")
-        if (isInIdeaSync) {
-            // WORKAROUND: https://youtrack.jetbrains.com/issue/KT-83265/How-to-disable-Explicit-Backing-Fields-compiler-warning
-            freeCompilerArgs.add("-XXLanguage:+ExplicitBackingFields")
-        }
-        // WORKAROUND: https://issuetracker.google.com/issues/430526759
-        freeCompilerArgs.add("-Xlambdas=class")
     }
-}
-
-ktorfit {
-    // WORKAROUND: https://github.com/Foso/Ktorfit/issues/1010
-    compilerPluginVersion = "2.3.3"
 }
 
 android {
     namespace = "day.vitayuzu.neodb"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = android.namespace
@@ -76,6 +60,7 @@ android {
         register("fastRelease") {
             initWith(getByName("release"))
             isMinifyEnabled = false
+            //noinspection NotShrinkingResources
             isShrinkResources = false
             lint.checkReleaseBuilds = false
         }
@@ -134,9 +119,10 @@ dependencies {
     // Kotlin
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.datetime)
+    implementation(libs.kotlinx.collection.immutable)
     // Hilt
-    // WORKAROUND: https://github.com/google/dagger/issues/5001
-    ksp("org.jetbrains.kotlin:kotlin-metadata-jvm:2.3.0")
+    // WORKAROUND: https://github.com/google/dagger/issues/5180
+    ksp("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
     implementation(libs.google.hilt.android)
     ksp(libs.google.hilt.compiler)
     implementation(libs.androidx.hilt.viewmodel)
