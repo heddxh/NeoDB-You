@@ -5,6 +5,7 @@ import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.data.schema.detail.EditionSchema
 import day.vitayuzu.neodb.data.schema.detail.GameSchema
 import day.vitayuzu.neodb.data.schema.detail.MovieSchema
+import day.vitayuzu.neodb.data.schema.detail.PerformanceProductionSchema
 import day.vitayuzu.neodb.data.schema.detail.PerformanceSchema
 import day.vitayuzu.neodb.data.schema.detail.PodcastSchema
 import day.vitayuzu.neodb.data.schema.detail.TVSeasonSchema
@@ -78,6 +79,13 @@ fun DetailSchema.toDetail(): Detail {
 
         is PerformanceSchema -> buildList {
             addAll(genre)
+            director.firstOrNull()?.let { add(it) }
+            playwright.firstOrNull()?.let { add(it) }
+            // Take up to 5 people
+            actor.take(5).forEach { add(it.name) }
+        }
+
+        is PerformanceProductionSchema -> buildList {
             director.firstOrNull()?.let { add(it) }
             playwright.firstOrNull()?.let { add(it) }
             // Take up to 5 people

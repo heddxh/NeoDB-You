@@ -31,6 +31,7 @@ data class TVShowSchema(
     @SerialName("orig_title") val origTitle: String?,
     val director: List<String> = emptyList(),
     val playwright: List<String> = emptyList(),
+    @Serializable(with = ActorSerializer::class)
     val actor: List<String> = emptyList(),
     val genre: List<String> = emptyList(),
     val language: List<String> = emptyList(),

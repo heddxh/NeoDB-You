@@ -5,8 +5,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("Performance")
-data class PerformanceSchema(
+@SerialName("PerformanceProduction")
+data class PerformanceProductionSchema(
     // Common fields
     override val id: String,
     override val type: String,
@@ -28,7 +28,6 @@ data class PerformanceSchema(
     override val tags: List<String>?,
     // Specific fields
     @SerialName("orig_title") val origTitle: String?,
-    val genre: List<String> = emptyList(),
     val language: List<String> = emptyList(),
     @SerialName("opening_date") val openingDate: String?,
     @SerialName("closing_date") val closingDate: String?,
@@ -42,9 +41,3 @@ data class PerformanceSchema(
     val crew: List<CrewMemberSchema> = emptyList(),
     @SerialName("official_site") val officialSite: String?,
 ) : DetailSchema
-
-@Serializable
-data class CrewMemberSchema(
-    val name: String,
-    val role: String?,
-)
