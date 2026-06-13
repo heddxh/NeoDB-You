@@ -25,9 +25,6 @@ import kotlinx.datetime.number
 import kotlinx.datetime.todayIn
 import java.util.GregorianCalendar
 import javax.inject.Inject
-import kotlin.collections.contains
-import kotlin.collections.remove
-import kotlin.sequences.contains
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -79,9 +76,9 @@ class LibraryViewModel @Inject constructor(
             it.copy(
                 selectedEntryTypes = (
                     if (which in it.selectedEntryTypes) {
-                        it.selectedEntryTypes.remove(which)
+                        it.selectedEntryTypes.removing(which)
                     } else {
-                        it.selectedEntryTypes.add(which)
+                        it.selectedEntryTypes.adding(which)
                     }
                 ),
             )
