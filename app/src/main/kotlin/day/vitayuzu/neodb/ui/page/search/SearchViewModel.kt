@@ -21,30 +21,33 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     val repository: NeoDBRepository,
-    val authRepository: AuthRepository,
+    authRepository: AuthRepository,
 ) : ViewModel() {
     val searchResult = mutableStateListOf<Entry>()
-    var isSearching by mutableStateOf(false)
+    private val uuids = mutableSetOf<String>()
 
-    private var previousQuery = ""
+    var isSearching by mutableStateOf(false)
     private var searchJob: Job? = null
 
     val instanceName = authRepository.accountStatus.value.instanceUrl
         .ifEmpty { BASE_URL }
 
     fun onSearch(query: String) {
-        if (query == previousQuery) return
-
-        isSearching = true
         searchJob?.cancel()
-        previousQuery = query
         searchResult.clear()
+        uuids.clear()
+        isSearching = true
         searchJob = repository
             .searchWithKeyword(query)
             .map { result ->
-                result.data.map { Entry(it) }
-            }.onEach { searchResult.addAll(it) }
-            .onCompletion { isSearching = false }
-            .launchIn(viewModelScope)
+                result.data.mapNotNull {
+                    // Search result may contain duplicated entries among different pages
+                    if (uuids.add(it.uuid)) Entry(it) else null
+                }
+            }.onEach {
+                searchResult.addAll(it)
+            }.onCompletion {
+                isSearching = false
+            }.launchIn(viewModelScope)
     }
 }
