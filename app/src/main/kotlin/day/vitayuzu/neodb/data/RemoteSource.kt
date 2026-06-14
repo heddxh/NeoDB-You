@@ -13,7 +13,7 @@ import day.vitayuzu.neodb.data.schema.ResultSchema
 import day.vitayuzu.neodb.data.schema.SearchResult
 import day.vitayuzu.neodb.data.schema.TokenSchema
 import day.vitayuzu.neodb.data.schema.TrendingItemSchema
-import day.vitayuzu.neodb.data.schema.UserPreferenceSchema
+import day.vitayuzu.neodb.data.schema.UserPreference
 import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.util.APP_NAME
@@ -119,7 +119,7 @@ class RemoteSource @Inject constructor(
         }
     }
 
-    suspend fun fetchSelfPreference(): UserPreferenceSchema = withContext(dispatcher) {
+    suspend fun fetchSelfPreference(): UserPreference = withContext(dispatcher) {
         api.fetchSelfPreference()
     }
 
@@ -233,7 +233,7 @@ interface NeoDbApi {
     ): UserSchema
 
     @GET("me/preference")
-    suspend fun fetchSelfPreference(): UserPreferenceSchema
+    suspend fun fetchSelfPreference(): UserPreference
 
     @GET("me/shelf/item/{uuid}")
     suspend fun fetchItemUserMark(

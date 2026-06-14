@@ -3,9 +3,10 @@ package day.vitayuzu.neodb.data.schema
 import day.vitayuzu.neodb.util.EntryType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.util.Locale
 
 @Serializable
-data class UserPreferenceSchema(
+data class UserPreference(
     @SerialName("default_crosspost")
     val crossPost: Boolean,
     @SerialName("default_visibility")
@@ -15,11 +16,12 @@ data class UserPreferenceSchema(
     val language: String,
 ) {
     companion object {
-        fun getDefault(language: String) = UserPreferenceSchema(
-            crossPost = true,
-            visibility = 0,
-            hiddenSearchCategories = emptyList(),
-            language = language,
-        )
+        val Default: UserPreference
+            get() = UserPreference(
+                crossPost = true,
+                visibility = 0,
+                hiddenSearchCategories = emptyList(),
+                language = Locale.getDefault().toLanguageTag(),
+            )
     }
 }
