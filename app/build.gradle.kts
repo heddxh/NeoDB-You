@@ -98,6 +98,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.slf4j.android)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.core.splashscreen)
     // Jetpack Compose
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
