@@ -41,7 +41,7 @@ class UserPreferenceManager @Inject constructor(
             }.launchIn(scope)
     }
 
-    private suspend fun refresh() {
+    suspend fun refresh() {
         runCatching {
             Log.d("UserPreferenceRepository", "Start fetching user preference")
             preference.update { it.copy(loading = true) }

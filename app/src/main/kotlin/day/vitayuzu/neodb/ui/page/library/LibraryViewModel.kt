@@ -86,7 +86,7 @@ class LibraryViewModel @Inject constructor(
                     } else {
                         it.selectedEntryTypes.adding(which)
                     }
-                ),
+                    ),
             )
         }
         refreshDisplayedMarks()

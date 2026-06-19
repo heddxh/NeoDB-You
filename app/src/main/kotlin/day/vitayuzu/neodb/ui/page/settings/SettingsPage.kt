@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -48,6 +49,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -87,45 +89,52 @@ fun SettingsPage(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Scaffold(modifier, bottomBar = bottomBar) {
-        // WORKAROUND: Only add 8dp padding to UserProfilePart to avoid left button wrapping in English locale
-        Column(
+    Scaffold(modifier, bottomBar = bottomBar) { paddingValues ->
+        PullToRefreshBox(
+            isRefreshing = uiState.refreshing,
+            onRefresh = viewModel::refresh,
             modifier = Modifier
-                .padding(it)
-                .consumeWindowInsets(it)
-                .padding(horizontal = 8.dp)
-                .verticalScroll(rememberScrollState()),
+                .padding(paddingValues)
+                .consumeWindowInsets(paddingValues)
+                .fillMaxSize(),
         ) {
-            if (uiState.isLogin) { // logged in
-                UserProfilePart(
-                    avatar = uiState.avatar,
-                    username = uiState.username,
-                    fediAccount = uiState.fediAccount,
-                    modifier = Modifier.fillMaxWidth(),
-                    logOut = viewModel::logout,
-                    instanceUrl = uiState.url,
+            // WORKAROUND: Only add 8dp padding to UserProfilePart to avoid left button wrapping in English locale
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                if (uiState.isLogin) { // logged in
+                    UserProfilePart(
+                        avatar = uiState.avatar,
+                        username = uiState.username,
+                        fediAccount = uiState.fediAccount,
+                        modifier = Modifier.fillMaxWidth(),
+                        logOut = viewModel::logout,
+                        instanceUrl = uiState.url,
+                    )
+                } else { // need login
+                    LoginPart(Modifier.padding(horizontal = 8.dp))
+                }
+                SettingsCard(
+                    Modifier.padding(horizontal = 8.dp),
+                    settings = uiState.appSettings,
+                    onChangeShelfType = viewModel::onChangeShelfType,
+                    onChangeEntryType = viewModel::onChangeEntryTypes,
+                    onToggleCheckUpdate = viewModel::onToggleCheckUpdate,
                 )
-            } else { // need login
-                LoginPart(Modifier.padding(horizontal = 8.dp))
+                AboutCard(
+                    Modifier.padding(horizontal = 8.dp),
+                    newVersionUrl = uiState.newVersionUrl,
+                    checkUpdate = viewModel::checkUpdate,
+                )
+                ExperimentalCard(
+                    Modifier.padding(horizontal = 8.dp).padding(bottom = 8.dp),
+                    appSettings = uiState.appSettings,
+                    onClearAuthData = viewModel::logout,
+                    onToggleVerboseLog = viewModel::onToggleVerboseLog,
+                )
             }
-            SettingsCard(
-                Modifier.padding(horizontal = 8.dp),
-                settings = uiState.appSettings,
-                onChangeShelfType = viewModel::onChangeShelfType,
-                onChangeEntryType = viewModel::onChangeEntryTypes,
-                onToggleCheckUpdate = viewModel::onToggleCheckUpdate,
-            )
-            AboutCard(
-                Modifier.padding(horizontal = 8.dp),
-                newVersionUrl = uiState.newVersionUrl,
-                checkUpdate = viewModel::checkUpdate,
-            )
-            ExperimentalCard(
-                Modifier.padding(horizontal = 8.dp).padding(bottom = 8.dp),
-                appSettings = uiState.appSettings,
-                onClearAuthData = viewModel::logout,
-                onToggleVerboseLog = viewModel::onToggleVerboseLog,
-            )
         }
     }
 }

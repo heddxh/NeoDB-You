@@ -138,6 +138,7 @@ class AuthRepository @Inject constructor(
                 AccountStatus(
                     isLogin = true,
                     instanceUrl = instanceUrl,
+                    account = it.account,
                 )
             }
             runCatching {
@@ -150,6 +151,7 @@ class AuthRepository @Inject constructor(
                         account = userSchema,
                     )
                 }
+                Log.d("AuthRepository", "End update account status")
             }.onFailure {
                 Log.e("AuthRepository", "Failed to fetch self account info", it)
             }
