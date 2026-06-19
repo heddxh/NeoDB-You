@@ -15,13 +15,22 @@ plugins {
 }
 
 kotlin {
+    val kotlin = libs.versions.kotlin
+        .get()
+        .substring(0..2)
     compilerOptions {
         jvmToolchain(21)
-        languageVersion = KotlinVersion.KOTLIN_2_3
-        apiVersion = KotlinVersion.KOTLIN_2_3
+        languageVersion = KotlinVersion.fromVersion(kotlin)
+        apiVersion = KotlinVersion.fromVersion(kotlin)
         jvmTarget = JvmTarget.JVM_21
-        freeCompilerArgs.add("-Xannotation-default-target=param-property")
-        freeCompilerArgs.add("-Xexplicit-backing-fields")
+        with(freeCompilerArgs) {
+            add("-Xname-based-destructuring=name-mismatch")
+            if (System.getProperty("idea.sync.active").toBoolean()) {
+                add("-Xannotation-default-target=param-property")
+                // WORKAROUND: https://youtrack.jetbrains.com/issue/IDEA-390361/Explicit-backing-fields-IDE-editor-falsely-requires-Xexplicit-backing-fields-on-Kotlin-2.4.0
+                add("-Xexplicit-backing-fields")
+            }
+        }
     }
 }
 
