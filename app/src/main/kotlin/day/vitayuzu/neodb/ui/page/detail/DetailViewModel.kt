@@ -7,6 +7,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import day.vitayuzu.neodb.data.NeoDBRepository
+import day.vitayuzu.neodb.data.UserPreferenceManager
 import day.vitayuzu.neodb.data.schema.MarkInSchema
 import day.vitayuzu.neodb.ui.model.Detail
 import day.vitayuzu.neodb.ui.model.Mark
@@ -28,6 +29,7 @@ class DetailViewModel @AssistedInject constructor(
     @Assisted val type: EntryType,
     @Assisted val uuid: String, // FIXME: tv is kinds of confusing, should be season instead of show
     private val repo: NeoDBRepository,
+    private val userPreferenceManager: UserPreferenceManager,
 ) : ViewModel() {
 
     @AssistedFactory
@@ -38,7 +40,7 @@ class DetailViewModel @AssistedInject constructor(
     val uiState: StateFlow<DetailUiState>
         field = MutableStateFlow(DetailUiState())
 
-    // Keep reference to the job loading reviews to able to cancel it when refreshing again.
+    // Keep reference to the job loading reviews to be able to cancel it when refreshing again.
     private var loadingReviewsJob: Job? = null
 
     init {
@@ -50,7 +52,13 @@ class DetailViewModel @AssistedInject constructor(
     private fun refreshDetail() {
         viewModelScope.launch {
             repo.fetchDetail(type, uuid).collect { detailSchema ->
-                uiState.update { it.copy(detail = detailSchema.toDetail()) }
+                uiState.update {
+                    it.copy(
+                        detail = detailSchema.toDetail(
+                            userPreferenceManager.preference.value.language,
+                        ),
+                    )
+                }
             }
         }
     }
@@ -64,7 +72,14 @@ class DetailViewModel @AssistedInject constructor(
                     .onEmpty {
                         uiState.update { it.copy(mark = null) }
                     }.collect { markSchema ->
-                        uiState.update { it.copy(mark = Mark(markSchema)) }
+                        uiState.update {
+                            it.copy(
+                                mark = Mark(
+                                    markSchema,
+                                    userPreferenceManager.preference.value.language,
+                                ),
+                            )
+                        }
                     }
             }.invokeOnCompletion {
                 uiState.update { it.copy(isLoadingMark = false) }

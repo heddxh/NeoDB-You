@@ -1,9 +1,9 @@
 package day.vitayuzu.neodb.ui.model
 
 import day.vitayuzu.neodb.data.schema.EntrySchema
-import day.vitayuzu.neodb.data.schema.TrendingItemSchema
 import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.util.EntryType
+import day.vitayuzu.neodb.util.display
 
 /**
  * Entry represents a book/movie/tv etc, used for a card.
@@ -24,32 +24,21 @@ data class Entry(
     val rating: Float?,
     val uuid: String,
 ) {
-    constructor(schema: EntrySchema) : this(
-        title = schema.displayTitle,
+    constructor(schema: EntrySchema, preferredLang: String) : this(
+        title = schema.localizedTitle.display(preferredLang) ?: schema.title,
         category = EntryType.valueOf(schema.category),
         url = schema.url,
-        des = schema.description,
+        des = schema.localizedDescription.display(preferredLang) ?: schema.description,
         coverUrl = schema.coverImageUrl,
         rating = schema.rating,
         uuid = schema.uuid,
     )
 
-    // TODO: merge into EntrySchema
-    constructor(schema: TrendingItemSchema) : this(
-        title = schema.displayTitle,
-        category = EntryType.valueOf(schema.category),
-        url = schema.url,
-        des = schema.description,
-        coverUrl = schema.coverImageUrl,
-        rating = schema.rating,
-        uuid = schema.uuid,
-    )
-
-    constructor(schema: DetailSchema) : this(
-        title = schema.displayTitle,
+    constructor(schema: DetailSchema, preferredLang: String) : this(
+        title = schema.localizedTitle.display(preferredLang) ?: schema.title,
         category = schema.category,
         url = schema.url,
-        des = schema.description.toString(),
+        des = schema.localizedDescription.display(preferredLang) ?: schema.description,
         coverUrl = schema.coverImageUrl,
         rating = schema.rating,
         uuid = schema.uuid,

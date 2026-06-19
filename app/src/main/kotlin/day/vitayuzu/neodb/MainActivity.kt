@@ -31,7 +31,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import day.vitayuzu.neodb.data.AppSettingsManager
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.ONBOARDING_COMPLETED
 import day.vitayuzu.neodb.data.AuthRepository
-import day.vitayuzu.neodb.data.UserPreferenceManager
 import day.vitayuzu.neodb.ui.component.SharedBottomBar
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
@@ -60,8 +59,6 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject lateinit var authRepository: AuthRepository
-
-    @Inject lateinit var userPreferenceManager: UserPreferenceManager
 
     @Inject lateinit var appSettingsManager: AppSettingsManager
 

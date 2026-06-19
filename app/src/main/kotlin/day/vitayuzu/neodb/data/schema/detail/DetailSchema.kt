@@ -29,7 +29,7 @@ sealed interface DetailSchema {
     val url: String
     val category: EntryType
     val title: String
-    val description: String?
+    val description: String
     val rating: Float?
     val tags: List<String>?
 
@@ -37,13 +37,11 @@ sealed interface DetailSchema {
 
     @SerialName("parent_uuid") val parentUuid: String?
 
-    @SerialName("display_title") val displayTitle: String
-
     @SerialName("external_resources") val externalResources: List<ExternalResource>?
 
-    @SerialName("localized_title") val localizedTitle: List<LocalizedData>?
+    @SerialName("localized_title") val localizedTitle: List<LocalizedData>
 
-    @SerialName("localized_description") val localizedDescription: List<LocalizedData>?
+    @SerialName("localized_description") val localizedDescription: List<LocalizedData>
 
     @SerialName("cover_image_url") val coverImageUrl: String?
 

@@ -5,7 +5,6 @@ import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 /**
@@ -22,8 +21,8 @@ data class Mark(
     val rating: Int?,
     val comment: String?,
 ) {
-    @OptIn(ExperimentalTime::class) constructor(scheme: MarkSchema) : this(
-        entry = Entry(scheme.entrySchema),
+    constructor(scheme: MarkSchema, preferredLang: String) : this(
+        entry = Entry(scheme.entrySchema, preferredLang),
         shelfType = ShelfType.valueOf(scheme.shelfType),
         date =
             Instant

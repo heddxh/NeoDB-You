@@ -2,13 +2,16 @@ package day.vitayuzu.neodb.data
 
 import android.util.Log
 import day.vitayuzu.neodb.AppScope
-import day.vitayuzu.neodb.data.schema.UserPreference
+import day.vitayuzu.neodb.data.schema.UserPreferenceSchema
+import day.vitayuzu.neodb.util.EntryType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,7 +27,7 @@ class UserPreferenceManager @Inject constructor(
 ) {
 
     val preference: StateFlow<UserPreference>
-        field = MutableStateFlow(UserPreference.Default)
+        field = MutableStateFlow(UserPreference())
 
     init {
         authRepo.accountStatus
@@ -41,16 +44,34 @@ class UserPreferenceManager @Inject constructor(
     private suspend fun refresh() {
         runCatching {
             Log.d("UserPreferenceRepository", "Start fetching user preference")
+            preference.update { it.copy(loading = true) }
             remoteSource.fetchSelfPreference()
         }.onSuccess { schema ->
             Log.d("UserPreferenceRepository", "End fetching user preference:$schema")
-            preference.value = schema
+            preference.value = UserPreference(schema)
         }.onFailure { error ->
             Log.e("UserPreferenceRepository", "Error fetching user preference: $error")
         }
+        preference.update { it.copy(loading = false) }
     }
 
     private fun reset() {
-        preference.value = UserPreference.Default
+        preference.value = UserPreference()
     }
+}
+
+data class UserPreference(
+    val loading: Boolean = false,
+    val crossPost: Boolean = true,
+    val visibility: Int = 0,
+    val hiddenSearchCategories: List<EntryType> = emptyList(),
+    val language: String = Locale.getDefault().toLanguageTag(),
+) {
+    constructor(schema: UserPreferenceSchema) : this(
+        loading = false,
+        crossPost = schema.crossPost,
+        visibility = schema.visibility,
+        hiddenSearchCategories = schema.hiddenSearchCategories,
+        language = schema.language,
+    )
 }

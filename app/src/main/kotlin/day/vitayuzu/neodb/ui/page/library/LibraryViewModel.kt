@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import day.vitayuzu.neodb.data.AppSettingsManager
 import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
+import day.vitayuzu.neodb.data.UserPreferenceManager
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
@@ -33,6 +34,7 @@ import kotlin.time.ExperimentalTime
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     private val neoDBRepository: NeoDBRepository,
+    private val userPreferenceManager: UserPreferenceManager,
     authRepository: AuthRepository,
     settingsManager: AppSettingsManager,
 ) : ViewModel() {
@@ -62,8 +64,12 @@ class LibraryViewModel @Inject constructor(
         marks.clear()
         neoDBRepository.userShelf
             .onEach { pagedMarkSchemaFlow ->
-                marks += pagedMarkSchemaFlow.data?.map { Mark(it) }?.sortedByDescending { it.date }
-                    ?: emptyList()
+                marks +=
+                    pagedMarkSchemaFlow.data
+                        ?.map {
+                            Mark(it, userPreferenceManager.preference.value.language)
+                        }?.sortedByDescending { it.date }
+                        ?: emptyList()
             }.onCompletion {
                 refreshDisplayedMarks()
                 generateHeatMap()
@@ -133,11 +139,11 @@ class LibraryViewModel @Inject constructor(
                     mark.date.month.number - 1, // GregorianCalendar month is 0-based
                     mark.date.day,
                 ).get(GregorianCalendar.WEEK_OF_YEAR)
-            }.mapValues { (weekIndex, marks) ->
+            }.mapValues { [weekIndex, marks] ->
                 // Construct a week
                 return@mapValues marks
                     .groupBy { it.date } // Get marks with same day
-                    .map { (_, sameDayMarks) ->
+                    .map { [_, sameDayMarks] ->
                         HeatMapDayData(weekIndex, sameDayMarks)
                     }
             }

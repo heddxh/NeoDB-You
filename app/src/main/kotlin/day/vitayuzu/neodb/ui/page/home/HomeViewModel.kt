@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import day.vitayuzu.neodb.data.AppSettingsManager
 import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
+import day.vitayuzu.neodb.data.UserPreferenceManager
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.util.EntryType
 import kotlinx.coroutines.Job
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -28,6 +30,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val neoDBRepository: NeoDBRepository,
+    private val userPreferenceManager: UserPreferenceManager,
     settingsManager: AppSettingsManager,
     authRepository: AuthRepository,
 ) : ViewModel() {
@@ -40,7 +43,6 @@ class HomeViewModel @Inject constructor(
     private var enabledTrendingTypes: List<EntryType> = EntryType.entries.take(6)
 
     init {
-        updateTrending()
         // Refresh data when app settings change
         settingsManager.appSettings
             .map { it.homeTrendingTypes }
@@ -57,23 +59,28 @@ class HomeViewModel @Inject constructor(
 
     fun updateTrending() {
         viewModelScope.launch {
+            // Since it is the first screen when entering,
+            // wait until finish loading user preference
+            userPreferenceManager.preference.first { !it.loading }
+
             refreshJob?.cancelAndJoin()
             // Should after job cancellation since it will toggle it to false
             uiState.update { it.copy(isLoading = true) }
             refreshJob = viewModelScope
                 .launch {
-                    val jobs = enabledTrendingTypes.map {
+                    val jobs = enabledTrendingTypes.map { entryType ->
                         async {
-                            (
-                                neoDBRepository
-                                    .fetchTrendingByEntryType(it)
-                                    .firstOrNull() ?: emptyList()
-                            ).map { Entry(it) }
+                            neoDBRepository
+                                .fetchTrendingByEntryType(entryType)
+                                .firstOrNull()
+                                ?.map {
+                                    Entry(it, userPreferenceManager.preference.value.language)
+                                } ?: emptyList()
                         }
                     }
                     uiState.update {
                         it.copy(
-                            data = enabledTrendingTypes.zip(jobs.awaitAll()).toMap(),
+                            data = (enabledTrendingTypes zip jobs.awaitAll()).toMap(),
                         )
                     }
                 }.apply {

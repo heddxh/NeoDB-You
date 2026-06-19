@@ -2,6 +2,7 @@ package day.vitayuzu.neodb.data
 
 import day.vitayuzu.neodb.AppIoDispatcher
 import day.vitayuzu.neodb.data.schema.AuthClientIdentify
+import day.vitayuzu.neodb.data.schema.EntrySchema
 import day.vitayuzu.neodb.data.schema.GithubLatestReleaseSchema
 import day.vitayuzu.neodb.data.schema.InstanceSchema
 import day.vitayuzu.neodb.data.schema.MarkInSchema
@@ -12,8 +13,7 @@ import day.vitayuzu.neodb.data.schema.PublicInstanceSchema
 import day.vitayuzu.neodb.data.schema.ResultSchema
 import day.vitayuzu.neodb.data.schema.SearchResult
 import day.vitayuzu.neodb.data.schema.TokenSchema
-import day.vitayuzu.neodb.data.schema.TrendingItemSchema
-import day.vitayuzu.neodb.data.schema.UserPreference
+import day.vitayuzu.neodb.data.schema.UserPreferenceSchema
 import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.util.APP_NAME
@@ -90,7 +90,7 @@ class RemoteSource @Inject constructor(
             api.fetchMyShelf(type, page)
         }
 
-    suspend fun fetchTrending(type: EntryType): List<TrendingItemSchema> = withContext(dispatcher) {
+    suspend fun fetchTrending(type: EntryType): List<EntrySchema> = withContext(dispatcher) {
         api.fetchTrending(type)
     }
 
@@ -119,7 +119,7 @@ class RemoteSource @Inject constructor(
         }
     }
 
-    suspend fun fetchSelfPreference(): UserPreference = withContext(dispatcher) {
+    suspend fun fetchSelfPreference(): UserPreferenceSchema = withContext(dispatcher) {
         api.fetchSelfPreference()
     }
 
@@ -212,7 +212,7 @@ interface NeoDbApi {
     @GET("trending/{type}")
     suspend fun fetchTrending(
         @Path("type") type: EntryType,
-    ): List<TrendingItemSchema>
+    ): List<EntrySchema>
 
     @GET("{type}/{uuid}")
     suspend fun fetchDetail(
@@ -233,7 +233,7 @@ interface NeoDbApi {
     ): UserSchema
 
     @GET("me/preference")
-    suspend fun fetchSelfPreference(): UserPreference
+    suspend fun fetchSelfPreference(): UserPreferenceSchema
 
     @GET("me/shelf/item/{uuid}")
     suspend fun fetchItemUserMark(

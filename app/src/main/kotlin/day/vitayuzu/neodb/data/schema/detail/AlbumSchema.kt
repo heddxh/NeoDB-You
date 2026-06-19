@@ -15,12 +15,13 @@ data class AlbumSchema(
     @SerialName("api_url") override val apiUrl: String,
     override val category: EntryType,
     @SerialName("parent_uuid") override val parentUuid: String?,
-    @SerialName("display_title") override val displayTitle: String,
     @SerialName("external_resources") override val externalResources: List<ExternalResource>?,
     override val title: String,
-    override val description: String?,
-    @SerialName("localized_title") override val localizedTitle: List<LocalizedData>?,
-    @SerialName("localized_description") override val localizedDescription: List<LocalizedData>?,
+    override val description: String = "",
+    @SerialName("localized_title")
+    override val localizedTitle: List<LocalizedData> = emptyList(),
+    @SerialName("localized_description")
+    override val localizedDescription: List<LocalizedData> = emptyList(),
     @SerialName("cover_image_url") override val coverImageUrl: String?,
     override val rating: Float?,
     @SerialName("rating_count") override val ratingCount: Int?,

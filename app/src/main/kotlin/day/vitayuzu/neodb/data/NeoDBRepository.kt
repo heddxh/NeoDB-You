@@ -1,10 +1,10 @@
 package day.vitayuzu.neodb.data
 
 import android.util.Log
+import day.vitayuzu.neodb.data.schema.EntrySchema
 import day.vitayuzu.neodb.data.schema.HasPages
 import day.vitayuzu.neodb.data.schema.MarkInSchema
 import day.vitayuzu.neodb.data.schema.ResultSchema
-import day.vitayuzu.neodb.data.schema.TrendingItemSchema
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,7 +27,7 @@ class NeoDBRepository @Inject constructor(private val remoteSource: RemoteSource
             fetchMyShelfByShelfType(it)
         }
 
-    fun fetchTrendingByEntryType(type: EntryType): Flow<List<TrendingItemSchema>> = flow {
+    fun fetchTrendingByEntryType(type: EntryType): Flow<List<EntrySchema>> = flow {
         emit(remoteSource.fetchTrending(type))
     }.log(type.toString())
 
