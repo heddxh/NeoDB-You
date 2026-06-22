@@ -21,7 +21,7 @@ data class EntrySchema(
     val rating: Float? = null,
     @SerialName("rating_count") val ratingCount: Int? = null,
     @SerialName("rating_distribution") val ratingDistribution: List<Int> = listOf(),
-    val tags: List<String> = listOf(),
+    val tags: List<String>? = listOf(),
     val title: String = "",
     val type: String = "",
     val url: String = "",
