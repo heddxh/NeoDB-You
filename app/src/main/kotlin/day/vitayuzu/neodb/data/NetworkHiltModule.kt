@@ -59,6 +59,7 @@ object NetworkHiltModule {
                             ignoreUnknownKeys = true
                             isLenient = true // Allow unquoted string
                             explicitNulls = false // Allow missing nullable fields
+                            coerceInputValues = true // Allow to use default value when null
                         },
                     )
                 }
