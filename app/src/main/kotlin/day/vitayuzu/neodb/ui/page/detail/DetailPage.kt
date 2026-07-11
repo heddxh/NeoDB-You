@@ -104,6 +104,7 @@ import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.ui.theme.kindColors
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.sharedBoundsTransition
+import day.vitayuzu.neodb.util.toReadableString
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
@@ -299,7 +300,6 @@ private fun DetailContent(
             items = postList.take(if (showAllReviews) Int.MAX_VALUE else lessReviewsNumber),
             key = { it.hashCode() },
         ) {
-            // TODO: show human readable date, see [Instant.toReadableString]
             PostCard(
                 avatarUrl = it.avatar,
                 username = it.username,
@@ -308,7 +308,7 @@ private fun DetailContent(
                 date = it.date
                     .toLocalDateTime(TimeZone.currentSystemDefault())
                     .date
-                    .toString(),
+                    .toReadableString(),
                 modifier = Modifier.animateItem(),
             )
             HorizontalDivider(thickness = 0.2.dp)
