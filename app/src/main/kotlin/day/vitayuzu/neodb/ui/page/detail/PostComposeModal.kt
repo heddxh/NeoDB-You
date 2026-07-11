@@ -2,7 +2,6 @@ package day.vitayuzu.neodb.ui.page.detail
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldLineLimits
-import androidx.compose.foundation.text.input.placeCursorAtEnd
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -25,6 +23,8 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,9 +41,10 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -66,9 +67,12 @@ import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.ShelfType
 import day.vitayuzu.neodb.util.Visibility
-import day.vitayuzu.neodb.util.toDateString
-import day.vitayuzu.neodb.util.toInstant
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.todayIn
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -76,12 +80,10 @@ import kotlin.time.Instant
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun PostComposeModal(
-    postDate: Instant,
     modifier: Modifier = Modifier,
     originMark: Mark? = null,
     onDismiss: () -> Unit = {},
     onSend: (MarkInSchema) -> Unit = {},
-    onShowDatePicker: () -> Unit = {},
 ) {
     // Avoid last row to be covered by navigation bar when open more settings
     val sheetState = rememberBottomSheetState(
@@ -95,7 +97,7 @@ fun PostComposeModal(
     ) {
         val scope = rememberCoroutineScope()
         ComposeModalContent(
-            postDate = originMark?.date?.toInstant() ?: postDate,
+            modifier = Modifier.safeContentPadding(),
             originMark = originMark,
             onSend = {
                 onSend(it)
@@ -104,8 +106,6 @@ fun PostComposeModal(
                     onDismiss()
                 }
             },
-            onShowDatePicker = onShowDatePicker,
-            modifier = Modifier.safeContentPadding(),
         )
     }
 }
@@ -113,37 +113,49 @@ fun PostComposeModal(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 private fun ComposeModalContent(
-    postDate: Instant,
     modifier: Modifier = Modifier,
     originMark: Mark? = null,
     onSend: (MarkInSchema) -> Unit = {},
-    onShowDatePicker: () -> Unit = {},
 ) {
     val shelfTypes = ShelfType.entries
-    var selectedShelfTypeIndex by rememberSaveable { mutableIntStateOf(2) }
-
-    val commentState = rememberTextFieldState()
-    var ratingSliderValue by rememberSaveable { mutableFloatStateOf(0f) }
 
     var isShowMoreSettings by rememberSaveable { mutableStateOf(false) }
+    var isShowDatePicker by rememberSaveable { mutableStateOf(false) }
+
+    var selectedShelfTypeIndex by rememberSaveable {
+        mutableIntStateOf(originMark?.shelfType?.ordinal ?: 2)
+    }
+
+    val commentState = rememberTextFieldState(originMark?.comment ?: "")
+
+    var ratingSliderValue by rememberSaveable {
+        mutableFloatStateOf(
+            originMark?.rating?.toFloat() ?: 0f,
+        )
+    }
+
+    var postDate by rememberSaveable {
+        mutableStateOf(
+            (originMark?.date ?: Clock.System.todayIn(TimeZone.currentSystemDefault())),
+        )
+    }
+
     var isPostToFedi by rememberSaveable { mutableStateOf(false) }
+
     var postVisibility by rememberSaveable { mutableStateOf(Visibility.Public) }
 
-    // Backfill original data for edit existing mark.
-    LaunchedEffect(originMark) {
-        if (originMark != null) {
-            selectedShelfTypeIndex = originMark.shelfType.ordinal
-            commentState.edit {
-                replace(0, length, originMark.comment.orEmpty())
-                placeCursorAtEnd()
-            }
-            ratingSliderValue = originMark.rating?.toFloat() ?: 0f
-        }
+    if (isShowDatePicker) {
+        DatePickerModal(
+            initialDate = postDate,
+            onConfirm = {
+                postDate = Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
+            },
+            onDismiss = { isShowDatePicker = false },
+        )
     }
 
     Column(
         modifier = modifier,
-//        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         // BUG: https://issuetracker.google.com/issues/436988693
@@ -171,10 +183,10 @@ private fun ComposeModalContent(
         // More settings
         AnimatedVisibility(visible = isShowMoreSettings) {
             MoreSettingsContent(
-                postDate = postDate.toDateString(),
+                postDate = postDate.toString(),
                 isPostToFedi = isPostToFedi,
                 onTogglePostToFedi = { isPostToFedi = it },
-                onShowDatePicker = onShowDatePicker,
+                onShowDatePicker = { isShowDatePicker = true },
                 postVisibility = postVisibility,
                 onSetVisibility = { postVisibility = it },
             )
@@ -257,7 +269,7 @@ private fun MoreSettingsContent(
     postVisibility: Visibility = Visibility.Public,
     onSetVisibility: (Visibility) -> Unit = {},
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = postDate,
@@ -266,11 +278,10 @@ private fun MoreSettingsContent(
             label = { Text(stringResource(R.string.textfield_postdate)) },
             singleLine = true,
             trailingIcon = {
-                IconButton(onClick = {}) {
+                IconButton(onClick = onShowDatePicker) {
                     Icon(
                         painter = painterResource(R.drawable.calendar_outline),
                         contentDescription = "Select post date",
-                        modifier = Modifier.clickable(onClick = onShowDatePicker),
                     )
                 }
             },
@@ -313,13 +324,46 @@ private fun MoreSettingsContent(
     }
 }
 
+@Composable
+private fun DatePickerModal(
+    initialDate: LocalDate,
+    onConfirm: (Long) -> Unit = {},
+    onDismiss: () -> Unit = {},
+) {
+    val datePickerState =
+        rememberDatePickerState(
+            initialSelectedDateMillis = initialDate
+                .atStartOfDayIn(TimeZone.UTC)
+                .toEpochMilliseconds(),
+        )
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onConfirm(datePickerState.selectedDateMillis!!)
+                onDismiss()
+            }) {
+                Text(stringResource(R.string.common_ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.common_cancel))
+            }
+        },
+    ) {
+        DatePicker(state = datePickerState, showModeToggle = false)
+    }
+}
+
 @OptIn(ExperimentalTime::class)
 @Preview
 @Composable
 private fun PreviewComposeModal() {
     NeoDBYouTheme {
         Surface {
-            ComposeModalContent(postDate = Clock.System.now())
+            ComposeModalContent()
         }
     }
 }

@@ -44,8 +44,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
@@ -59,12 +57,10 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -108,8 +104,8 @@ import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.ui.theme.kindColors
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.sharedBoundsTransition
-import day.vitayuzu.neodb.util.toDateString
-import kotlin.time.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -150,10 +146,7 @@ fun DetailPage(
             }
         },
     ) { paddings ->
-        var showDatePicker by rememberSaveable { mutableStateOf(false) }
         var showConfirmDialog by rememberSaveable { mutableStateOf(false) }
-        val currentTimeLong = Clock.System.now().toEpochMilliseconds()
-        var postDate by rememberSaveable { mutableLongStateOf(currentTimeLong) }
 
         // Main UI with background image.
         AnimatedVisibility(
@@ -201,19 +194,15 @@ fun DetailPage(
             when (modalState) {
                 ModalState.New -> {
                     PostComposeModal(
-                        postDate = Instant.fromEpochMilliseconds(postDate),
                         onSend = viewModel::postMark,
-                        onShowDatePicker = { showDatePicker = true },
                         onDismiss = { modalState = ModalState.Closed },
                     )
                 }
 
                 ModalState.Edit -> {
                     PostComposeModal(
-                        postDate = Instant.fromEpochMilliseconds(postDate),
                         originMark = uiState.mark,
                         onSend = viewModel::postMark,
-                        onShowDatePicker = { showDatePicker = true },
                         onDismiss = { modalState = ModalState.Closed },
                     )
                 }
@@ -228,15 +217,6 @@ fun DetailPage(
                 }
 
                 ModalState.Closed -> {}
-            }
-
-            // FIXME: try to avoid composition everytime toggle the pick
-            // Draw the date picker last to ensure it appears on top.
-            if (showDatePicker) {
-                DatePickerModal(
-                    onConfirm = { postDate = it ?: currentTimeLong },
-                    onDismiss = { showDatePicker = false },
-                )
             }
 
             if (showConfirmDialog) {
@@ -325,7 +305,10 @@ private fun DetailContent(
                 username = it.username,
                 content = it.content,
                 rating = it.rating,
-                date = it.date.toDateString(),
+                date = it.date
+                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                    .date
+                    .toString(),
                 modifier = Modifier.animateItem(),
             )
             HorizontalDivider(thickness = 0.2.dp)
@@ -632,36 +615,6 @@ private fun PostCard(
                 modifier = Modifier.alpha(.5f).align(Alignment.End),
             )
         }
-    }
-}
-
-@OptIn(ExperimentalTime::class)
-@Composable
-private fun DatePickerModal(
-    date: Instant = Clock.System.now(),
-    onConfirm: (Long?) -> Unit = {},
-    onDismiss: () -> Unit = {},
-) {
-    val datePickerState =
-        rememberDatePickerState(initialSelectedDateMillis = date.toEpochMilliseconds())
-
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                onConfirm(datePickerState.selectedDateMillis)
-                onDismiss()
-            }) {
-                Text(stringResource(R.string.common_ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.common_cancel))
-            }
-        },
-    ) {
-        DatePicker(state = datePickerState, showModeToggle = false)
     }
 }
 
