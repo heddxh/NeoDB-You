@@ -19,9 +19,11 @@ import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.util.appendIfNameAndValueAbsent
+import io.ktor.util.appendIfNameAbsent
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import javax.inject.Singleton
@@ -36,14 +38,17 @@ object NetworkHiltModule {
 
     @Singleton
     @Provides
-    fun provideHttpClient(preferenceSource: AppSettingsManager): Ktorfit = ktorfit {
+    fun provideHttpClient(
+        appSettings: AppSettingsManager,
+        userPreference: dagger.Lazy<UserPreferenceManager>,
+    ): Ktorfit = ktorfit {
         httpClient(
             HttpClient {
                 baseUrl("https://$BASE_URL/api/") // using https://neodb.social/api as default
                 install(Logging) {
                     logger = Logger.ANDROID
                     runBlocking {
-                        level = if (preferenceSource.getAuthData(VERBOSE_LOG) == true) {
+                        level = if (appSettings.getAuthData(VERBOSE_LOG) == true) {
                             LogLevel.ALL
                         } else {
                             LogLevel.NONE
@@ -51,7 +56,16 @@ object NetworkHiltModule {
                     }
                 }
                 defaultRequest {
-                    headers.appendIfNameAndValueAbsent("Content-Type", "application/json")
+                    headers.appendIfNameAbsent(
+                        HttpHeaders.ContentType,
+                        ContentType.Application.Json.toString(),
+                    )
+                    headers.appendIfNameAbsent(
+                        HttpHeaders.AcceptLanguage,
+                        userPreference
+                            .get()
+                            .preference.value.language,
+                    )
                 }
                 install(ContentNegotiation) {
                     json(
@@ -76,7 +90,7 @@ object NetworkHiltModule {
                             // Will be cached until process die, use clearToken() to refresh.
                             // See: AuthRepository.kt
                             val token =
-                                preferenceSource.getAuthData(AppSettingsManager.ACCESS_TOKEN)
+                                appSettings.getAuthData(AppSettingsManager.ACCESS_TOKEN)
                             if (token != null) {
                                 // No expire time, no need to refresh
                                 BearerTokens(token, null)
