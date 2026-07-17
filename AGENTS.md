@@ -26,6 +26,8 @@ Coil 3 / Coroutines & Flow / DataStore。单模块项目（只有 `:app`，无�
 
 - 格式以 `.editorconfig` 为准，另遵守 [compose-rules](https://mrmans0n.github.io/compose-rules/)
   。无通配符导入，行宽 100，缩进 4 空格。
+- **不要修复纯格式类的 lint/IDE 诊断**（换行位置、链式调用格式等）：按上述风格正常书写即可，
+  剩下的格式问题由我自己处理，不要为此做专门修复编辑。
 - ViewModel 状态用 `MutableStateFlow`（不用 `MutableState`），并使用 Kotlin explicit backing fields：
   `val uiState: StateFlow<T>` 声明 + `field = MutableStateFlow(...)`。
 - 导航：路由定义在 `util/AppNavigator.kt`（`sealed interface AppDestination`），跳转用
