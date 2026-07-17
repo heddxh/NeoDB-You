@@ -136,3 +136,4 @@ fabric.properties
 
 /.run/Check OpenAPI Change.run.xml
 /checkapi.sh
+.hotswan/

@@ -6,7 +6,6 @@ coreKtx = "1.19.0"
 lifecycle = "2.10.0"
 activityCompose = "1.13.0"
 composeBom = "2026.05.01"
-m3-alpha = "1.5.0-alpha21"
 ksp = "2.3.4"
 ktorfitLib = "2.7.5"
 kotlinxSerializationJson = "1.11.0"
@@ -25,11 +24,12 @@ versionCompare = "1.5.0"
 nav3 = "1.1.2"
 lifecycleViewmodelNav3 = "2.10.0"
 splashscreen = "1.2.0"
+hotswan = "1.3.7"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
-androidx-material3 = { module = "androidx.compose.material3:material3", version.ref = "m3-alpha" }
+androidx-material3 = { module = "androidx.compose.material3:material3", version = "1.5.0-alpha23" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-material-icon-core = { module = "androidx.compose.material:material-icons-core" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -60,6 +60,7 @@ androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runt
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3" }
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
+hotswan-preview = { module = "com.github.skydoves.compose.hotswan:preview", version.ref = "hotswan" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -69,3 +70,4 @@ ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfitLib" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 google-hilt-android = { id = 'com.google.dagger.hilt.android', version.ref = "hilt" }
 aboutlibraries-android = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutLibraries" }
+hotswan-compiler = { id = "com.github.skydoves.compose.hotswan.compiler", version.ref = "hotswan" }

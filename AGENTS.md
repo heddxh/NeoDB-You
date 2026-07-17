@@ -18,6 +18,10 @@ Coil 3 / Coroutines & Flow / DataStore。单模块项目（只有 `:app`，无�
 ./gradlew lint                     # Android Lint
 ```
 
+- HotSwan MCP 可用时，先用 `hotswan_get_status` 检查状态，必要时调用 `hotswan_start`；改完代码后
+  用 `hotswan_reload`，并用 `hotswan_take_screenshot` 或语义树与交互工具确认真机效果。reload 成功也证明
+  增量编译通过；仅当 HotSwan 不可用或确实需要完整构建时才用 gradle。
+- HotSwan watcher 会检测保存的文件；reload 失败或没有可重载改动时用 `hotswan_get_logs` 诊断。
 - 项目**没有任何测试**（无 `src/test`、`src/androidTest`），不要找测试命令。
 - Ktlint **未接入 Gradle**：格式规则全在 `.editorconfig`（含 compose-rules 配置），`./gradlew lint`
   不检查格式。
