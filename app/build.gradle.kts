@@ -94,6 +94,12 @@ android {
     @Suppress("UnstableApiUsage")
     androidResources.generateLocaleConfig = true
 
+    testOptions.unitTests {
+        // Unmocked android.* methods (e.g. android.util.Log) return default values
+        // instead of throwing, so pure logic passing through .log() is testable on JVM.
+        isReturnDefaultValues = true
+    }
+
     // https://developer.android.com/build/dependencies#dependency-info-play
     // https://gitlab.com/fdroid/fdroiddata/-/merge_requests/31338#note_2985399646
     dependenciesInfo {
@@ -151,6 +157,10 @@ dependencies {
     implementation(libs.androidx.browser)
     // Other
     implementation(libs.versionCompare)
+    // Test (JVM unit tests only, see app/src/test)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
 
 // Signing config
