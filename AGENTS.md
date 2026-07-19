@@ -12,13 +12,18 @@ Coil 3 / Coroutines & Flow / DataStore。单模块项目（只有 `:app`，无�
 
 ```bash
 ./gradlew :app:compileDebugKotlin  # 只编译 Kotlin，最快的正确性检查
+./gradlew :app:testDebugUnitTest   # JVM 单元测试（app/src/test）
 ./gradlew assembleDebug            # Debug 构建（applicationId 后缀 .debug，可与正式版共存）
 ./gradlew assembleFastRelease      # Release 但跳过 R8/资源压缩/lint，用于快速验证
 ./gradlew assembleRelease          # 完整 Release（CI 使用；无 keystore.properties 时产出未签名 APK）
 ./gradlew lint                     # Android Lint
 ```
 
-- 项目**没有任何测试**（无 `src/test`、`src/androidTest`），不要找测试命令。
+- 单元测试是纯 JVM 的（无 `src/androidTest`，无模拟器）。`isReturnDefaultValues = true`：未 mock 的
+  `android.*` 方法（如 `android.util.Log`）返回默认值而不是抛异常；依赖真实 Android 框架的代码（如
+  `android.icu`、`android.net.Uri`）无法在单元测试覆盖，不要为它们写 JVM 测试。
+- 修改纯逻辑（`util/`、schema→model 映射、Repository 数据处理）时**应补充/更新对应单元测试**。
+- CI：`.github/workflows/check.yml` 在 PR 以及 `main`、`claude/**` 分支 push 时运行单元测试 + lint。
 - Ktlint **未接入 Gradle**：格式规则全在 `.editorconfig`（含 compose-rules 配置），`./gradlew lint`
   不检查格式。
 
