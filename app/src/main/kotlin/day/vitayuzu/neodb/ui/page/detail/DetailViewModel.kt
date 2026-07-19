@@ -96,11 +96,12 @@ class DetailViewModel @AssistedInject constructor(
                 hasMorePost = false,
             )
         }
+        // Capture the previous job before reassignment: inside the new coroutine,
+        // loadingReviewsJob already points to the new job itself.
+        val previousJob = loadingReviewsJob
         loadingReviewsJob = viewModelScope.launch {
             // Cancel previous job
-            if (loadingReviewsJob?.isActive == true) {
-                loadingReviewsJob?.cancelAndJoin()
-            }
+            previousJob?.cancelAndJoin()
 
             @Suppress(
                 "ktlint:standard:chain-method-continuation",
