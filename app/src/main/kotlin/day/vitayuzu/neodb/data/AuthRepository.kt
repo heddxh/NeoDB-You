@@ -84,9 +84,9 @@ class AuthRepository @Inject constructor(
             return Result.success(Pair(clientId, clientSecret))
         } else {
             Log.d("AuthRepository", "No saved auth client identification found, registering...")
-            runCatching {
+            return runCatching {
                 remoteSource.registerOauthAPP(instanceUrl)
-            }.onSuccess { oauthData ->
+            }.mapCatching { oauthData ->
                 with(appSettingsManager) {
                     store(INSTANCE_URL, instanceUrl)
                     store(CLIENT_ID, oauthData.clientId)
@@ -94,14 +94,11 @@ class AuthRepository @Inject constructor(
                 }
                 _accountStatus.update { it.copy(instanceUrl = instanceUrl) }
                 Log.d("AuthRepository", "Registered client saved")
-                return Result.success(Pair(oauthData.clientId, oauthData.clientSecret))
+                Pair(oauthData.clientId, oauthData.clientSecret)
             }.onFailure {
                 Log.e("AuthRepository", "Failed to register client", it)
             }
         }
-
-        Log.e("AuthRepository", "Failed to register app")
-        return Result.failure(Throwable())
     }
 
     /**

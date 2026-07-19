@@ -10,11 +10,11 @@ import day.vitayuzu.neodb.util.ShelfType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 
@@ -81,4 +81,10 @@ fun <T> Flow<T>.log(msg: String, tag: String = "Repository") = this
         Log.e(tag, "Error fetching $msg: $it")
     }
 
-fun Flow<ResultSchema>.validate() = this.filter { it.message == "OK" }
+/**
+ * Throw if the server reports a non-OK result, so downstream (e.g. [log]) can observe the failure
+ * instead of treating it as a successful empty flow.
+ */
+fun Flow<ResultSchema>.validate() = this.onEach {
+    check(it.message == "OK") { "Server returned non-OK result: ${it.message}" }
+}
