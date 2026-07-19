@@ -23,7 +23,8 @@ Coil 3 / Coroutines & Flow / DataStore。单模块项目（只有 `:app`，无�
   `android.*` 方法（如 `android.util.Log`）返回默认值而不是抛异常；依赖真实 Android 框架的代码（如
   `android.icu`、`android.net.Uri`）无法在单元测试覆盖，不要为它们写 JVM 测试。
 - 修改纯逻辑（`util/`、schema→model 映射、Repository 数据处理）时**应补充/更新对应单元测试**。
-- CI：`.github/workflows/check.yml` 在 PR 以及 `main`、`claude/**` 分支 push 时运行单元测试 + lint。
+- CI：`check.yml` 在 PR 以及 `main`、`claude/**` 分支 push 时运行单元测试 + lint。（文件暂位于
+  `.github/check.yml`，移入 `.github/workflows/` 后生效，见其头部注释。）
 - Ktlint **未接入 Gradle**：格式规则全在 `.editorconfig`（含 compose-rules 配置），`./gradlew lint`
   不检查格式。
 
