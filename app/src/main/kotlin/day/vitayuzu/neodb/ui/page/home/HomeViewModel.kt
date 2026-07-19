@@ -74,7 +74,7 @@ class HomeViewModel @Inject constructor(
                                 .fetchTrendingByEntryType(entryType)
                                 .firstOrNull()
                                 ?.map {
-                                    Entry(it, userPreferenceManager.preference.value.language)
+                                    Entry(it)
                                 } ?: emptyList()
                         }
                     }

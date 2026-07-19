@@ -39,22 +39,12 @@ sealed interface DetailSchema {
 
     @SerialName("external_resources") val externalResources: List<ExternalResource>?
 
-    @SerialName("localized_title") val localizedTitle: List<LocalizedData>
-
-    @SerialName("localized_description") val localizedDescription: List<LocalizedData>
-
     @SerialName("cover_image_url") val coverImageUrl: String?
 
     @SerialName("rating_count") val ratingCount: Int?
 
     @SerialName("rating_distribution") val ratingDistribution: List<Int>?
 }
-
-@Serializable
-data class LocalizedData(
-    val lang: String = "",
-    val text: String = "",
-)
 
 @Serializable
 data class ExternalResource(val url: String)

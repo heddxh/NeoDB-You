@@ -22,7 +22,7 @@ data class Mark(
     val comment: String?,
 ) {
     constructor(scheme: MarkSchema, preferredLang: String) : this(
-        entry = Entry(scheme.entrySchema, preferredLang),
+        entry = Entry(scheme.entrySchema),
         shelfType = ShelfType.valueOf(scheme.shelfType),
         date =
             Instant

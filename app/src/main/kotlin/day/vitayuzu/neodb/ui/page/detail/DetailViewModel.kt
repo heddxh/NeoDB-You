@@ -54,9 +54,7 @@ class DetailViewModel @AssistedInject constructor(
             repo.fetchDetail(type, uuid).collect { detailSchema ->
                 uiState.update {
                     it.copy(
-                        detail = detailSchema.toDetail(
-                            userPreferenceManager.preference.value.language,
-                        ),
+                        detail = detailSchema.toDetail(),
                     )
                 }
             }

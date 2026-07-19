@@ -40,7 +40,7 @@ object NetworkHiltModule {
     @Provides
     fun provideHttpClient(
         appSettings: AppSettingsManager,
-        userPreference: dagger.Lazy<UserPreferenceManager>,
+        userPreference: dagger.Lazy<UserPreferenceManager>, // avoid dependency cycle
     ): Ktorfit = ktorfit {
         httpClient(
             HttpClient {

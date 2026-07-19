@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
-import day.vitayuzu.neodb.data.UserPreferenceManager
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.util.BASE_URL
 import kotlinx.coroutines.Job
@@ -22,7 +21,6 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val repository: NeoDBRepository,
-    private val userPreferenceManager: UserPreferenceManager,
     authRepository: AuthRepository,
 ) : ViewModel() {
     val searchResult = mutableStateListOf<Entry>()
@@ -45,7 +43,7 @@ class SearchViewModel @Inject constructor(
                 result.data.mapNotNull {
                     // Search result may contain duplicated entries among different pages
                     if (uuids.add(it.uuid)) {
-                        Entry(it, userPreferenceManager.preference.value.language)
+                        Entry(it)
                     } else {
                         null
                     }

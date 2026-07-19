@@ -11,7 +11,6 @@ import day.vitayuzu.neodb.data.schema.detail.PodcastSchema
 import day.vitayuzu.neodb.data.schema.detail.TVSeasonSchema
 import day.vitayuzu.neodb.data.schema.detail.TVShowSchema
 import day.vitayuzu.neodb.util.EntryType
-import day.vitayuzu.neodb.util.display
 
 data class Detail(
     val type: EntryType,
@@ -22,7 +21,7 @@ data class Detail(
     val des: String?,
 )
 
-fun DetailSchema.toDetail(preferredLang: String): Detail {
+fun DetailSchema.toDetail(): Detail {
     val infoParts = when (this) {
         is EditionSchema -> buildList {
             addAll(author)
@@ -96,10 +95,10 @@ fun DetailSchema.toDetail(preferredLang: String): Detail {
 
     return Detail(
         type = this.category,
-        title = this.localizedTitle.display(preferredLang) ?: this.title,
+        title = this.title,
         coverUrl = this.coverImageUrl,
         rating = this.rating,
-        des = this.localizedDescription.display(preferredLang) ?: this.description,
+        des = this.description,
         info = infoParts.filter { it.isNotBlank() }.joinToString(separator = " / "),
     )
 }
