@@ -19,6 +19,13 @@ enum class EntryType {
     // Fanfic, Exhibition, Collection,
     default, ;
 
+    /**
+     * Path segment of the catalog detail endpoint (`/api/{path}/{uuid}`).
+     * Music is exposed as `album` there, unlike trending/search endpoints.
+     */
+    val detailApiPath: String
+        get() = if (this == music) "album" else name
+
     fun toR(): Int = when (this) {
         book -> R.string.entry_displayname_book
         movie -> R.string.entry_displayname_movie

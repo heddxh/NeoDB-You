@@ -95,12 +95,7 @@ class RemoteSource @Inject constructor(
     }
 
     suspend fun fetchDetail(type: EntryType, uuid: String) = withContext(dispatcher) {
-        val typeStringEndpoint = if (type == EntryType.music) {
-            "album"
-        } else {
-            type.toString()
-        }
-        api.fetchDetail(typeStringEndpoint, uuid)
+        api.fetchDetail(type.detailApiPath, uuid)
     }
 
     suspend fun fetchItemPosts(
