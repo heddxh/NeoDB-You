@@ -1,0 +1,48 @@
+# NOTE: This file is inert here. Activate it with:
+#   git mv .github/check.yml .github/workflows/check.yml
+# It was authored by an agent whose git credentials lack the `workflow` scope,
+# so it could not be pushed into .github/workflows/ directly.
+name: Check
+
+# Runs on every PR and on pushes to main and agent branches (claude/**),
+# so both humans and coding agents get fast feedback without opening a PR.
+on:
+  pull_request:
+    paths-ignore: [ "docs/**", "fastlane/**", "**.md" ]
+  push:
+    branches: [ "main", "claude/**" ]
+    paths-ignore: [ "docs/**", "fastlane/**", "**.md" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest
+
+      - name: Lint
+        run: ./gradlew :app:lintDebug
+
+      - name: Upload reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: app/build/reports/

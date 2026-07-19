@@ -94,11 +94,9 @@ android {
     @Suppress("UnstableApiUsage")
     androidResources.generateLocaleConfig = true
 
-    testOptions.unitTests {
-        // Unmocked android.* methods (e.g. android.util.Log) return default values
-        // instead of throwing, so pure logic passing through .log() is testable on JVM.
-        isReturnDefaultValues = true
-    }
+    // Unmocked android.* methods (e.g. android.util.Log) return default values
+    // instead of throwing, so pure logic passing through .log() is testable on JVM.
+    testOptions.unitTests.isReturnDefaultValues = true
 
     // https://developer.android.com/build/dependencies#dependency-info-play
     // https://gitlab.com/fdroid/fdroiddata/-/merge_requests/31338#note_2985399646
