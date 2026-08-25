@@ -21,7 +21,6 @@ import androidx.compose.material3.ToggleButtonColors
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.ToggleButtonShapes
 import androidx.compose.material3.TonalToggleButton
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -32,7 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
@@ -182,7 +181,6 @@ private val MultiCheckedWeight = 1.4f
 private val PressedWeight = 1.15f
 private val PressedScale = 0.97f
 private val UncheckedAccentRatio = 0.13f
-private val UncheckedContentAccentRatio = 0.7f
 
 @Composable
 private fun RowScope.ConnectedButton(
@@ -278,9 +276,9 @@ private fun connectedColors(accent: Color, checked: Boolean): ToggleButtonColors
     )
     val contentColor by animateColorAsState(
         targetValue = if (checked) {
-            MaterialTheme.colorScheme.contentColorFor(resolved).takeOrElse { Color.White }
+            resolved.contrastingContentColor()
         } else {
-            lerp(MaterialTheme.colorScheme.onSurface, resolved, UncheckedContentAccentRatio)
+            MaterialTheme.colorScheme.onSurface
         },
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
         label = "Content color",
@@ -292,6 +290,10 @@ private fun connectedColors(accent: Color, checked: Boolean): ToggleButtonColors
         checkedContentColor = contentColor,
     )
 }
+
+// Black and white have equal WCAG contrast at this luminance.
+private fun Color.contrastingContentColor(): Color =
+    if (luminance() > 0.179f) Color.Black else Color.White
 
 @Preview
 @Composable
