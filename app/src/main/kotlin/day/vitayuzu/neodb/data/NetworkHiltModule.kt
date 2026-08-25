@@ -7,9 +7,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.VERBOSE_LOG
 import day.vitayuzu.neodb.util.BASE_URL
+import day.vitayuzu.neodb.util.toSupportedTag
 import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.ktorfit
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
@@ -19,6 +21,7 @@ import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.plugin
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.encodedPath
@@ -26,6 +29,7 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.appendIfNameAbsent
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import java.util.Locale
 import javax.inject.Singleton
 
 @Module
@@ -42,7 +46,7 @@ object NetworkHiltModule {
         appSettings: AppSettingsManager,
         userPreference: dagger.Lazy<UserPreferenceManager>, // avoid dependency cycle
     ): Ktorfit = ktorfit {
-        httpClient(
+        val client =
             HttpClient {
                 baseUrl("https://$BASE_URL/api/") // using https://neodb.social/api as default
                 install(Logging) {
@@ -59,12 +63,6 @@ object NetworkHiltModule {
                     headers.appendIfNameAbsent(
                         HttpHeaders.ContentType,
                         ContentType.Application.Json.toString(),
-                    )
-                    headers.appendIfNameAbsent(
-                        HttpHeaders.AcceptLanguage,
-                        userPreference
-                            .get()
-                            .preference.value.language,
                     )
                 }
                 install(ContentNegotiation) {
@@ -101,7 +99,19 @@ object NetworkHiltModule {
                         }
                     }
                 }
-            },
-        )
+            }
+        client.plugin(HttpSend).intercept { request ->
+            val settings = appSettings.currentSettings()
+            val language = when (settings.preferredLanguageSource) {
+                PreferredLanguageSource.Server -> userPreference.get().serverLanguage(
+                    awaitPreference = !request.url.encodedPath.endsWith("/me/preference"),
+                )
+                PreferredLanguageSource.App -> Locale.getDefault().toSupportedTag()
+                PreferredLanguageSource.User -> settings.contentUserLanguage
+            }
+            request.headers.appendIfNameAbsent(HttpHeaders.AcceptLanguage, language)
+            execute(request)
+        }
+        httpClient(client)
     }
 }

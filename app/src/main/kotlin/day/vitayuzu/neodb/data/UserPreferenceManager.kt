@@ -2,12 +2,15 @@ package day.vitayuzu.neodb.data
 
 import android.util.Log
 import day.vitayuzu.neodb.AppScope
+import day.vitayuzu.neodb.data.AppSettingsManager.Companion.ACCESS_TOKEN
 import day.vitayuzu.neodb.data.schema.UserPreferenceSchema
 import day.vitayuzu.neodb.util.EntryType
+import day.vitayuzu.neodb.util.toSupportedTag
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -22,12 +25,15 @@ import javax.inject.Singleton
 @Singleton
 class UserPreferenceManager @Inject constructor(
     private val remoteSource: RemoteSource,
-    authRepo: AuthRepository,
+    private val authRepo: AuthRepository,
+    private val appSettingsManager: AppSettingsManager,
     @AppScope scope: CoroutineScope,
 ) {
 
     val preference: StateFlow<UserPreference>
         field = MutableStateFlow(UserPreference())
+
+    private val serverPreferenceReady = MutableStateFlow(false)
 
     init {
         authRepo.accountStatus
@@ -42,6 +48,7 @@ class UserPreferenceManager @Inject constructor(
     }
 
     suspend fun refresh() {
+        serverPreferenceReady.value = false
         runCatching {
             Log.d("UserPreferenceRepository", "Start fetching user preference")
             preference.update { it.copy(loading = true) }
@@ -53,6 +60,16 @@ class UserPreferenceManager @Inject constructor(
             Log.e("UserPreferenceRepository", "Error fetching user preference: $error")
         }
         preference.update { it.copy(loading = false) }
+        serverPreferenceReady.value = true
+    }
+
+    suspend fun serverLanguage(awaitPreference: Boolean): String {
+        val isLoggedIn = appSettingsManager.getAuthData(ACCESS_TOKEN) != null
+        if (!isLoggedIn) {
+            return Locale.getDefault().toSupportedTag()
+        }
+        if (awaitPreference) serverPreferenceReady.first { it }
+        return preference.value.language
     }
 
     private fun reset() {
