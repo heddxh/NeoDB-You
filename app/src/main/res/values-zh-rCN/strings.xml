@@ -51,7 +51,7 @@
     <string name="settings_preference_entryType">主页趋势</string>
     <string name="settings_preference_entryType_support">设置希望显示在主页上的趋势类型。</string>
     <string name="settings_preference_languageSource">内容语言</string>
-    <string name="settings_preference_languageSource_support">条目信息与发文的首选语言。</string>
+    <string name="settings_preference_languageSource_support">条目信息的首选语言。</string>
     <string name="settings_preference_languageSource_server">服务器</string>
     <string name="settings_preference_languageSource_app">应用</string>
     <string name="settings_preference_languageSource_user">自定义</string>

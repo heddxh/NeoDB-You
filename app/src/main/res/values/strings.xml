@@ -52,7 +52,7 @@
     <string name="settings_preference_entryType">Home trending sections</string>
     <string name="settings_preference_entryType_support">Set which sections you want to see in home page.</string>
     <string name="settings_preference_languageSource">Content language</string>
-    <string name="settings_preference_languageSource_support">Preferred language for item info and posts.</string>
+    <string name="settings_preference_languageSource_support">Preferred language for item info.</string>
     <string name="settings_preference_languageSource_server">Server</string>
     <string name="settings_preference_languageSource_app">App</string>
     <string name="settings_preference_languageSource_user">Custom</string>
