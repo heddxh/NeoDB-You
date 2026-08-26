@@ -13,6 +13,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@v7
@@ -50,3 +52,11 @@ jobs:
           name: NeoDB-You-nightly-${{ github.sha }}.apk
           path: NeoDB-You-nightly-${{ github.sha }}.apk
           archive: false
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          name: Nighly
+          prerelease: true
+          removeArtifacts: true
+          artifacts: NeoDB-You-nightly-${{ github.sha }}.apk
