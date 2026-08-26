@@ -7,9 +7,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.VERBOSE_LOG
 import day.vitayuzu.neodb.util.BASE_URL
+import day.vitayuzu.neodb.util.toSupportedTag
 import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.ktorfit
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
@@ -26,6 +28,7 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.appendIfNameAbsent
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import java.util.Locale
 import javax.inject.Singleton
 
 @Module
@@ -42,9 +45,28 @@ object NetworkHiltModule {
         appSettings: AppSettingsManager,
         userPreference: dagger.Lazy<UserPreferenceManager>, // avoid dependency cycle
     ): Ktorfit = ktorfit {
+        val contentLanguagePlugin = createClientPlugin("ContentLanguage") {
+            onRequest { request, _ ->
+                val settings = appSettings.currentSettings()
+                val language = when (settings.contentLanguageSource) {
+                    ContentLanguageSource.Server -> if (
+                        request.url.encodedPath.endsWith("/me/preference")
+                    ) {
+                        // This request makes the server language ready, so it cannot await itself.
+                        userPreference.get().currentLanguage()
+                    } else {
+                        userPreference.get().serverLanguage()
+                    }
+                    ContentLanguageSource.App -> Locale.getDefault().toSupportedTag()
+                    ContentLanguageSource.User -> settings.customContentLanguage
+                }
+                request.headers.appendIfNameAbsent(HttpHeaders.AcceptLanguage, language)
+            }
+        }
         httpClient(
             HttpClient {
                 baseUrl("https://$BASE_URL/api/") // using https://neodb.social/api as default
+                install(contentLanguagePlugin)
                 install(Logging) {
                     logger = Logger.ANDROID
                     runBlocking {
@@ -59,12 +81,6 @@ object NetworkHiltModule {
                     headers.appendIfNameAbsent(
                         HttpHeaders.ContentType,
                         ContentType.Application.Json.toString(),
-                    )
-                    headers.appendIfNameAbsent(
-                        HttpHeaders.AcceptLanguage,
-                        userPreference
-                            .get()
-                            .preference.value.language,
                     )
                 }
                 install(ContentNegotiation) {

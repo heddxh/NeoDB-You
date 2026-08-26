@@ -11,6 +11,7 @@ import day.vitayuzu.neodb.data.AppSettingsManager.Companion.LIBRARY_SHELF_TYPE
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.VERBOSE_LOG
 import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.OtherRepository
+import day.vitayuzu.neodb.data.ContentLanguageSource
 import day.vitayuzu.neodb.data.UserPreference
 import day.vitayuzu.neodb.data.UserPreferenceManager
 import day.vitayuzu.neodb.data.schema.UserSchema
@@ -133,6 +134,15 @@ class SettingsViewModel @Inject constructor(
     fun onChangeEntryTypes(types: List<EntryType>) {
         viewModelScope.launch {
             appSettingsManager.store(HOME_TRENDING_TYPES, types)
+        }
+    }
+
+    fun onChangeContentLanguage(to: ContentLanguageSource, customLanguage: String) {
+        viewModelScope.launch {
+            appSettingsManager.storeContentLanguagePreference(
+                source = to,
+                customLanguage = customLanguage,
+            )
         }
     }
 

@@ -9,7 +9,7 @@ const val USER_PREFERENCES = "user_preferences"
 /**
  * Extract from [settings.py](https://raw.githubusercontent.com/neodb-social/neodb/main/neodb/boofilsic/settings.py)
  *
- * NOTE: Subtract primary language subtag for post; Pass it as Accept-Language to get localized metadata
+ * Pass a supported tag as Accept-Language to get localized item metadata.
  */
 val Supported_Languages = listOf(
     "da",

@@ -14,13 +14,11 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -92,30 +90,21 @@ private fun LibraryContent(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    val color = listOf(
-                        MaterialTheme.colorScheme.statusColor(ShelfType.wishlist),
-                        MaterialTheme.colorScheme.statusColor(ShelfType.progress),
-                        MaterialTheme.colorScheme.statusColor(ShelfType.complete),
-                        MaterialTheme.colorScheme.statusColor(ShelfType.dropped),
-                    )
                     ConnectedButtonGroup(
-                        optionNumber = ShelfType.entries.size,
-                        selectedOption = ShelfType.entries.indexOf(uiState.selectedShelfType),
-                        onSelectedChange = { onShelfTypeChange(ShelfType.entries[it]) },
-                        colors = { index ->
-                            ToggleButtonDefaults.tonalToggleButtonColors(
-                                checkedContainerColor = color[index],
-                                checkedContentColor = Color.White,
-                            )
-                        },
-                        optionContent = { index ->
-                            Text(
-                                stringResource(ShelfType.entries[index].toR()),
-                                maxLines = 1,
-                                softWrap = false,
-                            )
-                        },
-                    )
+                        options = ShelfType.entries,
+                        selected = uiState.selectedShelfType,
+                        onSelectedChange = onShelfTypeChange,
+                        accent = { MaterialTheme.colorScheme.statusColor(it) },
+                        checkedWeight = 1.2f,
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                    ) {
+                        Text(
+                            stringResource(it.toR()),
+                            maxLines = 1,
+                            softWrap = false,
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                        )
+                    }
                 }
                 EntryTypeFilterChipsRow(
                     selectedEntryTypes = uiState.selectedEntryTypes,

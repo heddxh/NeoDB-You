@@ -8,7 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,9 +35,7 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -48,13 +45,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -73,6 +71,7 @@ import day.vitayuzu.neodb.BuildConfig
 import day.vitayuzu.neodb.OauthActivity
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.data.AppSettings
+import day.vitayuzu.neodb.data.ContentLanguageSource
 import day.vitayuzu.neodb.ui.theme.AppShapeDefaults
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.AppNavigator
@@ -121,6 +120,7 @@ fun SettingsPage(
                     settings = uiState.appSettings,
                     onChangeShelfType = viewModel::onChangeShelfType,
                     onChangeEntryType = viewModel::onChangeEntryTypes,
+                    onChangeContentLang = viewModel::onChangeContentLanguage,
                     onToggleCheckUpdate = viewModel::onToggleCheckUpdate,
                 )
                 AboutCard(
@@ -238,14 +238,13 @@ private fun UserProfilePart(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Preview
 @Composable
 private fun SettingsCard(
     modifier: Modifier = Modifier,
     settings: AppSettings = AppSettings(),
     onChangeShelfType: (ShelfType) -> Unit = {},
     onChangeEntryType: (List<EntryType>) -> Unit = {},
+    onChangeContentLang: (source: ContentLanguageSource, lang: String) -> Unit = { _, _ -> },
     onToggleCheckUpdate: (Boolean) -> Unit = {},
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -256,97 +255,110 @@ private fun SettingsCard(
         val itemColors = ListItemDefaults.colors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
         )
-        SelectablePreference(
+        SelectablePreferenceCard.Single(
+            options = ShelfType.entries,
+            selected = settings.libraryShelfType,
+            onSelectedChange = { onChangeShelfType(it) },
             color = MaterialTheme.colorScheme.surfaceContainer,
-            optionNumber = ShelfType.entries.size,
-            selectedOption = ShelfType.entries.indexOf(settings.libraryShelfType),
-            onSelectedChange = { onChangeShelfType(ShelfType.entries[it]) },
             shape = AppShapeDefaults.topListItemShape,
             title = {
                 ListItem(
                     leadingContent = { Icon(Icons.Default.DateRange, null) },
-                    headlineContent = {
-                        Text(stringResource(R.string.settings_preference_shelfType))
-                    },
                     supportingContent = {
                         Text(stringResource(R.string.settings_preference_shelfType_support))
                     },
                     colors = itemColors,
-                )
-            },
-            optionContent = {
-                Text(stringResource(ShelfType.entries[it].toR()))
-            },
-        )
-        Card(shape = AppShapeDefaults.middleListItemShape) {
-            val selectedTypes =
-                remember {
-                    mutableStateListOf<EntryType>().apply {
-                        settings.homeTrendingTypes.takeIf { it.isNotEmpty() }?.let {
-                            addAll(settings.homeTrendingTypes)
-                        } ?: addAll(EntryType.entries.take(6))
-                    }
+                ) {
+                    Text(stringResource(R.string.settings_preference_shelfType))
                 }
-            ListItem(
-                leadingContent = { Icon(Icons.Default.Home, null) },
-                headlineContent = {
-                    Text(stringResource(R.string.settings_preference_entryType))
-                },
-                supportingContent = {
-                    Text(stringResource(R.string.settings_preference_entryType_support))
-                },
-                colors = itemColors,
-            )
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
-                    .fillMaxWidth()
-                    .padding(start = 56.dp),
-            ) {
-                EntryType.entries.take(6).forEach {
-                    FilterChip(
-                        selected = selectedTypes.contains(it),
-                        onClick = {
-                            if (selectedTypes.contains(it)) {
-                                selectedTypes.remove(it)
-                            } else {
-                                selectedTypes.add(it)
-                            }
-                            onChangeEntryType(selectedTypes)
-                        },
-                        label = { Text(stringResource(it.toR())) },
-                        colors = FilterChipDefaults.filterChipColors().copy(
-                            containerColor = ToggleButtonDefaults
-                                .tonalToggleButtonColors()
-                                .containerColor,
-                            labelColor = ToggleButtonDefaults
-                                .tonalToggleButtonColors()
-                                .contentColor,
-                            selectedContainerColor = ToggleButtonDefaults
-                                .tonalToggleButtonColors()
-                                .checkedContainerColor,
-                            selectedLabelColor = ToggleButtonDefaults
-                                .tonalToggleButtonColors()
-                                .checkedContentColor,
-                        ),
+            },
+        ) {
+            Text(stringResource(it.toR()), modifier = Modifier.padding(horizontal = 12.dp))
+        }
+
+        val selectedTypes =
+            remember {
+                mutableStateListOf<EntryType>().apply {
+                    settings.homeTrendingTypes.takeIf { it.isNotEmpty() }?.let {
+                        addAll(settings.homeTrendingTypes)
+                    } ?: addAll(EntryType.entries.take(6))
+                }
+            }
+        SelectablePreferenceCard.Multi(
+            shape = AppShapeDefaults.middleListItemShape,
+            title = {
+                ListItem(
+                    leadingContent = { Icon(Icons.Default.Home, null) },
+                    supportingContent = {
+                        Text(stringResource(R.string.settings_preference_entryType_support))
+                    },
+                    colors = itemColors,
+                ) {
+                    Text(
+                        stringResource(R.string.settings_preference_entryType),
+                    )
+                }
+            },
+        ) {
+            EntryType.entries.take(6).forEach { entryType ->
+                item(
+                    checked = entryType in selectedTypes,
+                    onCheckedChange = {
+                        if (selectedTypes.contains(entryType)) {
+                            selectedTypes.remove(entryType)
+                        } else {
+                            selectedTypes.add(entryType)
+                        }
+                        onChangeEntryType(selectedTypes)
+                    },
+                ) {
+                    Text(
+                        stringResource(entryType.toR()),
+                        modifier = Modifier.padding(horizontal = 8.dp),
                     )
                 }
             }
         }
+
+        // Content Language
+        Card(
+            shape = AppShapeDefaults.middleListItemShape,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            ),
+        ) {
+            ListItem(
+                colors = itemColors,
+                leadingContent = { Icon(painterResource(R.drawable.internet_outline), null) },
+                supportingContent = {
+                    Text(stringResource(R.string.settings_preference_languageSource_support))
+                },
+            ) {
+                Text(stringResource(R.string.settings_preference_languageSource))
+            }
+            LanguageSourcePreference(
+                selectedSource = settings.contentLanguageSource,
+                onSourceChange = { onChangeContentLang(it, settings.customContentLanguage) },
+                selectedLanguage = settings.customContentLanguage,
+                onLanguageChange = { onChangeContentLang(ContentLanguageSource.User, it) },
+                modifier = Modifier.padding(start = 56.dp, end = 8.dp, bottom = 8.dp),
+            )
+        }
+
         // Check Update Switch
         Card(shape = AppShapeDefaults.bottomListItemShape) {
             ListItem(
                 colors = itemColors,
                 leadingContent = { Icon(Icons.Default.Refresh, null) },
-                headlineContent = { Text(stringResource(R.string.settings_preference_update)) },
                 trailingContent = {
                     Switch(
                         checked = settings.checkUpdate,
                         onCheckedChange = onToggleCheckUpdate,
                     )
                 },
-            )
+            ) {
+                Text(stringResource(R.string.settings_preference_update))
+            }
         }
     }
 }
@@ -370,15 +382,11 @@ private fun AboutCard(
             )
             // Version
             ListItem(
-                colors = itemColors,
-                headlineContent = { Text(stringResource(R.string.settings_about_version)) },
-                trailingContent = {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        if (newVersionUrl != null) Text("Go to release page", Modifier.alpha(.6f))
-                        Text(BuildConfig.VERSION_NAME)
+                modifier = Modifier.clickable {
+                    if (newVersionUrl != null) {
+                        intent.launchUrl(context, newVersionUrl.toUri().toHttpUri())
+                    } else {
+                        checkUpdate()
                     }
                 },
                 leadingContent = {
@@ -390,29 +398,37 @@ private fun AboutCard(
                         Icon(Icons.Default.Info, null)
                     }
                 },
-                modifier = Modifier.clickable {
-                    if (newVersionUrl != null) {
-                        intent.launchUrl(context, newVersionUrl.toUri().toHttpUri())
-                    } else {
-                        checkUpdate()
+                trailingContent = {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (newVersionUrl != null) Text("Go to release page", Modifier.alpha(.6f))
+                        Text(BuildConfig.VERSION_NAME)
                     }
                 },
+                overlineContent = null,
+                supportingContent = null,
+                colors = itemColors,
+                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
+                content = { Text(stringResource(R.string.settings_about_version)) },
             )
             // Developer
             ListItem(
-                colors = itemColors,
-                headlineContent = { Text(stringResource(R.string.settings_about_developer)) },
-                trailingContent = { Text("@heddxh(Yuzu Vita)") },
+                modifier = Modifier,
                 leadingContent = { Icon(Icons.Default.AccountCircle, null) },
+                trailingContent = { Text("@heddxh(Yuzu Vita)") },
+                overlineContent = null,
+                supportingContent = null,
+                colors = itemColors,
+                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
+                content = { Text(stringResource(R.string.settings_about_developer)) },
             )
             ListItem(
-                colors = itemColors,
-                headlineContent = { Text("GitHub") },
-                trailingContent = {
-                    Icon(
-                        painterResource(R.drawable.outline_arrow_outward_24),
-                        "Go to GitHub repo",
-                        Modifier.size(16.dp),
+                modifier = Modifier.clickable {
+                    intent.launchUrl(
+                        context,
+                        "https://github.com/heddxh/NeoDB-You".toUri(),
                     )
                 },
                 leadingContent = {
@@ -424,16 +440,22 @@ private fun AboutCard(
                         Modifier.size(24.dp).padding(2.dp),
                     )
                 },
-                modifier = Modifier.clickable {
-                    intent.launchUrl(
-                        context,
-                        "https://github.com/heddxh/NeoDB-You".toUri(),
+                trailingContent = {
+                    Icon(
+                        painterResource(R.drawable.outline_arrow_outward_24),
+                        "Go to GitHub repo",
+                        Modifier.size(16.dp),
                     )
                 },
+                overlineContent = null,
+                supportingContent = null,
+                colors = itemColors,
+                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
+                content = { Text("GitHub") },
             )
             ListItem(
-                colors = itemColors,
-                headlineContent = { Text(stringResource(R.string.settings_about_license)) },
+                modifier = Modifier.clickable { appNavigator goto AppNavigator.License },
+                leadingContent = { Icon(painterResource(R.drawable.baseline_balance_24), null) },
                 trailingContent = {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowForward,
@@ -441,8 +463,11 @@ private fun AboutCard(
                         Modifier.size(16.dp),
                     )
                 },
-                leadingContent = { Icon(painterResource(R.drawable.baseline_balance_24), null) },
-                modifier = Modifier.clickable { appNavigator goto AppNavigator.License },
+                overlineContent = null,
+                supportingContent = null,
+                colors = itemColors,
+                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
+                content = { Text(stringResource(R.string.settings_about_license)) },
             )
         }
     }
@@ -468,37 +493,69 @@ private fun ExperimentalCard(
                 headlineColor = MaterialTheme.colorScheme.onErrorContainer,
             )
             ListItem(
-                colors = itemColors,
-                headlineContent = {
-                    Text(stringResource(R.string.settings_experimental_clearAuth))
-                },
+                modifier = Modifier.clickable(onClick = onClearAuthData),
+                leadingContent = null,
+                trailingContent = null,
+                overlineContent = null,
                 supportingContent = {
                     Text(stringResource(R.string.settings_experimental_clearAuth_supportText))
                 },
-                modifier = Modifier.clickable(onClick = onClearAuthData),
+                colors = itemColors,
+                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
+                content = {
+                    Text(stringResource(R.string.settings_experimental_clearAuth))
+                },
             )
             ListItem(
-                colors = itemColors,
-                headlineContent = {
-                    Text(stringResource(R.string.settings_experimental_verbose))
-                },
-                supportingContent = {
-                    Text(stringResource(R.string.settings_experimental_verbose_supportText))
-                },
+                modifier = Modifier,
+                leadingContent = null,
                 trailingContent = {
                     Switch(checked = appSettings.verboseLog, onCheckedChange = onToggleVerboseLog)
                 },
+                overlineContent = null,
+                supportingContent = {
+                    Text(stringResource(R.string.settings_experimental_verbose_supportText))
+                },
+                colors = itemColors,
+                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
+                content = {
+                    Text(stringResource(R.string.settings_experimental_verbose))
+                },
             )
             ListItem(
-                colors = itemColors,
-                headlineContent = {
-                    Text(stringResource(R.string.settings_experimental_print))
-                },
                 modifier = Modifier.clickable {
                     Log.d("ExperimentalCard", appSettings.toString())
                 },
+                leadingContent = null,
+                trailingContent = null,
+                overlineContent = null,
+                supportingContent = null,
+                colors = itemColors,
+                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
+                content = {
+                    Text(stringResource(R.string.settings_experimental_print))
+                },
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewSettingsCard() {
+    NeoDBYouTheme {
+        var settings by remember { mutableStateOf(AppSettings()) }
+        SettingsCard(
+            settings = settings,
+            onChangeShelfType = {
+                settings = settings.copy(libraryShelfType = it)
+            },
+            onChangeContentLang = { source, lang ->
+                settings
+                    .copy(contentLanguageSource = source)
+                    .let { settings = it }
+            },
+        )
     }
 }
 
