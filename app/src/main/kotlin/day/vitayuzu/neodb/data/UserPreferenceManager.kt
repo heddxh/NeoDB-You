@@ -63,14 +63,17 @@ class UserPreferenceManager @Inject constructor(
         serverPreferenceReady.value = true
     }
 
-    suspend fun serverLanguage(awaitPreference: Boolean): String {
+    suspend fun serverLanguage(): String {
         val isLoggedIn = appSettingsManager.getAuthData(ACCESS_TOKEN) != null
         if (!isLoggedIn) {
             return Locale.getDefault().toSupportedTag()
         }
-        if (awaitPreference) serverPreferenceReady.first { it }
+        // Avoid sending other cold-start requests with the local fallback before refresh finishes.
+        serverPreferenceReady.first { ready -> ready }
         return preference.value.language
     }
+
+    fun currentLanguage(): String = preference.value.language
 
     private fun reset() {
         preference.value = UserPreference()

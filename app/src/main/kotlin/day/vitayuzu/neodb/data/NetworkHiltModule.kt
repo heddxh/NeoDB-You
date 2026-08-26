@@ -49,9 +49,14 @@ object NetworkHiltModule {
             onRequest { request, _ ->
                 val settings = appSettings.currentSettings()
                 val language = when (settings.contentLanguageSource) {
-                    ContentLanguageSource.Server -> userPreference.get().serverLanguage(
-                        awaitPreference = !request.url.encodedPath.endsWith("/me/preference"),
-                    )
+                    ContentLanguageSource.Server -> if (
+                        request.url.encodedPath.endsWith("/me/preference")
+                    ) {
+                        // This request makes the server language ready, so it cannot await itself.
+                        userPreference.get().currentLanguage()
+                    } else {
+                        userPreference.get().serverLanguage()
+                    }
                     ContentLanguageSource.App -> Locale.getDefault().toSupportedTag()
                     ContentLanguageSource.User -> settings.customContentLanguage
                 }
