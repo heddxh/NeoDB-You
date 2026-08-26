@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -33,7 +34,7 @@ class UserPreferenceManager @Inject constructor(
     val preference: StateFlow<UserPreference>
         field = MutableStateFlow(UserPreference())
 
-    private val serverPreferenceReady = MutableStateFlow(false)
+    private val serverContentLanguage = MutableStateFlow<String?>(null)
 
     init {
         authRepo.accountStatus
@@ -48,7 +49,7 @@ class UserPreferenceManager @Inject constructor(
     }
 
     suspend fun refresh() {
-        serverPreferenceReady.value = false
+        serverContentLanguage.value = null
         runCatching {
             Log.d("UserPreferenceRepository", "Start fetching user preference")
             preference.update { it.copy(loading = true) }
@@ -56,11 +57,12 @@ class UserPreferenceManager @Inject constructor(
         }.onSuccess { schema ->
             Log.d("UserPreferenceRepository", "End fetching user preference:$schema")
             preference.value = UserPreference(schema)
+            serverContentLanguage.value = schema.language
         }.onFailure { error ->
             Log.e("UserPreferenceRepository", "Error fetching user preference: $error")
+            serverContentLanguage.value = preference.value.language
         }
         preference.update { it.copy(loading = false) }
-        serverPreferenceReady.value = true
     }
 
     suspend fun serverLanguage(): String {
@@ -68,9 +70,7 @@ class UserPreferenceManager @Inject constructor(
         if (!isLoggedIn) {
             return Locale.getDefault().toSupportedTag()
         }
-        // Avoid sending other cold-start requests with the local fallback before refresh finishes.
-        serverPreferenceReady.first { ready -> ready }
-        return preference.value.language
+        return serverContentLanguage.filterNotNull().first()
     }
 
     fun currentLanguage(): String = preference.value.language
