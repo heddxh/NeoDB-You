@@ -15,16 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Java JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: 21
           distribution: temurin
+          cache: gradle
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Build release
         env:
@@ -44,7 +45,8 @@ jobs:
           echo "APK renamed to NeoDB-You-nightly-${SHA}.apk"
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: nightly
+          name: NeoDB-You-nightly-${{ github.sha }}.apk
           path: NeoDB-You-nightly-${{ github.sha }}.apk
+          archive: false
