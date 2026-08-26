@@ -41,7 +41,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import day.vitayuzu.neodb.R
-import day.vitayuzu.neodb.data.PreferredLanguageSource
+import day.vitayuzu.neodb.data.ContentLanguageSource
 import day.vitayuzu.neodb.ui.component.ConnectedButtonGroup
 import day.vitayuzu.neodb.ui.component.connectedShapes
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
@@ -50,21 +50,21 @@ import java.util.Locale
 
 @Composable
 fun LanguageSourcePreference(
-    selectedSource: PreferredLanguageSource,
-    onSourceChange: (PreferredLanguageSource) -> Unit,
+    selectedSource: ContentLanguageSource,
+    onSourceChange: (ContentLanguageSource) -> Unit,
     selectedLanguage: String,
     onLanguageChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
-        val entries = PreferredLanguageSource.entries
+        val entries = ContentLanguageSource.entries
         ConnectedButtonGroup(Modifier.fillMaxWidth().selectableGroup()) {
             entries.forEachIndexed { index, source ->
                 item(
                     checked = source == selectedSource,
                     onCheckedChange = { onSourceChange(source) },
                     modifier = Modifier.semantics { role = Role.RadioButton },
-                    shapes = if (source == PreferredLanguageSource.User) {
+                    shapes = if (source == ContentLanguageSource.User) {
                         connectedShapes(
                             isFirst = index == 0,
                             isLast = index == entries.lastIndex,
@@ -77,7 +77,7 @@ fun LanguageSourcePreference(
             }
         }
         AnimatedVisibility(
-            visible = selectedSource == PreferredLanguageSource.User,
+            visible = selectedSource == ContentLanguageSource.User,
             enter = expandVertically(MaterialTheme.motionScheme.fastSpatialSpec()) +
                 fadeIn(MaterialTheme.motionScheme.fastEffectsSpec()),
             exit = shrinkVertically(MaterialTheme.motionScheme.fastSpatialSpec()) +
@@ -169,11 +169,11 @@ private fun languageChipColors(checked: Boolean): ToggleButtonColors {
     )
 }
 
-/** String resource of the label for a [PreferredLanguageSource] option. */
-private fun PreferredLanguageSource.toR(): Int = when (this) {
-    PreferredLanguageSource.Server -> R.string.settings_preference_languageSource_server
-    PreferredLanguageSource.App -> R.string.settings_preference_languageSource_app
-    PreferredLanguageSource.User -> R.string.settings_preference_languageSource_user
+/** String resource of the label for a [ContentLanguageSource] option. */
+private fun ContentLanguageSource.toR(): Int = when (this) {
+    ContentLanguageSource.Server -> R.string.settings_preference_languageSource_server
+    ContentLanguageSource.App -> R.string.settings_preference_languageSource_app
+    ContentLanguageSource.User -> R.string.settings_preference_languageSource_user
 }
 
 /** Native display name of a BCP-47 language tag, e.g. "zh-hans" -> "简体中文". */
@@ -200,7 +200,7 @@ private val ChipContentAlpha = 0.85f
 private fun PreviewLanguageSourcePreference() {
     NeoDBYouTheme {
         Surface {
-            var source by remember { mutableStateOf(PreferredLanguageSource.User) }
+            var source by remember { mutableStateOf(ContentLanguageSource.User) }
             var lang by remember { mutableStateOf("zh-hans") }
             LanguageSourcePreference(
                 selectedSource = source,

@@ -71,7 +71,7 @@ import day.vitayuzu.neodb.BuildConfig
 import day.vitayuzu.neodb.OauthActivity
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.data.AppSettings
-import day.vitayuzu.neodb.data.PreferredLanguageSource
+import day.vitayuzu.neodb.data.ContentLanguageSource
 import day.vitayuzu.neodb.ui.theme.AppShapeDefaults
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.AppNavigator
@@ -120,7 +120,7 @@ fun SettingsPage(
                     settings = uiState.appSettings,
                     onChangeShelfType = viewModel::onChangeShelfType,
                     onChangeEntryType = viewModel::onChangeEntryTypes,
-                    onChangeContentLang = viewModel::onChangePreferredLanguageSource,
+                    onChangeContentLang = viewModel::onChangeContentLanguage,
                     onToggleCheckUpdate = viewModel::onToggleCheckUpdate,
                 )
                 AboutCard(
@@ -244,7 +244,7 @@ private fun SettingsCard(
     settings: AppSettings = AppSettings(),
     onChangeShelfType: (ShelfType) -> Unit = {},
     onChangeEntryType: (List<EntryType>) -> Unit = {},
-    onChangeContentLang: (source: PreferredLanguageSource, lang: String?) -> Unit = { _, _ -> },
+    onChangeContentLang: (source: ContentLanguageSource, lang: String) -> Unit = { _, _ -> },
     onToggleCheckUpdate: (Boolean) -> Unit = {},
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -337,10 +337,10 @@ private fun SettingsCard(
                 Text(stringResource(R.string.settings_preference_languageSource))
             }
             LanguageSourcePreference(
-                selectedSource = settings.preferredLanguageSource,
-                onSourceChange = { onChangeContentLang(it, settings.contentUserLanguage) },
-                selectedLanguage = settings.contentUserLanguage,
-                onLanguageChange = { onChangeContentLang(PreferredLanguageSource.User, it) },
+                selectedSource = settings.contentLanguageSource,
+                onSourceChange = { onChangeContentLang(it, settings.customContentLanguage) },
+                selectedLanguage = settings.customContentLanguage,
+                onLanguageChange = { onChangeContentLang(ContentLanguageSource.User, it) },
                 modifier = Modifier.padding(start = 56.dp, end = 8.dp, bottom = 8.dp),
             )
         }
@@ -552,7 +552,7 @@ private fun PreviewSettingsCard() {
             },
             onChangeContentLang = { source, lang ->
                 settings
-                    .copy(preferredLanguageSource = source)
+                    .copy(contentLanguageSource = source)
                     .let { settings = it }
             },
         )
