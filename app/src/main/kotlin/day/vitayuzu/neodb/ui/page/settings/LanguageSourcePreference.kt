@@ -8,7 +8,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -26,19 +25,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButtonColors
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.data.ContentLanguageSource
@@ -46,6 +48,7 @@ import day.vitayuzu.neodb.ui.component.ConnectedButtonGroup
 import day.vitayuzu.neodb.ui.component.connectedShapes
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.util.Supported_Languages
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 @Composable
@@ -101,35 +104,61 @@ private fun LanguagePanel(
     modifier: Modifier = Modifier,
 ) {
     val chipColors = languages.map { languageChipColors(it == selected) }
-    // Scroll the selected chip into view when the panel opens or selection changes.
-    val selectedChipRequester = remember { BringIntoViewRequester() }
-    LaunchedEffect(selected) { selectedChipRequester.bringIntoView() }
-    ConnectedButtonGroup(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(PanelShape)
-            .background(MaterialTheme.colorScheme.primary)
-            .horizontalScroll(rememberScrollState())
-            .padding(PanelPadding)
-            .width(IntrinsicSize.Max)
-            .selectableGroup(),
+    val requesters = remember(languages) {
+        List(languages.size) { BringIntoViewRequester() }
+    }
+    val sizes = remember(languages) { Array(languages.size) { IntSize.Zero } }
+    val coroutineScope = rememberCoroutineScope()
+    val margin = with(LocalDensity.current) { BringIntoViewMargin.toPx() }
+
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = PanelShape,
+        color = MaterialTheme.colorScheme.primary,
     ) {
-        languages.forEachIndexed { index, tag ->
-            item(
-                checked = tag == selected,
-                onCheckedChange = { onSelect(tag) },
-                modifier = Modifier
-                    .semantics { role = Role.RadioButton }
-                    .then(
-                        if (tag == selected) {
-                            Modifier.bringIntoViewRequester(selectedChipRequester)
-                        } else {
-                            Modifier
-                        },
-                    ),
-                colors = chipColors[index],
-            ) {
-                Text(tag.toDisplayName(), maxLines = 1)
+        ConnectedButtonGroup(
+            checkedWeight = 1.1f,
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                .padding(PanelPadding)
+                .width(IntrinsicSize.Max)
+                .selectableGroup(),
+        ) {
+            languages.forEachIndexed { index, tag ->
+                item(
+                    checked = tag == selected,
+                    onCheckedChange = onCheckedChange@{
+                        if (tag == selected) return@onCheckedChange
+
+                        onSelect(tag)
+                        val size = sizes[index]
+                        coroutineScope.launch {
+                            requesters[index].bringIntoView(
+                                rect = if (size == IntSize.Zero) {
+                                    null
+                                } else {
+                                    Rect(
+                                        left = -margin,
+                                        top = 0f,
+                                        right = size.width + margin,
+                                        bottom = size.height.toFloat(),
+                                    )
+                                },
+                            )
+                        }
+                    },
+                    modifier = Modifier
+                        .semantics { role = Role.RadioButton }
+                        .onSizeChanged { sizes[index] = it }
+                        .bringIntoViewRequester(requesters[index]),
+                    colors = chipColors[index],
+                ) {
+                    Text(
+                        tag.toDisplayName(),
+                        maxLines = 1,
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                    )
+                }
             }
         }
     }
@@ -186,6 +215,7 @@ private val AttachedCorner = 4.dp
 private val PanelCorner = 12.dp
 private val PanelGap = 4.dp
 private val PanelPadding = 8.dp
+private val BringIntoViewMargin = 8.dp
 private val PanelShape = RoundedCornerShape(
     topStart = PanelCorner,
     topEnd = AttachedCorner,
