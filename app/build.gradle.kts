@@ -163,6 +163,10 @@ dependencies {
 
 // Signing config
 private fun configureSigning() {
+    if (System.getenv("SKIP_RELEASE_SIGNING").toBoolean()) {
+        println("Release signing skipped")
+        return
+    }
     if (System.getenv("GITHUB_ACTIONS").toBoolean()) {
         // Read from env
         val keyBase64 = getEnv("SIGN_KEY_BASE64")

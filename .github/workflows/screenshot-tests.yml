@@ -18,6 +18,8 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      SKIP_RELEASE_SIGNING: true
     steps:
       - name: Checkout repo
         uses: actions/checkout@v7
