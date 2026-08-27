@@ -69,7 +69,7 @@ fun LibraryPage(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun LibraryContent(
+internal fun LibraryContent(
     uiState: LibraryUiState,
     modifier: Modifier = Modifier,
     onShelfTypeChange: (ShelfType) -> Unit = {},

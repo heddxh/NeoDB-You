@@ -239,7 +239,7 @@ private fun UserProfilePart(
 }
 
 @Composable
-private fun SettingsCard(
+internal fun SettingsCard(
     modifier: Modifier = Modifier,
     settings: AppSettings = AppSettings(),
     onChangeShelfType: (ShelfType) -> Unit = {},

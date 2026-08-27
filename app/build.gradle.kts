@@ -13,6 +13,7 @@ plugins {
     alias(libs.plugins.google.hilt.android)
     alias(libs.plugins.aboutlibraries.android)
     alias(libs.plugins.hotswan.compiler)
+    alias(libs.plugins.screenshot)
 }
 
 kotlin {
@@ -38,6 +39,7 @@ kotlin {
 android {
     namespace = "day.vitayuzu.neodb"
     compileSdk = 37
+    experimentalProperties["android.experimental.enableScreenshotTest"] = true
 
     defaultConfig {
         applicationId = android.namespace
@@ -152,6 +154,9 @@ dependencies {
     implementation(libs.androidx.browser)
     // HotSwan
     debugImplementation(libs.hotswan.preview)
+    // Compose preview screenshot tests
+    screenshotTestImplementation(libs.screenshot.validation.api)
+    screenshotTestImplementation(libs.androidx.ui.tooling)
     // Other
     implementation(libs.versionCompare)
 }

@@ -241,7 +241,7 @@ fun DetailPage(
 
 @OptIn(ExperimentalTime::class)
 @Composable
-private fun DetailContent(
+internal fun DetailContent(
     detail: Detail,
     modifier: Modifier = Modifier,
     mark: Mark? = null,
