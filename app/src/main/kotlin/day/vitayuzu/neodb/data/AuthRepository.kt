@@ -14,7 +14,7 @@ import io.ktor.client.plugins.auth.authProvider
 import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import io.ktor.client.plugins.plugin
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -38,8 +38,8 @@ class AuthRepository @Inject constructor(
     private val ktorfit: Ktorfit,
 ) {
 
-    private val _accountStatus = MutableStateFlow(AccountStatus())
-    val accountStatus = _accountStatus.asStateFlow()
+    val accountStatus: StateFlow<AccountStatus>
+        field = MutableStateFlow(AccountStatus())
 
     init {
         ktorfit.httpClient.plugin(HttpSend).intercept { request ->
@@ -92,7 +92,7 @@ class AuthRepository @Inject constructor(
                     store(CLIENT_ID, oauthData.clientId)
                     store(CLIENT_SECRET, oauthData.clientSecret)
                 }
-                _accountStatus.update { it.copy(instanceUrl = instanceUrl) }
+                accountStatus.update { it.copy(instanceUrl = instanceUrl) }
                 Log.d("AuthRepository", "Registered client saved")
                 return Result.success(Pair(oauthData.clientId, oauthData.clientSecret))
             }.onFailure {
@@ -131,12 +131,12 @@ class AuthRepository @Inject constructor(
         val token = appSettingsManager.getAuthData(ACCESS_TOKEN)
         val instanceUrl = appSettingsManager.getAuthData(INSTANCE_URL)
         if (token == null || instanceUrl == null) {
-            _accountStatus.update { AccountStatus() }
+            accountStatus.update { AccountStatus() }
         } else {
-            // Emit status asap before network call.
-            _accountStatus.update {
+            // Emit status asap before network call, for those who don't need account info.
+            accountStatus.update {
                 AccountStatus(
-                    isLogin = true,
+                    isLogin = true, // has token
                     instanceUrl = instanceUrl,
                     account = it.account,
                 )
@@ -144,7 +144,7 @@ class AuthRepository @Inject constructor(
             runCatching {
                 remoteSource.fetchSelfAccountInfo(instanceUrl)
             }.onSuccess { userSchema ->
-                _accountStatus.update {
+                accountStatus.update {
                     it.copy(
                         isLogin = true,
                         instanceUrl = instanceUrl,
@@ -169,7 +169,7 @@ class AuthRepository @Inject constructor(
             }
             appSettingsManager.deleteAllAuthData()
             ktorfit.httpClient.clearToken()
-            _accountStatus.update { AccountStatus() }
+            accountStatus.update { AccountStatus() }
             Log.d("AuthRepository", "Revoked all auth data")
         } catch (e: Exception) {
             Log.e("AuthRepository", "Failed to delete all auth data", e)
@@ -186,6 +186,9 @@ class AuthRepository @Inject constructor(
 }
 
 data class AccountStatus(
+    /**
+     * AKA has token
+     */
     val isLogin: Boolean = false,
     val instanceUrl: String = "",
     val account: UserSchema? = null,

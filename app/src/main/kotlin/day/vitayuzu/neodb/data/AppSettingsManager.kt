@@ -21,10 +21,9 @@ import day.vitayuzu.neodb.util.ShelfType
 import day.vitayuzu.neodb.util.USER_PREFERENCES
 import day.vitayuzu.neodb.util.toSupportedTag
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
+import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -41,27 +40,20 @@ import javax.inject.Singleton
  */
 @Singleton
 class AppSettingsManager @Inject constructor(
+    @AppScope scope: CoroutineScope,
     val dataStore: DataStore<Preferences>,
-    @AppScope private val scope: CoroutineScope,
 ) {
 
-    val appSettings: StateFlow<AppSettings> = dataStore.data
-        .catch { e ->
-            emit(emptyPreferences())
-            Log.e("LocalSettingsManager", "Error while reading preferences", e)
-        }.map { it.toAppSettings() }.stateIn(
-            scope = scope,
-            started = WhileSubscribed(5000),
-            initialValue = AppSettings(),
-        )
-
-    /** Reads the persisted snapshot; [appSettings] may still hold its initial value without collectors. */
-    suspend fun currentSettings(): AppSettings = dataStore.data
+    val appSettings: StateFlow<AppSettings?> = dataStore.data
         .catch { e ->
             emit(emptyPreferences())
             Log.e("LocalSettingsManager", "Error while reading preferences", e)
         }.map { it.toAppSettings() }
-        .first()
+        .stateIn(
+            scope = scope,
+            started = Eagerly,
+            initialValue = null,
+        )
 
     /**
      * Delete all local authentication.
@@ -126,6 +118,7 @@ class AppSettingsManager @Inject constructor(
     }
 
     private fun Preferences.toAppSettings(): AppSettings {
+        val defaults = AppSettings.Default
         val homeTrendingTypes = getAsList<EntryType>(HOME_TRENDING_TYPES)
         val libraryShelfType = this[LIBRARY_SHELF_TYPE]?.let { stored ->
             ShelfType.entries.find { it.name == stored }
@@ -135,27 +128,27 @@ class AppSettingsManager @Inject constructor(
         }
 
         return AppSettings(
-            homeTrendingTypes = homeTrendingTypes,
-            libraryShelfType = libraryShelfType,
-            contentLanguageSource = languageSource,
-            customContentLanguage = this[CUSTOM_CONTENT_LANGUAGE],
-            verboseLog = this[VERBOSE_LOG],
-            checkUpdate = this[CHECK_UPDATE],
+            homeTrendingTypes = homeTrendingTypes ?: defaults.homeTrendingTypes,
+            libraryShelfType = libraryShelfType ?: defaults.libraryShelfType,
+            contentLanguageSource = languageSource ?: defaults.contentLanguageSource,
+            customContentLanguage = this[CUSTOM_CONTENT_LANGUAGE]
+                ?: defaults.customContentLanguage,
+            verboseLog = this[VERBOSE_LOG] ?: defaults.verboseLog,
+            checkUpdate = this[CHECK_UPDATE] ?: defaults.checkUpdate,
         )
     }
 
-    private inline fun <reified T> Preferences.getAsList(
-        key: Preferences.Key<String>,
-    ): List<T> = this[key]?.let { encoded ->
-        runCatching { Json.decodeFromString<List<T>>(encoded) }
-            .onFailure {
-                Log.e(
-                    "LocalSettingsManager",
-                    "Error while reading preferences ${key.name}",
-                    it,
-                )
-            }.getOrDefault(emptyList())
-    } ?: emptyList()
+    private inline fun <reified T> Preferences.getAsList(key: Preferences.Key<String>): List<T>? =
+        this[key]?.let { encoded ->
+            runCatching { Json.decodeFromString<List<T>>(encoded) }
+                .onFailure {
+                    Log.e(
+                        "LocalSettingsManager",
+                        "Error while reading preferences ${key.name}",
+                        it,
+                    )
+                }.getOrNull()
+        }
 
     companion object {
         val INSTANCE_URL = stringPreferencesKey("instance_url")
@@ -178,31 +171,26 @@ class AppSettingsManager @Inject constructor(
     }
 }
 
-@Suppress("ktlint:standard:max-line-length")
 data class AppSettings(
-    val homeTrendingTypes: List<EntryType> = emptyList(), // enabled trending types for home
-    val libraryShelfType: ShelfType = ShelfType.wishlist, // preferred/default shelf type for library
-    val contentLanguageSource: ContentLanguageSource = ContentLanguageSource.Server,
-    val customContentLanguage: String = Locale.getDefault().toSupportedTag(),
-    val verboseLog: Boolean = false,
-    val checkUpdate: Boolean = false, // disabled by default
+    val homeTrendingTypes: List<EntryType>, // enabled trending types for home
+    val libraryShelfType: ShelfType, // preferred/default shelf type for library
+    val contentLanguageSource: ContentLanguageSource,
+    val customContentLanguage: String,
+    val verboseLog: Boolean,
+    val checkUpdate: Boolean,
 ) {
-    // Make null fields have default value
-    constructor(
-        homeTrendingTypes: List<EntryType>?,
-        libraryShelfType: ShelfType?,
-        contentLanguageSource: ContentLanguageSource?,
-        customContentLanguage: String?,
-        verboseLog: Boolean?,
-        checkUpdate: Boolean?,
-    ) : this(
-        homeTrendingTypes ?: emptyList(),
-        libraryShelfType ?: ShelfType.progress,
-        contentLanguageSource ?: ContentLanguageSource.Server,
-        customContentLanguage ?: Locale.getDefault().toSupportedTag(),
-        verboseLog ?: false,
-        checkUpdate ?: false,
-    )
+    companion object {
+        // Use getter since we need get latest locale
+        val Default: AppSettings
+            get() = AppSettings(
+                homeTrendingTypes = EntryType.entries.take(6),
+                libraryShelfType = ShelfType.progress,
+                contentLanguageSource = ContentLanguageSource.Server,
+                customContentLanguage = Locale.getDefault().toSupportedTag(),
+                verboseLog = false,
+                checkUpdate = false,
+            )
+    }
 }
 
 enum class ContentLanguageSource { Server, App, User }

@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
@@ -46,6 +47,7 @@ class LibraryViewModel @Inject constructor(
 
     init {
         settingsManager.appSettings
+            .filterNotNull()
             .map { it.libraryShelfType }
             .distinctUntilChanged()
             .onEach { type ->

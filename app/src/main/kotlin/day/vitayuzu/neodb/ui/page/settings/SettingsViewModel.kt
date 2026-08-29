@@ -10,9 +10,8 @@ import day.vitayuzu.neodb.data.AppSettingsManager.Companion.HOME_TRENDING_TYPES
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.LIBRARY_SHELF_TYPE
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.VERBOSE_LOG
 import day.vitayuzu.neodb.data.AuthRepository
-import day.vitayuzu.neodb.data.OtherRepository
 import day.vitayuzu.neodb.data.ContentLanguageSource
-import day.vitayuzu.neodb.data.UserPreference
+import day.vitayuzu.neodb.data.OtherRepository
 import day.vitayuzu.neodb.data.UserPreferenceManager
 import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.util.EntryType
@@ -22,11 +21,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.joinAll
@@ -41,12 +41,35 @@ class SettingsViewModel @Inject constructor(
     private val userPreferenceManager: UserPreferenceManager,
 ) : ViewModel() {
 
-    private val refreshing = MutableStateFlow(false)
+    val refreshing: StateFlow<Boolean>
+        field = MutableStateFlow(false)
+
+    val settingsState: StateFlow<AppSettings?> = appSettingsManager.appSettings
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val accountState: StateFlow<AccountState?> =
+        authRepo.accountStatus.mapLatest { (val isLogin, val account) ->
+            if (!isLogin || account == null) return@mapLatest null
+            AccountState(
+                isLogin = true,
+                url = account.url,
+                avatar = account.avatar,
+                username = account.displayName,
+                fediAccount = account.getFediAccount(),
+            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+
+
     private val checkUpdateTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val newVersionUrlFlow: StateFlow<String?> = merge(
+    val updateState: StateFlow<String?> = merge(
         appSettingsManager.appSettings
+            .filterNotNull()
             .map { it.checkUpdate }
             .distinctUntilChanged()
             .filter { it }, // false -> true
@@ -57,41 +80,6 @@ class SettingsViewModel @Inject constructor(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
         initialValue = null,
-    )
-
-    val uiState: StateFlow<SettingsUiState> = combine(
-        authRepo.accountStatus,
-        appSettingsManager.appSettings,
-        newVersionUrlFlow,
-        userPreferenceManager.preference,
-        refreshing,
-    ) { (val isLogin, val account), appSettings, newVersionUrl, userPreference, refreshing ->
-        // Double check account to ensure it actually loaded the info
-        // see [updateAccountStatus]
-        if (isLogin && account != null) {
-            SettingsUiState(
-                refreshing = refreshing,
-                isLogin = true,
-                url = account.url,
-                avatar = account.avatar,
-                username = account.displayName,
-                fediAccount = account.getFediAccount(),
-                newVersionUrl = newVersionUrl,
-                appSettings = appSettings,
-                userPreference = userPreference,
-            )
-        } else {
-            SettingsUiState(
-                refreshing = refreshing,
-                isLogin = false,
-                newVersionUrl = newVersionUrl,
-                appSettings = appSettings,
-            )
-        }
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = SettingsUiState(),
     )
 
     // Check update, refresh account info and fetch user preference
@@ -162,14 +150,10 @@ class SettingsViewModel @Inject constructor(
     }
 }
 
-data class SettingsUiState(
-    val refreshing: Boolean = false,
-    val isLogin: Boolean = false,
-    val url: String = "",
-    val avatar: String? = null,
-    val username: String = "",
-    val fediAccount: String? = null,
-    val newVersionUrl: String? = null,
-    val appSettings: AppSettings = AppSettings(),
-    val userPreference: UserPreference = UserPreference()
+data class AccountState(
+    val isLogin: Boolean,
+    val url: String,
+    val avatar: String?,
+    val username: String,
+    val fediAccount: String?,
 )

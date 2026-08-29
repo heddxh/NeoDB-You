@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
@@ -45,9 +45,9 @@ class HomeViewModel @Inject constructor(
     init {
         // Refresh data when app settings change
         settingsManager.appSettings
+            .filterNotNull()
             .map { it.homeTrendingTypes }
             .distinctUntilChanged()
-            .filter { it.isNotEmpty() }
             .onEach { enabledTrendingTypes = it }
             .launchIn(viewModelScope)
         // Refresh data when login status changes.

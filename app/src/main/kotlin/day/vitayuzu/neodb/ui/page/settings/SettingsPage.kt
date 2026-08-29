@@ -49,7 +49,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -86,11 +85,15 @@ fun SettingsPage(
     viewModel: SettingsViewModel = hiltViewModel(),
     bottomBar: @Composable () -> Unit,
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val accountState by viewModel.accountState.collectAsStateWithLifecycle()
+    val settingsState by viewModel.settingsState.collectAsStateWithLifecycle()
+    val updateState by viewModel.updateState.collectAsStateWithLifecycle()
+
+    val isRefreshing by viewModel.refreshing.collectAsStateWithLifecycle()
 
     Scaffold(modifier, bottomBar = bottomBar) { paddingValues ->
         PullToRefreshBox(
-            isRefreshing = uiState.refreshing,
+            isRefreshing = isRefreshing,
             onRefresh = viewModel::refresh,
             modifier = Modifier
                 .padding(paddingValues)
@@ -103,21 +106,22 @@ fun SettingsPage(
                     .padding(horizontal = 8.dp)
                     .verticalScroll(rememberScrollState()),
             ) {
-                if (uiState.isLogin) { // logged in
+                val state = accountState
+                if (state?.isLogin == true) { // logged in
                     UserProfilePart(
-                        avatar = uiState.avatar,
-                        username = uiState.username,
-                        fediAccount = uiState.fediAccount,
+                        avatar = state.avatar,
+                        username = state.username,
+                        fediAccount = state.fediAccount,
                         modifier = Modifier.fillMaxWidth(),
                         logOut = viewModel::logout,
-                        instanceUrl = uiState.url,
+                        instanceUrl = state.url,
                     )
                 } else { // need login
                     LoginPart(Modifier.padding(horizontal = 8.dp))
                 }
                 SettingsCard(
                     Modifier.padding(horizontal = 8.dp),
-                    settings = uiState.appSettings,
+                    appSettings = settingsState ?: AppSettings.Default,
                     onChangeShelfType = viewModel::onChangeShelfType,
                     onChangeEntryType = viewModel::onChangeEntryTypes,
                     onChangeContentLang = viewModel::onChangeContentLanguage,
@@ -125,12 +129,12 @@ fun SettingsPage(
                 )
                 AboutCard(
                     Modifier.padding(horizontal = 8.dp),
-                    newVersionUrl = uiState.newVersionUrl,
+                    newVersionUrl = updateState,
                     checkUpdate = viewModel::checkUpdate,
                 )
                 ExperimentalCard(
                     Modifier.padding(horizontal = 8.dp).padding(bottom = 8.dp),
-                    appSettings = uiState.appSettings,
+                    appSettings = settingsState ?: AppSettings.Default,
                     onClearAuthData = viewModel::logout,
                     onToggleVerboseLog = viewModel::onToggleVerboseLog,
                 )
@@ -241,7 +245,7 @@ private fun UserProfilePart(
 @Composable
 private fun SettingsCard(
     modifier: Modifier = Modifier,
-    settings: AppSettings = AppSettings(),
+    appSettings: AppSettings = AppSettings.Default,
     onChangeShelfType: (ShelfType) -> Unit = {},
     onChangeEntryType: (List<EntryType>) -> Unit = {},
     onChangeContentLang: (source: ContentLanguageSource, lang: String) -> Unit = { _, _ -> },
@@ -257,7 +261,7 @@ private fun SettingsCard(
         )
         SelectablePreferenceCard.Single(
             options = ShelfType.entries,
-            selected = settings.libraryShelfType,
+            selected = appSettings.libraryShelfType,
             onSelectedChange = { onChangeShelfType(it) },
             color = MaterialTheme.colorScheme.surfaceContainer,
             shape = AppShapeDefaults.topListItemShape,
@@ -276,14 +280,7 @@ private fun SettingsCard(
             Text(stringResource(it.toR()), modifier = Modifier.padding(horizontal = 12.dp))
         }
 
-        val selectedTypes =
-            remember {
-                mutableStateListOf<EntryType>().apply {
-                    settings.homeTrendingTypes.takeIf { it.isNotEmpty() }?.let {
-                        addAll(settings.homeTrendingTypes)
-                    } ?: addAll(EntryType.entries.take(6))
-                }
-            }
+        val selectedTypes = appSettings.homeTrendingTypes
         SelectablePreferenceCard.Multi(
             shape = AppShapeDefaults.middleListItemShape,
             title = {
@@ -303,13 +300,13 @@ private fun SettingsCard(
             EntryType.entries.take(6).forEach { entryType ->
                 item(
                     checked = entryType in selectedTypes,
-                    onCheckedChange = {
-                        if (selectedTypes.contains(entryType)) {
-                            selectedTypes.remove(entryType)
+                    onCheckedChange = { checked ->
+                        val updatedTypes = if (checked) {
+                            selectedTypes + entryType
                         } else {
-                            selectedTypes.add(entryType)
+                            selectedTypes - entryType
                         }
-                        onChangeEntryType(selectedTypes)
+                        onChangeEntryType(updatedTypes)
                     },
                 ) {
                     Text(
@@ -337,9 +334,9 @@ private fun SettingsCard(
                 Text(stringResource(R.string.settings_preference_languageSource))
             }
             LanguageSourcePreference(
-                selectedSource = settings.contentLanguageSource,
-                onSourceChange = { onChangeContentLang(it, settings.customContentLanguage) },
-                selectedLanguage = settings.customContentLanguage,
+                selectedSource = appSettings.contentLanguageSource,
+                onSourceChange = { onChangeContentLang(it, appSettings.customContentLanguage) },
+                selectedLanguage = appSettings.customContentLanguage,
                 onLanguageChange = { onChangeContentLang(ContentLanguageSource.User, it) },
                 modifier = Modifier.padding(start = 56.dp, end = 8.dp, bottom = 8.dp),
             )
@@ -352,7 +349,7 @@ private fun SettingsCard(
                 leadingContent = { Icon(Icons.Default.Refresh, null) },
                 trailingContent = {
                     Switch(
-                        checked = settings.checkUpdate,
+                        checked = appSettings.checkUpdate,
                         onCheckedChange = onToggleCheckUpdate,
                     )
                 },
@@ -477,7 +474,7 @@ private fun AboutCard(
 @Composable
 private fun ExperimentalCard(
     modifier: Modifier = Modifier,
-    appSettings: AppSettings = AppSettings(),
+    appSettings: AppSettings = AppSettings.Default,
     onClearAuthData: () -> Unit = {},
     onToggleVerboseLog: (Boolean) -> Unit = {},
 ) {
@@ -544,9 +541,9 @@ private fun ExperimentalCard(
 @Composable
 private fun PreviewSettingsCard() {
     NeoDBYouTheme {
-        var settings by remember { mutableStateOf(AppSettings()) }
+        var settings by remember { mutableStateOf(AppSettings.Default) }
         SettingsCard(
-            settings = settings,
+            appSettings = settings,
             onChangeShelfType = {
                 settings = settings.copy(libraryShelfType = it)
             },

@@ -26,6 +26,8 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.appendIfNameAbsent
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import java.util.Locale
@@ -42,12 +44,12 @@ object NetworkHiltModule {
     @Singleton
     @Provides
     fun provideHttpClient(
-        appSettings: AppSettingsManager,
+        appSettingsMgr: AppSettingsManager,
         userPreference: dagger.Lazy<UserPreferenceManager>, // avoid dependency cycle
     ): Ktorfit = ktorfit {
         val contentLanguagePlugin = createClientPlugin("ContentLanguage") {
             onRequest { request, _ ->
-                val settings = appSettings.currentSettings()
+                val settings = appSettingsMgr.appSettings.filterNotNull().first()
                 val language = when (settings.contentLanguageSource) {
                     ContentLanguageSource.Server -> if (
                         request.url.encodedPath.endsWith("/me/preference")
@@ -57,7 +59,9 @@ object NetworkHiltModule {
                     } else {
                         userPreference.get().serverLanguage()
                     }
+
                     ContentLanguageSource.App -> Locale.getDefault().toSupportedTag()
+
                     ContentLanguageSource.User -> settings.customContentLanguage
                 }
                 request.headers.appendIfNameAbsent(HttpHeaders.AcceptLanguage, language)
@@ -70,7 +74,7 @@ object NetworkHiltModule {
                 install(Logging) {
                     logger = Logger.ANDROID
                     runBlocking {
-                        level = if (appSettings.getAuthData(VERBOSE_LOG) == true) {
+                        level = if (appSettingsMgr.getAuthData(VERBOSE_LOG) == true) {
                             LogLevel.ALL
                         } else {
                             LogLevel.NONE
@@ -105,8 +109,7 @@ object NetworkHiltModule {
                         loadTokens {
                             // Will be cached until process die, use clearToken() to refresh.
                             // See: AuthRepository.kt
-                            val token =
-                                appSettings.getAuthData(AppSettingsManager.ACCESS_TOKEN)
+                            val token = appSettingsMgr.getAuthData(AppSettingsManager.ACCESS_TOKEN)
                             if (token != null) {
                                 // No expire time, no need to refresh
                                 BearerTokens(token, null)
