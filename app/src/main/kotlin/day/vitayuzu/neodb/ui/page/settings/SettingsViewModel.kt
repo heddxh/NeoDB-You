@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import day.vitayuzu.neodb.data.AppSettings
 import day.vitayuzu.neodb.data.AppSettingsManager
-import day.vitayuzu.neodb.data.AppSettingsManager.Companion.HOME_TRENDING_TYPES
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.LIBRARY_SHELF_TYPE
 import day.vitayuzu.neodb.data.AppSettingsManager.Companion.VERBOSE_LOG
 import day.vitayuzu.neodb.data.AuthRepository
@@ -119,9 +118,9 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { appSettingsManager.store(LIBRARY_SHELF_TYPE, shelfType.name) }
     }
 
-    fun onChangeEntryTypes(types: List<EntryType>) {
+    fun onChangeEntryType(type: EntryType, enabled: Boolean) {
         viewModelScope.launch {
-            appSettingsManager.store(HOME_TRENDING_TYPES, types)
+            appSettingsManager.updateHomeTrendingType(type, enabled)
         }
     }
 

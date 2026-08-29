@@ -47,7 +47,7 @@ class AppSettingsManager @Inject constructor(
     val appSettings: StateFlow<AppSettings?> = dataStore.data
         .catch { e ->
             emit(emptyPreferences())
-            Log.e("LocalSettingsManager", "Error while reading preferences", e)
+            Log.e("AppSettingsManager", "Error while reading preferences", e)
         }.map { it.toAppSettings() }
         .stateIn(
             scope = scope,
@@ -71,8 +71,7 @@ class AppSettingsManager @Inject constructor(
     suspend fun <T> getAuthData(key: Preferences.Key<T>) = dataStore.data
         .map { it[key] }
         .catch {
-//            if (it !is IOException) throw it // rethrow all but IOException
-            Log.e("AuthRepository", "Error while reading preferences ${key.name}", it)
+            Log.e("AppSettingsManager", "Error while reading preferences ${key.name}", it)
         }.firstOrNull()
 
     /**
@@ -92,18 +91,24 @@ class AppSettingsManager @Inject constructor(
                 it[key] = value
             }
         }.onFailure {
-//            if (it !is IOException) throw it // rethrow all but IOException
-            Log.e("AuthRepository", "Error while editing preferences ${key.name}", it)
+            Log.e("AppSettingsManager", "Error while editing preferences ${key.name}", it)
         }
     }
 
-    suspend inline fun <reified T> store(key: Preferences.Key<String>, value: List<T>) {
+    suspend fun updateHomeTrendingType(type: EntryType, enabled: Boolean) {
         runCatching {
-            dataStore.edit {
-                it[key] = Json.encodeToString(value)
+            dataStore.edit { preferences ->
+                val current = preferences.getAsList<EntryType>(HOME_TRENDING_TYPES)
+                    ?: AppSettings.Default.homeTrendingTypes
+                val updated = if (enabled) {
+                    (current + type).distinct()
+                } else {
+                    current - type
+                }
+                preferences[HOME_TRENDING_TYPES] = Json.encodeToString(updated)
             }
         }.onFailure {
-            Log.e("AuthRepository", "Error while editing preferences ${key.name}", it)
+            Log.e("AppSettingsManager", "Error while updating home trending types", it)
         }
     }
 
@@ -111,9 +116,13 @@ class AppSettingsManager @Inject constructor(
         source: ContentLanguageSource,
         customLanguage: String,
     ) {
-        dataStore.edit {
-            it[CONTENT_LANGUAGE_SOURCE] = source.name
-            it[CUSTOM_CONTENT_LANGUAGE] = customLanguage
+        runCatching {
+            dataStore.edit {
+                it[CONTENT_LANGUAGE_SOURCE] = source.name
+                it[CUSTOM_CONTENT_LANGUAGE] = customLanguage
+            }
+        }.onFailure {
+            Log.e("AppSettingsManager", "Error while updating content language preference", it)
         }
     }
 
@@ -143,7 +152,7 @@ class AppSettingsManager @Inject constructor(
             runCatching { Json.decodeFromString<List<T>>(encoded) }
                 .onFailure {
                     Log.e(
-                        "LocalSettingsManager",
+                        "AppSettingsManager",
                         "Error while reading preferences ${key.name}",
                         it,
                     )

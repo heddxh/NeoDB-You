@@ -123,7 +123,7 @@ fun SettingsPage(
                     Modifier.padding(horizontal = 8.dp),
                     appSettings = settingsState ?: AppSettings.Default,
                     onChangeShelfType = viewModel::onChangeShelfType,
-                    onChangeEntryType = viewModel::onChangeEntryTypes,
+                    onChangeEntryType = viewModel::onChangeEntryType,
                     onChangeContentLang = viewModel::onChangeContentLanguage,
                     onToggleCheckUpdate = viewModel::onToggleCheckUpdate,
                 )
@@ -247,7 +247,7 @@ private fun SettingsCard(
     modifier: Modifier = Modifier,
     appSettings: AppSettings = AppSettings.Default,
     onChangeShelfType: (ShelfType) -> Unit = {},
-    onChangeEntryType: (List<EntryType>) -> Unit = {},
+    onChangeEntryType: (EntryType, Boolean) -> Unit = { _, _ -> },
     onChangeContentLang: (source: ContentLanguageSource, lang: String) -> Unit = { _, _ -> },
     onToggleCheckUpdate: (Boolean) -> Unit = {},
 ) {
@@ -301,12 +301,7 @@ private fun SettingsCard(
                 item(
                     checked = entryType in selectedTypes,
                     onCheckedChange = { checked ->
-                        val updatedTypes = if (checked) {
-                            selectedTypes + entryType
-                        } else {
-                            selectedTypes - entryType
-                        }
-                        onChangeEntryType(updatedTypes)
+                        onChangeEntryType(entryType, checked)
                     },
                 ) {
                     Text(
