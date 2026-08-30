@@ -192,6 +192,7 @@ fun DetailPage(
                         customTabsIntent.launchUrl(context, url)
                     }
                 },
+                onLongPull = { },
                 modifier = Modifier.padding(end = 20.dp),
             ) {
                 // Content
