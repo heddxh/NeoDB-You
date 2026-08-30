@@ -1,5 +1,6 @@
 package day.vitayuzu.neodb.ui.page.detail
 
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
@@ -9,7 +10,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -75,6 +75,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -112,7 +113,7 @@ import kotlin.time.Instant
 
 private enum class ModalState { Closed, Edit, New, Des }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DetailPage(
     type: EntryType,
@@ -122,6 +123,9 @@ fun DetailPage(
         hiltViewModel<DetailViewModel, DetailViewModel.Factory> { it.create(type, uuid) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val context = LocalContext.current
+    val customTabsIntent = CustomTabsIntent.Builder().build()
 
     var modalState by rememberSaveable { mutableStateOf(ModalState.Closed) }
 
@@ -180,16 +184,27 @@ fun DetailPage(
                     },
             )
 
-            // Content
-            DetailContent(
-                detail = detail,
-                mark = uiState.mark,
-                postList = uiState.postList,
-                onClick = { modalState = ModalState.Des },
-                onEditMark = { modalState = ModalState.Edit },
-                onDeleteMark = { showConfirmDialog = true },
-                isLoadingMark = uiState.isLoadingMark,
-            )
+            // Pull ribbon
+            PullRibbon(
+                onPull = {
+                    val url = viewModel.getFullUrl()
+                    if (url != null) {
+                        customTabsIntent.launchUrl(context, url)
+                    }
+                },
+                modifier = Modifier.padding(end = 20.dp),
+            ) {
+                // Content
+                DetailContent(
+                    detail = detail,
+                    mark = uiState.mark,
+                    postList = uiState.postList,
+                    onShowDes = { modalState = ModalState.Des },
+                    onEditMark = { modalState = ModalState.Edit },
+                    onDeleteMark = { showConfirmDialog = true },
+                    isLoadingMark = uiState.isLoadingMark,
+                )
+            }
 
             // Modal sheet
             when (modalState) {
@@ -246,7 +261,7 @@ private fun DetailContent(
     modifier: Modifier = Modifier,
     mark: Mark? = null,
     postList: List<Post> = emptyList(),
-    onClick: () -> Unit = {},
+    onShowDes: () -> Unit = {},
     onEditMark: () -> Unit = {},
     onDeleteMark: () -> Unit = {},
     isLoadingMark: Boolean = false,
@@ -273,12 +288,7 @@ private fun DetailContent(
                 rating = detail.rating,
                 info = detail.info ?: "",
                 des = detail.des ?: "",
-                modifier = Modifier.fillMaxWidth().clickable(
-                    // Using this overload to skip composition
-                    interactionSource = null,
-                    indication = LocalIndication.current,
-                    onClick = onClick,
-                ),
+                onShowDes = onShowDes,
             )
         }
 
@@ -488,6 +498,7 @@ private fun DetailHeadingItem(
     info: String,
     des: String,
     modifier: Modifier = Modifier,
+    onShowDes: () -> Unit = {},
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -531,6 +542,7 @@ private fun DetailHeadingItem(
                 style = MaterialTheme.typography.bodySmall,
                 maxLines = 5,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.clickable(onClick = onShowDes),
             )
         }
     }
@@ -626,6 +638,7 @@ private fun DetailContentPreview() {
     val detail = Detail(
         type = EntryType.movie,
         title = "The Shawshank Redemption",
+        url = "https://example.com/movie/example",
         coverUrl = null,
         rating = 4.8f,
         info = "Drama / Crime",

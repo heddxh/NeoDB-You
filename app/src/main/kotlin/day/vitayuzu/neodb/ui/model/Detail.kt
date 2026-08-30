@@ -15,6 +15,7 @@ import day.vitayuzu.neodb.util.EntryType
 data class Detail(
     val type: EntryType,
     val title: String,
+    val url: String,
     val coverUrl: String?,
     val rating: Float?,
     val info: String?,
@@ -96,6 +97,7 @@ fun DetailSchema.toDetail(): Detail {
     return Detail(
         type = this.category,
         title = this.title,
+        url = this.url,
         coverUrl = this.coverImageUrl,
         rating = this.rating,
         des = this.description,

@@ -1,11 +1,13 @@
 package day.vitayuzu.neodb.ui.page.detail
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.data.UserPreferenceManager
 import day.vitayuzu.neodb.data.schema.MarkInSchema
@@ -14,6 +16,7 @@ import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.model.Post
 import day.vitayuzu.neodb.ui.model.toDetail
 import day.vitayuzu.neodb.util.EntryType
+import day.vitayuzu.neodb.util.buildInstanceUri
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +33,7 @@ class DetailViewModel @AssistedInject constructor(
     @Assisted val uuid: String, // FIXME: tv is kinds of confusing, should be season instead of show
     private val repo: NeoDBRepository,
     private val userPreferenceManager: UserPreferenceManager,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
     @AssistedFactory
@@ -135,6 +139,15 @@ class DetailViewModel @AssistedInject constructor(
             repo.deleteMark(uuid).collect()
             refreshUserMark()
         }
+    }
+
+    fun getFullUrl(): Uri? {
+        val instanceUrl = authRepository.accountStatus.value.instanceUrl
+        val detailPath = uiState.value.detail?.url
+        if (instanceUrl.isNotBlank() && !detailPath.isNullOrBlank()) {
+            return buildInstanceUri(instanceUrl, detailPath)
+        }
+        return null
     }
 }
 
