@@ -1,5 +1,6 @@
 package day.vitayuzu.neodb.ui.page.settings
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,6 +16,7 @@ import day.vitayuzu.neodb.data.UserPreferenceManager
 import day.vitayuzu.neodb.data.schema.UserSchema
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.ShelfType
+import day.vitayuzu.neodb.util.buildInstanceUri
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,11 +49,11 @@ class SettingsViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val accountState: StateFlow<AccountState?> =
-        authRepo.accountStatus.mapLatest { (val isLogin, val account) ->
+        authRepo.accountStatus.mapLatest { (val isLogin, val instanceUrl, val account) ->
             if (!isLogin || account == null) return@mapLatest null
             AccountState(
                 isLogin = true,
-                url = account.url,
+                url = buildInstanceUri(instanceUrl, account.url),
                 avatar = account.avatar,
                 username = account.displayName,
                 fediAccount = account.getFediAccount(),
@@ -151,7 +153,7 @@ class SettingsViewModel @Inject constructor(
 
 data class AccountState(
     val isLogin: Boolean,
-    val url: String,
+    val url: Uri,
     val avatar: String?,
     val username: String,
     val fediAccount: String?,

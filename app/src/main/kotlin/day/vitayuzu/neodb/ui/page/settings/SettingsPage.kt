@@ -1,6 +1,7 @@
 package day.vitayuzu.neodb.ui.page.settings
 
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Image
@@ -77,7 +78,6 @@ import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.ShelfType
-import day.vitayuzu.neodb.util.toHttpUri
 
 @Composable
 fun SettingsPage(
@@ -112,9 +112,9 @@ fun SettingsPage(
                         avatar = state.avatar,
                         username = state.username,
                         fediAccount = state.fediAccount,
+                        instanceUrl = state.url,
                         modifier = Modifier.fillMaxWidth(),
                         logOut = viewModel::logout,
-                        instanceUrl = state.url,
                     )
                 } else { // need login
                     LoginPart(Modifier.padding(horizontal = 8.dp))
@@ -168,9 +168,9 @@ private fun UserProfilePart(
     avatar: String?,
     username: String,
     fediAccount: String?,
+    instanceUrl: Uri,
     modifier: Modifier = Modifier,
     logOut: () -> Unit = {},
-    instanceUrl: String = "",
 ) {
     val context = LocalContext.current
     val intent = CustomTabsIntent.Builder().build()
@@ -213,7 +213,9 @@ private fun UserProfilePart(
             ) {
                 // Account Settings
                 Button(
-                    onClick = { intent.launchUrl(context, instanceUrl.toUri().toHttpUri()) },
+                    onClick = {
+                        intent.launchUrl(context, instanceUrl)
+                    },
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors().copy(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -376,7 +378,7 @@ private fun AboutCard(
             ListItem(
                 modifier = Modifier.clickable {
                     if (newVersionUrl != null) {
-                        intent.launchUrl(context, newVersionUrl.toUri().toHttpUri())
+                        intent.launchUrl(context, newVersionUrl.toUri())
                     } else {
                         checkUpdate()
                     }
@@ -560,6 +562,7 @@ private fun PreviewUserAvatarAndName() {
                 avatar = null,
                 username = "Heddxh",
                 fediAccount = "@vita_yuzu_wine@neodb.social",
+                instanceUrl = "https://example.com".toUri(),
                 modifier = Modifier.fillMaxWidth(),
             )
         }
