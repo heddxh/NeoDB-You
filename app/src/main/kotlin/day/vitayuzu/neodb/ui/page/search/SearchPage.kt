@@ -97,7 +97,7 @@ fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltV
 data object SearchPageKey
 
 @Composable
-private fun SearchPageContent(
+internal fun SearchPageContent(
     modifier: Modifier = Modifier,
     windowInsetsPadding: PaddingValues = PaddingValues(),
     textFieldState: TextFieldState = rememberTextFieldState(),

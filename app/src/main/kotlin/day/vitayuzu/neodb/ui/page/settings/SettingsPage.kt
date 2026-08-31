@@ -245,7 +245,7 @@ private fun UserProfilePart(
 }
 
 @Composable
-private fun SettingsCard(
+internal fun SettingsCard(
     modifier: Modifier = Modifier,
     appSettings: AppSettings = AppSettings.Default,
     onChangeShelfType: (ShelfType) -> Unit = {},

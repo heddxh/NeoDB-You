@@ -97,7 +97,7 @@ fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun TrendingSection(
+internal fun TrendingSection(
     entries: List<Entry>,
     type: EntryType,
     modifier: Modifier = Modifier,

@@ -138,7 +138,7 @@ fun OnboardingScreen(
 }
 
 @Composable
-private fun WelcomePage(
+internal fun WelcomePage(
     onNext: () -> Unit,
     onSkip: () -> Unit,
     modifier: Modifier = Modifier,
