@@ -15,12 +15,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilledTonalToggleButton
+import androidx.compose.material3.FilledTonalToggleButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButtonColors
-import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.ToggleButtonShapes
-import androidx.compose.material3.TonalToggleButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -207,7 +207,7 @@ private fun RowScope.ConnectedButton(
         label = "Pressing scale",
     )
 
-    TonalToggleButton(
+    FilledTonalToggleButton(
         checked = item.checked,
         onCheckedChange = item.onCheckedChange,
         enabled = item.enabled,
@@ -283,7 +283,7 @@ private fun connectedColors(accent: Color, checked: Boolean): ToggleButtonColors
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
         label = "Content color",
     )
-    return ToggleButtonDefaults.tonalToggleButtonColors(
+    return FilledTonalToggleButtonDefaults.colors(
         containerColor = containerColor,
         contentColor = contentColor,
         checkedContainerColor = containerColor,
