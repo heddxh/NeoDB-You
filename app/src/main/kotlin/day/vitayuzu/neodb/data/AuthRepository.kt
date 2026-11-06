@@ -164,7 +164,7 @@ class AuthRepository @Inject constructor(
     suspend fun revoke() {
         try {
             appSettingsManager.getAllAuthData()?.let {
-                val (instanceUrl, clientId, clientSecret, token) = it
+                val [instanceUrl, clientId, clientSecret, token] = it
                 remoteSource.revokeAccessToken(instanceUrl, clientId, clientSecret, token)
             }
             appSettingsManager.deleteAllAuthData()

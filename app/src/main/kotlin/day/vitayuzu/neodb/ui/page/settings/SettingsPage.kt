@@ -404,7 +404,6 @@ private fun AboutCard(
                 overlineContent = null,
                 supportingContent = null,
                 colors = itemColors,
-                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
                 content = { Text(stringResource(R.string.settings_about_version)) },
             )
             // Developer
@@ -415,7 +414,6 @@ private fun AboutCard(
                 overlineContent = null,
                 supportingContent = null,
                 colors = itemColors,
-                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
                 content = { Text(stringResource(R.string.settings_about_developer)) },
             )
             ListItem(
@@ -444,7 +442,6 @@ private fun AboutCard(
                 overlineContent = null,
                 supportingContent = null,
                 colors = itemColors,
-                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
                 content = { Text("GitHub") },
             )
             ListItem(
@@ -460,7 +457,6 @@ private fun AboutCard(
                 overlineContent = null,
                 supportingContent = null,
                 colors = itemColors,
-                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
                 content = { Text(stringResource(R.string.settings_about_license)) },
             )
         }
@@ -495,7 +491,6 @@ private fun ExperimentalCard(
                     Text(stringResource(R.string.settings_experimental_clearAuth_supportText))
                 },
                 colors = itemColors,
-                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
                 content = {
                     Text(stringResource(R.string.settings_experimental_clearAuth))
                 },
@@ -511,7 +506,6 @@ private fun ExperimentalCard(
                     Text(stringResource(R.string.settings_experimental_verbose_supportText))
                 },
                 colors = itemColors,
-                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
                 content = {
                     Text(stringResource(R.string.settings_experimental_verbose))
                 },
@@ -525,7 +519,6 @@ private fun ExperimentalCard(
                 overlineContent = null,
                 supportingContent = null,
                 colors = itemColors,
-                elevation = ListItemDefaults.elevation(ListItemDefaults.Elevation),
                 content = {
                     Text(stringResource(R.string.settings_experimental_print))
                 },
