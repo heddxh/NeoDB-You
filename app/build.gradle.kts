@@ -12,7 +12,6 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.google.hilt.android)
     alias(libs.plugins.aboutlibraries.android)
-    alias(libs.plugins.hotswan.compiler)
 }
 
 kotlin {
@@ -150,8 +149,6 @@ dependencies {
     implementation(libs.datastore.preferences)
     implementation(libs.ktor.client.auth)
     implementation(libs.androidx.browser)
-    // HotSwan
-    debugImplementation(libs.hotswan.preview)
     // Other
     implementation(libs.versionCompare)
 }
