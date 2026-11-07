@@ -151,6 +151,12 @@ dependencies {
 
 // Signing config
 private fun configureSigning() {
+    // Pull requests, including forks, must build without access to release signing keys.
+    if (System.getenv("GITHUB_EVENT_NAME") == "pull_request") {
+        println("Pull request build, create unsigned release APK")
+        return
+    }
+
     if (System.getenv("GITHUB_ACTIONS").toBoolean()) {
         // Read from env
         val keyBase64 = getEnv("SIGN_KEY_BASE64")

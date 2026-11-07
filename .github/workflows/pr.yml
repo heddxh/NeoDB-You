@@ -1,0 +1,44 @@
+name: PR build
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v6
+        with:
+          java-version: 21
+          distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Build debug and release
+        run: ./gradlew :app:assembleDebug :app:assembleRelease
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: NeoDB-You-pr-${{ github.event.number }}-debug
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload unsigned release APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: NeoDB-You-pr-${{ github.event.number }}-release-unsigned
+          path: app/build/outputs/apk/release/*-unsigned.apk
+          if-no-files-found: error
