@@ -20,6 +20,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import coil3.ImageLoader
@@ -121,6 +122,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun MainNavDisplay(modifier: Modifier = Modifier) {
     val appNavigator = LocalNavigator.current
+    val backStack = appNavigator.backStack
 
     val libraries by produceLibraries(R.raw.aboutlibraries)
 
@@ -140,30 +142,13 @@ private fun MainNavDisplay(modifier: Modifier = Modifier) {
         }
     }
 
-    NavDisplay(
-        modifier = modifier,
-        backStack = appNavigator.backStack,
-        onBack = { appNavigator.back() },
+    val entries = rememberDecoratedNavEntries(
+        // Keep tab state and ViewModels even when a different top-level destination is displayed.
+        backStack = backStack + AppNavigator.TopLevelDestinations.filterNot { it in backStack },
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
-            // Keep viewmodel of top level destinations.
-            rememberViewModelStoreNavEntryDecorator {
-                appNavigator.previous !is TopLevelDestination
-            },
+            rememberViewModelStoreNavEntryDecorator(),
         ),
-        transitionSpec = {
-            if (appNavigator.current is TopLevelDestination) {
-                sharedXAxisTransition(appNavigator.animationDirection)
-            } else {
-                EnterTransition.None togetherWith ExitTransition.None
-            }
-        },
-        predictivePopTransitionSpec = {
-            EnterTransition.None togetherWith ExitTransition.None
-        },
-        popTransitionSpec = {
-            EnterTransition.None togetherWith ExitTransition.None
-        },
         entryProvider = entryProvider {
             entry<Home> {
                 HomeScreen {
@@ -189,6 +174,25 @@ private fun MainNavDisplay(modifier: Modifier = Modifier) {
             entry<License>(metadata = sharedXAxisTransitionMetadata) {
                 LibrariesContainer(libraries)
             }
+        },
+    )
+
+    NavDisplay(
+        modifier = modifier,
+        entries = entries.take(backStack.size),
+        onBack = { appNavigator.back() },
+        transitionSpec = {
+            if (appNavigator.current is TopLevelDestination) {
+                sharedXAxisTransition(appNavigator.animationDirection)
+            } else {
+                EnterTransition.None togetherWith ExitTransition.None
+            }
+        },
+        predictivePopTransitionSpec = {
+            EnterTransition.None togetherWith ExitTransition.None
+        },
+        popTransitionSpec = {
+            EnterTransition.None togetherWith ExitTransition.None
         },
     )
 }

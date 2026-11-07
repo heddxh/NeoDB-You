@@ -108,7 +108,7 @@ class OnboardingViewModel @Inject constructor(
         with(authRepo) {
             val instanceUrl = accountStatus.value.instanceUrl
             uiState.update { it.copy(isExchangingAccessToken = true) }
-            registerClientIfNeeded(instanceUrl).onSuccess { (clientId, clientSecret) ->
+            registerClientIfNeeded(instanceUrl).onSuccess { [clientId, clientSecret] ->
                 // Will call `updateAccountStatus` if successful:
                 exchangeAccessToken(clientId, clientSecret, code)
             }
