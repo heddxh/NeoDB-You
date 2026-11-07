@@ -111,8 +111,6 @@ dependencies {
     // Jetpack Compose
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
-    // androidTestImplementation(composeBom)
-    // debugImplementation(composeBom)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icon.core)
     implementation(libs.androidx.ui.tooling)
@@ -131,8 +129,6 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.collection.immutable)
     // Hilt
-    // WORKAROUND: https://github.com/google/dagger/issues/5180
-    ksp("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
     implementation(libs.google.hilt.android)
     ksp(libs.google.hilt.compiler)
     implementation(libs.androidx.hilt.viewmodel)

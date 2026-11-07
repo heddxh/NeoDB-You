@@ -19,11 +19,11 @@ import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilledTonalToggleButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButtonColors
-import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -190,7 +190,7 @@ private fun languageChipColors(checked: Boolean): ToggleButtonColors {
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
         label = "Chip content color",
     )
-    return ToggleButtonDefaults.tonalToggleButtonColors(
+    return FilledTonalToggleButtonDefaults.colors(
         containerColor = containerColor,
         contentColor = contentColor,
         checkedContainerColor = containerColor,

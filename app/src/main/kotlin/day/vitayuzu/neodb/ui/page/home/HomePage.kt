@@ -83,7 +83,7 @@ fun HomeScreen(
                     exit = fadeOut(),
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top)) {
-                        uiState.data.forEach { (type, data) ->
+                        uiState.data.forEach { [type, data] ->
                             TrendingSection(data, type)
                         }
                     }

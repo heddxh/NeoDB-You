@@ -44,9 +44,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -128,11 +128,11 @@ private fun ComposeModalContent(
 
     val commentState = rememberTextFieldState(originMark?.comment ?: "")
 
-    var ratingSliderValue by rememberSaveable {
-        mutableFloatStateOf(
-            originMark?.rating?.toFloat() ?: 0f,
-        )
-    }
+    val ratingSliderState = rememberSliderState(
+        value = originMark?.rating?.toFloat() ?: 0f,
+        steps = 9,
+        trackRange = 0f..10f,
+    )
 
     var postDate by rememberSaveable {
         mutableStateOf(
@@ -198,17 +198,15 @@ private fun ComposeModalContent(
             val haptic = LocalHapticFeedback.current
             AnimatedVisibility(visible = selectedShelfTypeIndex != 0) {
                 Slider(
-                    value = ratingSliderValue,
-                    valueRange = 0f..10f,
-                    steps = 9,
+                    state = ratingSliderState,
                     onValueChange = {
                         haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                        ratingSliderValue = it
+                        ratingSliderState.value = it
                     },
                     track = {
                         StarsWithScores(
                             size = 36,
-                            rating = ratingSliderValue,
+                            rating = ratingSliderState.value,
                             showScores = false,
                             starSpace = 4,
                         )
@@ -242,7 +240,7 @@ private fun ComposeModalContent(
                             shelfType = shelfTypes[selectedShelfTypeIndex],
                             visibility = postVisibility.ordinal,
                             commentText = commentState.text.toString(),
-                            ratingGrade = ratingSliderValue.toInt(),
+                            ratingGrade = ratingSliderState.value.toInt(),
                             tags = emptyList(), // TODO: allow add tags
                             createdTime = postDate.toString(),
                             postToFediverse = isPostToFedi,
