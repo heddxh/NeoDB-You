@@ -26,19 +26,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Build debug and release
-        run: ./gradlew :app:assembleDebug :app:assembleRelease
+      - name: Build debug
+        run: ./gradlew :app:assembleDebug
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v7
         with:
           name: NeoDB-You-pr-${{ github.event.number }}-debug
           path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
-
-      - name: Upload unsigned release APK
-        uses: actions/upload-artifact@v7
-        with:
-          name: NeoDB-You-pr-${{ github.event.number }}-release-unsigned
-          path: app/build/outputs/apk/release/*-unsigned.apk
           if-no-files-found: error

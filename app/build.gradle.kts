@@ -153,7 +153,7 @@ dependencies {
 private fun configureSigning() {
     // Pull requests, including forks, must build without access to release signing keys.
     if (System.getenv("GITHUB_EVENT_NAME") == "pull_request") {
-        println("Pull request build, create unsigned release APK")
+        println("Pull request build, skip release signing configuration")
         return
     }
 
