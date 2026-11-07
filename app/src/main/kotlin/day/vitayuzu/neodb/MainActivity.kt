@@ -1,6 +1,8 @@
 package day.vitayuzu.neodb
 
+import android.app.assist.AssistContent
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,10 +15,12 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entryProvider
@@ -34,6 +38,7 @@ import day.vitayuzu.neodb.data.AppSettingsManager.Companion.ONBOARDING_COMPLETED
 import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.ui.component.SharedBottomBar
 import day.vitayuzu.neodb.ui.page.detail.DetailPage
+import day.vitayuzu.neodb.ui.page.detail.DetailViewModel
 import day.vitayuzu.neodb.ui.page.home.HomeScreen
 import day.vitayuzu.neodb.ui.page.library.LibraryPage
 import day.vitayuzu.neodb.ui.page.search.SearchPage
@@ -64,6 +69,21 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var appSettingsManager: AppSettingsManager
 
     @Inject @AppScope lateinit var appScope: CoroutineScope
+
+    private var webUriProvider: (() -> Uri?)? = null
+
+    override fun onProvideAssistContent(outContent: AssistContent) {
+        super.onProvideAssistContent(outContent)
+
+        // Reparse the browser URL so query/fragment delimiters in an encoded path are recognized.
+        val uri = webUriProvider?.invoke()?.let { Uri.parse(it.toString()) }
+        outContent.webUri = uri
+            ?.takeIf { it.scheme == "https" && !it.host.isNullOrBlank() && it.userInfo == null }
+            ?.buildUpon()
+            ?.clearQuery()
+            ?.fragment(null)
+            ?.build()
+    }
 
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -109,7 +129,7 @@ class MainActivity : ComponentActivity() {
                             // This root surface is to make all transition have proper background.
                             // Or when transition between screens with dark mode, user will see white background.
                             Surface {
-                                MainNavDisplay()
+                                MainNavDisplay(onWebUriProviderChanged = { webUriProvider = it })
                             }
                         }
                     }
@@ -120,9 +140,22 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun MainNavDisplay(modifier: Modifier = Modifier) {
+private fun MainNavDisplay(
+    onWebUriProviderChanged: ((() -> Uri?)?) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val appNavigator = LocalNavigator.current
     val backStack = appNavigator.backStack
+    val detailViewModels = remember { mutableMapOf<Detail, DetailViewModel>() }
+
+    DisposableEffect(appNavigator) {
+        onWebUriProviderChanged {
+            // Read the stack at request time: outgoing entries can outlive a navigation change.
+            val destination = appNavigator.current as? Detail
+            detailViewModels[destination]?.getFullUrl()
+        }
+        onDispose { onWebUriProviderChanged(null) }
+    }
 
     val libraries by produceLibraries(R.raw.aboutlibraries)
 
@@ -168,8 +201,15 @@ private fun MainNavDisplay(modifier: Modifier = Modifier) {
             entry<AppNavigator.Search> {
                 SearchPage()
             }
-            entry<Detail> {
-                DetailPage(it.type, it.uuid)
+            entry<Detail> { destination ->
+                val viewModel = hiltViewModel<DetailViewModel, DetailViewModel.Factory> {
+                    it.create(destination.type, destination.uuid)
+                }
+                DisposableEffect(destination, viewModel) {
+                    detailViewModels[destination] = viewModel
+                    onDispose { detailViewModels.remove(destination, viewModel) }
+                }
+                DetailPage(destination.type, destination.uuid, viewModel = viewModel)
             }
             entry<License>(metadata = sharedXAxisTransitionMetadata) {
                 LibrariesContainer(libraries)
