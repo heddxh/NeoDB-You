@@ -16,11 +16,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entryProvider
@@ -70,19 +73,14 @@ class MainActivity : ComponentActivity() {
 
     @Inject @AppScope lateinit var appScope: CoroutineScope
 
-    private var webUriProvider: (() -> Uri?)? = null
+    private var currentWebUri: Uri? = null
 
     override fun onProvideAssistContent(outContent: AssistContent) {
         super.onProvideAssistContent(outContent)
 
-        // Reparse the browser URL so query/fragment delimiters in an encoded path are recognized.
-        val uri = webUriProvider?.invoke()?.let { Uri.parse(it.toString()) }
-        outContent.webUri = uri
-            ?.takeIf { it.scheme == "https" && !it.host.isNullOrBlank() && it.userInfo == null }
-            ?.buildUpon()
-            ?.clearQuery()
-            ?.fragment(null)
-            ?.build()
+        outContent.webUri = currentWebUri?.let {
+            Uri.parse(it.toString()).buildUpon().clearQuery().fragment(null).build()
+        }
     }
 
     @OptIn(ExperimentalSharedTransitionApi::class)
@@ -129,7 +127,7 @@ class MainActivity : ComponentActivity() {
                             // This root surface is to make all transition have proper background.
                             // Or when transition between screens with dark mode, user will see white background.
                             Surface {
-                                MainNavDisplay(onWebUriProviderChanged = { webUriProvider = it })
+                                MainNavDisplay(onWebUriChanged = { currentWebUri = it })
                             }
                         }
                     }
@@ -141,20 +139,20 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun MainNavDisplay(
-    onWebUriProviderChanged: ((() -> Uri?)?) -> Unit,
+    onWebUriChanged: (Uri?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val appNavigator = LocalNavigator.current
     val backStack = appNavigator.backStack
-    val detailViewModels = remember { mutableMapOf<Detail, DetailViewModel>() }
+    val detailViewModels = remember { mutableStateMapOf<Detail, DetailViewModel>() }
+    val currentDetailViewModel = detailViewModels[appNavigator.current]
+    val detailState = currentDetailViewModel?.uiState?.collectAsStateWithLifecycle()?.value
 
-    DisposableEffect(appNavigator) {
-        onWebUriProviderChanged {
-            // Read the stack at request time: outgoing entries can outlive a navigation change.
-            val destination = appNavigator.current as? Detail
-            detailViewModels[destination]?.getFullUrl()
-        }
-        onDispose { onWebUriProviderChanged(null) }
+    SideEffect {
+        onWebUriChanged(if (detailState?.detail != null) currentDetailViewModel.getFullUrl() else null)
+    }
+    DisposableEffect(Unit) {
+        onDispose { onWebUriChanged(null) }
     }
 
     val libraries by produceLibraries(R.raw.aboutlibraries)
