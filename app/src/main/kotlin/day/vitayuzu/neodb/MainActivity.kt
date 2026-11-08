@@ -16,10 +16,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -78,9 +78,11 @@ class MainActivity : ComponentActivity() {
     override fun onProvideAssistContent(outContent: AssistContent) {
         super.onProvideAssistContent(outContent)
 
-        outContent.webUri = currentWebUri?.let {
-            Uri.parse(it.toString()).buildUpon().clearQuery().fragment(null).build()
-        }
+        outContent.webUri = currentWebUri
+            ?.buildUpon()
+            ?.clearQuery()
+            ?.fragment(null)
+            ?.build()
     }
 
     @OptIn(ExperimentalSharedTransitionApi::class)
@@ -138,20 +140,20 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun MainNavDisplay(
-    onWebUriChanged: (Uri?) -> Unit,
-    modifier: Modifier = Modifier,
-) {
+private fun MainNavDisplay(onWebUriChanged: (Uri?) -> Unit, modifier: Modifier = Modifier) {
     val appNavigator = LocalNavigator.current
     val backStack = appNavigator.backStack
-    val detailViewModels = remember { mutableStateMapOf<Detail, DetailViewModel>() }
-    val currentDetailViewModel = detailViewModels[appNavigator.current]
-    val detailState = currentDetailViewModel?.uiState?.collectAsStateWithLifecycle()?.value
 
-    SideEffect {
-        onWebUriChanged(if (detailState?.detail != null) currentDetailViewModel.getFullUrl() else null)
+    var currentDetailViewModel by remember { mutableStateOf<DetailViewModel?>(null) }
+    currentDetailViewModel?.uiState?.collectAsStateWithLifecycle()?.value
+
+    val webUri = currentDetailViewModel?.let { viewModel ->
+        viewModel.uiState.collectAsStateWithLifecycle().value.detail?.let {
+            viewModel.getFullUrl()
+        }
     }
-    DisposableEffect(Unit) {
+    DisposableEffect(webUri) {
+        onWebUriChanged(webUri)
         onDispose { onWebUriChanged(null) }
     }
 
@@ -204,8 +206,8 @@ private fun MainNavDisplay(
                     it.create(destination.type, destination.uuid)
                 }
                 DisposableEffect(destination, viewModel) {
-                    detailViewModels[destination] = viewModel
-                    onDispose { detailViewModels.remove(destination, viewModel) }
+                    currentDetailViewModel = viewModel
+                    onDispose { currentDetailViewModel = null }
                 }
                 DetailPage(destination.type, destination.uuid, viewModel = viewModel)
             }
