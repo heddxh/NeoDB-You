@@ -145,7 +145,6 @@ private fun MainNavDisplay(onWebUriChanged: (Uri?) -> Unit, modifier: Modifier =
     val backStack = appNavigator.backStack
 
     var currentDetailViewModel by remember { mutableStateOf<DetailViewModel?>(null) }
-    currentDetailViewModel?.uiState?.collectAsStateWithLifecycle()?.value
 
     val webUri = currentDetailViewModel?.let { viewModel ->
         viewModel.uiState.collectAsStateWithLifecycle().value.detail?.let {
