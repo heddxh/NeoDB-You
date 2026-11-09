@@ -172,9 +172,13 @@ fun PullRibbon(
                 modifier = Modifier
                     .padding(bottom = 8.dp)
                     .size(40.dp)
-                    .graphicsLayer(
-                        compositingStrategy = CompositingStrategy.Offscreen,
-                    ).drawWithContent {
+                    .graphicsLayer {
+                        compositingStrategy = CompositingStrategy.Offscreen
+                        // Match the arrow's 12-unit span to the share icon's 19-unit span.
+                        val scale = lerp(1f, 12f / 19f, longPullProgress)
+                        scaleX = scale
+                        scaleY = scale
+                    }.drawWithContent {
                         drawContent()
                         drawRect(
                             color = iconActiveColor,
