@@ -8,19 +8,22 @@ Coil 3 / Coroutines & Flow / DataStore。单模块项目（只有 `:app`，无�
 
 ## 构建与验证
 
+构建、SDK 管理、设备交互、Compose 预览和 Android 文档查询，加载官方
+skill：`.agents/skills/android-cli/SKILL.md`。这里只补充项目特有事项。
+
 简单更改或 UI 迭代不需要构建验证；大型更改和重构需要构建确认正确性。
 
-```bash
-./gradlew :app:compileDebugKotlin  # 只编译 Kotlin，最快的正确性检查
-./gradlew assembleDebug            # Debug 构建（applicationId 后缀 .debug，可与正式版共存）
-./gradlew assembleFastRelease      # Release 但跳过 R8/资源压缩/lint，用于快速验证
-./gradlew assembleRelease          # 完整 Release（CI 使用；无 keystore.properties 时产出未签名 APK）
-./gradlew lint                     # Android Lint
-```
-
+- Debug applicationId 后缀为 `.debug`，可与正式版共存；Release 无 `keystore.properties` 时产出
+  未签名 APK。
 - 项目**没有任何测试**（无 `src/test`、`src/androidTest`），不要找测试命令。
 - Ktlint **未接入 Gradle**：格式规则全在 `.editorconfig`（含 compose-rules 配置），`./gradlew lint`
   不检查格式。
+
+## orb 环境
+
+- 初始化保存在 Amp 项目 `yuzu/NeoDB-You` 的 Pre-setup Script，不另设 `.agents/setup`。
+- 查看云端初始化脚本：`amp projects get yuzu/NeoDB-You --json | jq -r '.preSetupScript'`。
+- 本机保留现有 `local.properties` 和签名配置；截图、预览和报告放在 `.amp/in/artifacts/`。
 
 ## 必须遵守的约定
 
