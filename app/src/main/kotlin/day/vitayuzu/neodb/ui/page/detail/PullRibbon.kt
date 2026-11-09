@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.GenericShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -33,15 +31,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.Path
+import androidx.compose.ui.graphics.vector.PathData
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import kotlin.math.roundToInt
 
@@ -74,12 +80,6 @@ fun PullRibbon(
         label = "Pull ribbon offset",
     )
     val isAtMax = dragOffset >= maxPullDistance
-
-    val arrowRotated by animateFloatAsState(
-        targetValue = dragOffset / maxPullDistance * 180f,
-        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
-        label = "Pull ribbon arrow rotation",
-    )
 
     var longPullTriggered by remember { mutableStateOf(false) }
     val currentOnLongPull by rememberUpdatedState(onLongPull)
@@ -131,23 +131,60 @@ fun PullRibbon(
                 .compositeOver(MaterialTheme.colorScheme.secondaryContainer)
 
             Icon(
-                Icons.Default.KeyboardArrowDown,
+                painter = rememberVectorPainter(
+                    defaultWidth = 24.dp,
+                    defaultHeight = 24.dp,
+                    viewportWidth = 24f,
+                    viewportHeight = 24f,
+                    autoMirror = false,
+                ) { _, _ ->
+                    // Morph the chevron into the links between the three share nodes.
+                    Path(
+                        pathData = PathData {
+                            moveTo(lerp(7f, 17f, longPullProgress), lerp(10f, 5f, longPullProgress))
+                            lineTo(lerp(12f, 5f, longPullProgress), lerp(15f, 12f, longPullProgress))
+                            lineTo(17f, lerp(10f, 19f, longPullProgress))
+                        },
+                        stroke = SolidColor(Color.Black),
+                        strokeLineWidth = 2f,
+                        strokeLineCap = StrokeCap.Round,
+                        strokeLineJoin = StrokeJoin.Round,
+                    )
+                    Path(
+                        pathData = PathData {
+                            for ([x, y] in listOf(
+                                lerp(7f, 17f, longPullProgress) to lerp(10f, 5f, longPullProgress),
+                                lerp(12f, 5f, longPullProgress) to lerp(15f, 12f, longPullProgress),
+                                17f to lerp(10f, 19f, longPullProgress),
+                            )) {
+                                moveTo(x + 2.5f, y)
+                                arcToRelative(2.5f, 2.5f, 0f, true, true, -5f, 0f)
+                                arcToRelative(2.5f, 2.5f, 0f, true, true, 5f, 0f)
+                                close()
+                            }
+                        },
+                        fill = SolidColor(Color.Black),
+                        fillAlpha = longPullProgress,
+                    )
+                },
                 contentDescription = null,
                 tint = tint,
                 modifier = Modifier
                     .padding(bottom = 8.dp)
                     .size(40.dp)
-                    .graphicsLayer(
-                        compositingStrategy = CompositingStrategy.Offscreen,
-                    ).drawWithContent {
+                    .graphicsLayer {
+                        compositingStrategy = CompositingStrategy.Offscreen
+                        // Match the arrow's 12-unit span to the share icon's 19-unit span.
+                        val scale = lerp(1f, 12f / 19f, longPullProgress)
+                        scaleX = scale
+                        scaleY = scale
+                    }.drawWithContent {
                         drawContent()
                         drawRect(
                             color = iconActiveColor,
                             size = size.copy(width = size.width * longPullProgress),
                             blendMode = BlendMode.SrcAtop,
                         )
-                    }.graphicsLayer {
-                        rotationZ = arrowRotated
                     },
             )
         }
