@@ -1,0 +1,178 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="432dp"
+            android:height="432dp"
+            android:viewportWidth="108"
+            android:viewportHeight="108">
+            <group
+                android:translateX="29"
+                android:translateY="29">
+                <group
+                    android:name="green"
+                    android:translateX="-10"
+                    android:translateY="-10">
+                    <path
+                        android:name="green_path"
+                        android:fillAlpha="0"
+                        android:fillColor="#C0D9B4"
+                        android:pathData="M0 9C0 3 2.99296 0 8.97887 0H15.9624C18.6229 0 19.9531 1.33333 19.9531 4V20C19.9531 22.6667 18.6229 24 15.9624 24H3.99061C1.3302 24 0 22.6667 0 20V9Z" />
+                </group>
+                <group
+                    android:name="blue"
+                    android:translateX="10"
+                    android:translateY="-10">
+                    <path
+                        android:name="blue_path"
+                        android:fillAlpha="0"
+                        android:fillColor="#8DCAFF"
+                        android:pathData="M28.9319 0H40.9038C46.8897 0 49.8826 3 49.8826 9V32C49.8826 34 48.5 34 46.8897 32L25.939 5C23.2786 1.66667 24.2762 0 28.9319 0Z" />
+                </group>
+                <group
+                    android:name="ink"
+                    android:translateX="-10"
+                    android:translateY="10">
+                    <path
+                        android:name="ink_path"
+                        android:fillAlpha="0"
+                        android:fillColor="#3F5B7F"
+                        android:pathData="M3.99061 29H15.9624C18.6229 29 19.9531 30.3333 19.9531 33V46C19.9531 48.6667 18.6229 50 15.9624 50H8.97887C2.99296 50 0 47 0 41V33C0 30.3333 1.3302 29 3.99061 29Z" />
+                </group>
+                <group
+                    android:name="orange"
+                    android:translateX="10"
+                    android:translateY="10">
+                    <path
+                        android:name="orange_path"
+                        android:fillAlpha="0"
+                        android:fillColor="#FEA36D"
+                        android:pathData="M28.9319 18L47.8873 42C51 46 50 50 42.8991 50H28.9319C26.2715 50 24.9413 48.6667 24.9413 46V20C24.9413 17 26.2715 15.3333 28.9319 18Z" />
+                </group>
+            </group>
+        </vector>
+    </aapt:attr>
+
+    <target android:name="green">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="440"
+                android:interpolator="@anim/splash_arrive">
+                <propertyValuesHolder
+                    android:propertyName="translateX"
+                    android:valueFrom="-10"
+                    android:valueTo="0"
+                    android:valueType="floatType" />
+                <propertyValuesHolder
+                    android:propertyName="translateY"
+                    android:valueFrom="-10"
+                    android:valueTo="0"
+                    android:valueType="floatType" />
+            </objectAnimator>
+        </aapt:attr>
+    </target>
+    <target android:name="ink">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="440"
+                android:startOffset="60"
+                android:interpolator="@anim/splash_arrive">
+                <propertyValuesHolder
+                    android:propertyName="translateX"
+                    android:valueFrom="-10"
+                    android:valueTo="0"
+                    android:valueType="floatType" />
+                <propertyValuesHolder
+                    android:propertyName="translateY"
+                    android:valueFrom="10"
+                    android:valueTo="0"
+                    android:valueType="floatType" />
+            </objectAnimator>
+        </aapt:attr>
+    </target>
+    <target android:name="blue">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="440"
+                android:startOffset="120"
+                android:interpolator="@anim/splash_arrive">
+                <propertyValuesHolder
+                    android:propertyName="translateX"
+                    android:valueFrom="10"
+                    android:valueTo="0"
+                    android:valueType="floatType" />
+                <propertyValuesHolder
+                    android:propertyName="translateY"
+                    android:valueFrom="-10"
+                    android:valueTo="0"
+                    android:valueType="floatType" />
+            </objectAnimator>
+        </aapt:attr>
+    </target>
+    <target android:name="orange">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="440"
+                android:startOffset="180"
+                android:interpolator="@anim/splash_arrive">
+                <propertyValuesHolder
+                    android:propertyName="translateX"
+                    android:valueFrom="10"
+                    android:valueTo="0"
+                    android:valueType="floatType" />
+                <propertyValuesHolder
+                    android:propertyName="translateY"
+                    android:valueFrom="10"
+                    android:valueTo="0"
+                    android:valueType="floatType" />
+            </objectAnimator>
+        </aapt:attr>
+    </target>
+    <target android:name="green_path">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="440"
+                android:interpolator="@anim/splash_arrive"
+                android:propertyName="fillAlpha"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:valueType="floatType" />
+        </aapt:attr>
+    </target>
+    <target android:name="ink_path">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="440"
+                android:startOffset="60"
+                android:interpolator="@anim/splash_arrive"
+                android:propertyName="fillAlpha"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:valueType="floatType" />
+        </aapt:attr>
+    </target>
+    <target android:name="blue_path">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="440"
+                android:startOffset="120"
+                android:interpolator="@anim/splash_arrive"
+                android:propertyName="fillAlpha"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:valueType="floatType" />
+        </aapt:attr>
+    </target>
+    <target android:name="orange_path">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="440"
+                android:startOffset="180"
+                android:interpolator="@anim/splash_arrive"
+                android:propertyName="fillAlpha"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:valueType="floatType" />
+        </aapt:attr>
+    </target>
+</animated-vector>
