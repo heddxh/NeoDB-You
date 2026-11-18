@@ -32,6 +32,6 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v7
         with:
-          name: NeoDB-You-pr-${{ github.event.number }}-debug
           path: app/build/outputs/apk/debug/*.apk
+          archive: false
           if-no-files-found: error
