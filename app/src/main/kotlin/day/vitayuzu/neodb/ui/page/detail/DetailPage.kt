@@ -1,5 +1,6 @@
 package day.vitayuzu.neodb.ui.page.detail
 
+import android.content.Intent
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -192,7 +193,17 @@ fun DetailPage(
                         customTabsIntent.launchUrl(context, url)
                     }
                 },
-                onLongPull = { },
+                onLongPull = {
+                    val url = viewModel.getFullUrl()
+                    if (url != null) {
+                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                            setType("text/plain")
+                            putExtra(Intent.EXTRA_TEXT, url.toString())
+                            putExtra(Intent.EXTRA_TITLE, detail.title)
+                        }
+                        context.startActivity(Intent.createChooser(shareIntent, null))
+                    }
+                },
                 modifier = Modifier.padding(end = 20.dp),
             ) {
                 // Content
