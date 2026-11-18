@@ -13,6 +13,8 @@ skill：`.agents/skills/android-cli/SKILL.md`。这里只补充项目特有事�
 
 简单更改或 UI 迭代不需要构建验证；大型更改和重构需要构建确认正确性。
 
+- 设备验证前在本机 runner 运行 `adb devices -l`。有可用真机就必须用真机，除非用户明确指定模拟器；
+- 在 Orb 中默认不执行设备验证，如果明确要求，仅当本地runner存在时尝试。
 - Debug applicationId 后缀为 `.debug`，可与正式版共存；Release 无 `keystore.properties` 时产出
   未签名 APK。
 - 项目**没有任何测试**（无 `src/test`、`src/androidTest`），不要找测试命令。
