@@ -6,5 +6,7 @@
     <style name="Theme.NeoDBYou.Splashscreen" parent="Theme.SplashScreen">
         <item name="postSplashScreenTheme">@style/Theme.NeoDBYou</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
+        <!-- Animation metadata for Android 12, not a minimum splash screen display time. -->
+        <item name="windowSplashScreenAnimationDuration">620</item>
     </style>
 </resources>
