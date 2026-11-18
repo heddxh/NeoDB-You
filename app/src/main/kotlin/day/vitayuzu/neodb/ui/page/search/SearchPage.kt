@@ -31,6 +31,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
@@ -43,6 +44,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.component.EntryMarkCard
 import day.vitayuzu.neodb.ui.component.EntryTypeFilterChipsRow
@@ -53,14 +55,18 @@ import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.sharedBoundsTransition
 import kotlinx.collections.immutable.toImmutableSet
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filterNot
 
-@OptIn(FlowPreview::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val textFieldState = rememberTextFieldState()
+
+    LaunchedEffect(textFieldState, viewModel) {
+        snapshotFlow { textFieldState.text.toString() }
+            .collect { viewModel.onQueryChanged(it) }
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize().sharedBoundsTransition(
             key = SearchPageKey,
@@ -68,18 +74,8 @@ fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltV
             exit = scaleOut() + fadeOut(),
         ),
     ) { padding ->
-        val textFieldState = rememberTextFieldState()
-
-        // Perform search request
-        LaunchedEffect(textFieldState.text) {
-            snapshotFlow { textFieldState.text }
-                .debounce(500)
-                .filterNot { it.isEmpty() }
-                .collectLatest { viewModel.onSearch(it.toString()) }
-        }
-
         Box(Modifier.fillMaxSize()) {
-            if (viewModel.isSearching) {
+            if (uiState.isSearching) {
                 LoadingIndicator(
                     Modifier.align(Alignment.Center),
                 )
@@ -88,7 +84,7 @@ fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltV
                 windowInsetsPadding = padding,
                 textFieldState = textFieldState,
                 instanceName = viewModel.instanceName,
-                result = viewModel.searchResult.toList(),
+                result = uiState.results,
             )
         }
     }

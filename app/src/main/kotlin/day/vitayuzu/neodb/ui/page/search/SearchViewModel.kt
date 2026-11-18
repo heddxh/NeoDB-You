@@ -1,9 +1,5 @@
 package day.vitayuzu.neodb.ui.page.search
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,47 +7,62 @@ import day.vitayuzu.neodb.data.AuthRepository
 import day.vitayuzu.neodb.data.NeoDBRepository
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.util.BASE_URL
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val repository: NeoDBRepository,
     authRepository: AuthRepository,
 ) : ViewModel() {
-    val searchResult = mutableStateListOf<Entry>()
-    private val uuids = mutableSetOf<String>()
+    val uiState: StateFlow<SearchUiState>
+        field = MutableStateFlow(SearchUiState())
 
-    var isSearching by mutableStateOf(false)
-    private var searchJob: Job? = null
+    private val query = MutableStateFlow("")
 
     val instanceName = authRepository.accountStatus.value.instanceUrl
         .ifEmpty { BASE_URL }
 
-    fun onSearch(query: String) {
-        searchJob?.cancel()
-        searchResult.clear()
-        uuids.clear()
-        isSearching = true
-        searchJob = repository
-            .searchWithKeyword(query)
-            .map { result ->
-                result.data.mapNotNull {
-                    // Search result may contain duplicated entries among different pages
-                    if (uuids.add(it.uuid)) {
-                        Entry(it)
-                    } else {
-                        null
-                    }
+    init {
+        viewModelScope.launch {
+            query
+                .debounce(500)
+                .filterNot { it.isEmpty() }
+                .distinctUntilChanged()
+                .collectLatest { search(it) }
+        }
+    }
+
+    fun onQueryChanged(query: String) {
+        this.query.value = query
+    }
+
+    private suspend fun search(query: String) {
+        val seenUuids = mutableSetOf<String>()
+        uiState.value = SearchUiState(isSearching = true)
+        try {
+            repository.searchWithKeyword(query).collect { page ->
+                val entries = page.data.mapNotNull { entry ->
+                    if (seenUuids.add(entry.uuid)) Entry(entry) else null
                 }
-            }.onEach {
-                searchResult.addAll(it)
-            }.onCompletion {
-                isSearching = false
-            }.launchIn(viewModelScope)
+                uiState.update { it.copy(results = it.results + entries) }
+            }
+        } finally {
+            uiState.update { it.copy(isSearching = false) }
+        }
     }
 }
+
+data class SearchUiState(
+    val results: List<Entry> = emptyList(),
+    val isSearching: Boolean = false,
+)
