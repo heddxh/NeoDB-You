@@ -26,6 +26,8 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,6 +56,7 @@ import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.sharedBoundsTransition
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -63,6 +66,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val scrollState = rememberScrollState()
+    val pullToRefreshState = rememberPullToRefreshState()
 
     Scaffold(
         modifier = modifier,
@@ -70,8 +74,16 @@ fun HomeScreen(
         floatingActionButton = { SharedSearchFab() },
     ) { padding ->
         PullToRefreshBox(
+            state = pullToRefreshState,
             isRefreshing = uiState.isLoading,
             onRefresh = { viewModel.updateTrending() },
+            indicator = {
+                PullToRefreshDefaults.LoadingIndicator(
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    state = pullToRefreshState,
+                    isRefreshing = uiState.isLoading,
+                )
+            },
             modifier = Modifier.padding(padding).consumeWindowInsets(padding).fillMaxSize(),
         ) {
             // PullToRefresh relies on child scroll event to detect scroll gestures,

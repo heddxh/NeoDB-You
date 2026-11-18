@@ -81,7 +81,7 @@ fun SearchPage(modifier: Modifier = Modifier, viewModel: SearchViewModel = hiltV
         Box(Modifier.fillMaxSize()) {
             if (viewModel.isSearching) {
                 LoadingIndicator(
-                    Modifier.align(Alignment.Center).size(128.dp),
+                    Modifier.align(Alignment.Center),
                 )
             }
             SearchPageContent(
