@@ -50,7 +50,6 @@ fun LibraryPage(
     Scaffold(
         modifier = modifier,
         bottomBar = bottomBar,
-        floatingActionButton = { SharedSearchFab() },
     ) {
         PullToRefreshBox(
             isRefreshing = uiState.isLoading,

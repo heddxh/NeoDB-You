@@ -85,7 +85,6 @@ class MainActivity : ComponentActivity() {
             ?.build()
     }
 
-    @OptIn(ExperimentalSharedTransitionApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen() // change back to `postSplashScreenTheme`
         super.onCreate(savedInstanceState)

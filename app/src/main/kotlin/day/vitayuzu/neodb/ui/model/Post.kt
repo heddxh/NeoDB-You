@@ -1,5 +1,6 @@
 package day.vitayuzu.neodb.ui.model
 
+import androidx.core.text.HtmlCompat
 import day.vitayuzu.neodb.data.schema.CommentRelatedItem
 import day.vitayuzu.neodb.data.schema.PostSchema
 import day.vitayuzu.neodb.data.schema.RatingRelatedItem
@@ -22,7 +23,12 @@ data class Post(
         },
         date = Instant.parse(schema.createdAt), // TODO: find a way to display edit date
         content = schema.extNeoDB.relatedWith.find { it is CommentRelatedItem }?.let {
-            (it as CommentRelatedItem).content
+            HtmlCompat
+                .fromHtml(
+                    (it as CommentRelatedItem).content,
+                    HtmlCompat.FROM_HTML_MODE_COMPACT,
+                ).toString()
+                .trim()
         } ?: "",
     )
 }

@@ -1,13 +1,15 @@
 package day.vitayuzu.neodb.ui.component
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -16,8 +18,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,6 +31,7 @@ import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.model.Entry
 import day.vitayuzu.neodb.ui.model.Mark
 import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
+import day.vitayuzu.neodb.ui.theme.kindColorPair
 import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.sharedBoundsTransition
@@ -35,10 +41,17 @@ fun EntryMarkCard(
     entry: Entry,
     mark: Mark?,
     modifier: Modifier = Modifier,
+    trailingAction: (@Composable () -> Unit)? = null,
 ) {
     val appNavigator = LocalNavigator.current
+    val kindColors = MaterialTheme.colorScheme.kindColorPair(entry.category)
+    val coverShape = MaterialTheme.shapes.medium
+
     Card(
-        modifier = modifier.sharedBoundsTransition(SharedEntryCardKey(entry.uuid)),
+        modifier = modifier
+            .fillMaxWidth()
+            .sharedBoundsTransition(SharedEntryCardKey(entry.uuid)),
+        shape = MaterialTheme.shapes.large,
         onClick = { appNavigator goto AppNavigator.Detail(entry.category, entry.uuid) },
         colors = CardDefaults.cardColors(
             contentColor = MaterialTheme.colorScheme.onSurface,
@@ -46,67 +59,94 @@ fun EntryMarkCard(
         ),
     ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(0.dp, Alignment.Start),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.height(160.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.Top,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
         ) {
             AsyncImage(
                 model = entry.coverUrl,
-                contentDescription = "Cover image of ${entry.title}",
+                contentDescription = entry.title,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.width(114.dp).padding(vertical = 4.dp),
-                alignment = Alignment.CenterStart,
+                alignment = Alignment.Center,
+                modifier = Modifier
+                    .width(92.dp)
+                    .height(130.dp)
+                    .clip(coverShape)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        shape = coverShape,
+                    ),
                 placeholder = painterResource(R.drawable.image_placeholder),
                 fallback = painterResource(R.drawable.image_placeholder),
                 error = painterResource(R.drawable.image_placeholder),
             )
-            Spacer(Modifier.width(8.dp))
             Column(
-                verticalArrangement = Arrangement.Top,
+                verticalArrangement = Arrangement.spacedBy(6.dp),
                 horizontalAlignment = Alignment.Start,
-                modifier = Modifier.fillMaxSize().padding(end = 8.dp).padding(vertical = 4.dp),
+                modifier = Modifier.weight(1f),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f),
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = kindColors.container,
+                        contentColor = kindColors.onContainer,
                     ) {
                         Text(
-                            text = entry.title,
-                            style = MaterialTheme.typography.titleSmall,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f),
+                            text = stringResource(entry.category.toR()),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        EntryTypeText(entry.category)
                     }
                     if (entry.rating != null) {
-                        Spacer(modifier = Modifier.width(4.dp))
                         Row(
-                            horizontalArrangement = Arrangement.End,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            StarIcon()
-                            Spacer(modifier = Modifier.width(4.dp))
+                            StarIcon(size = 14)
                             Text(
-                                entry.rating.toString(),
+                                text = formatScore(entry.rating),
                                 style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
+                    Spacer(modifier = Modifier.weight(1f))
+                    trailingAction?.invoke()
                 }
-                Spacer(modifier = Modifier.height(2.dp))
-                // Description
                 Text(
-                    text = entry.des,
-                    maxLines = 3,
+                    text = entry.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodySmall,
                 )
-                Spacer(modifier = Modifier.weight(1f))
-                // User mark card
-                if (mark != null) UserMarkCard(mark, compact = true, enableBorder = false)
+                if (entry.des.isNotBlank()) {
+                    Text(
+                        text = entry.des,
+                        maxLines = if (mark != null) 2 else 3,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (mark != null) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    UserMarkCard(
+                        mark = mark,
+                        compact = true,
+                        enableBorder = false,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
     }
@@ -118,7 +158,7 @@ data class SharedEntryCardKey(val uuid: String)
 @Composable
 private fun PreviewEntryMarkCard() {
     NeoDBYouTheme {
-        Surface {
+        Surface(modifier = Modifier.padding(12.dp)) {
             EntryMarkCard(
                 entry = Entry.TEST,
                 mark = Mark.TEST,
