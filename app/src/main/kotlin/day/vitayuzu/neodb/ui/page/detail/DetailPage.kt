@@ -105,7 +105,7 @@ import day.vitayuzu.neodb.ui.theme.NeoDBYouTheme
 import day.vitayuzu.neodb.ui.theme.kindColors
 import day.vitayuzu.neodb.util.EntryType
 import day.vitayuzu.neodb.util.sharedBoundsTransition
-import day.vitayuzu.neodb.util.toReadableString
+import day.vitayuzu.neodb.util.toLocalizedReadableString
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
@@ -319,7 +319,7 @@ private fun DetailContent(
                 date = it.date
                     .toLocalDateTime(TimeZone.currentSystemDefault())
                     .date
-                    .toReadableString(),
+                    .toLocalizedReadableString(),
                 modifier = Modifier.animateItem(),
             )
             HorizontalDivider(thickness = 0.2.dp)

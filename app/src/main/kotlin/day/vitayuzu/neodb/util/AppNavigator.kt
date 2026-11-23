@@ -1,23 +1,49 @@
 package day.vitayuzu.neodb.util
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingToolbarDefaults
+import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import day.vitayuzu.neodb.R
+import day.vitayuzu.neodb.ui.page.search.SearchPageKey
 import day.vitayuzu.neodb.ui.theme.MotionHorizontallyDirection
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
@@ -44,15 +70,88 @@ class AppNavigator(
     val animationDirection: MotionHorizontallyDirection
         get() = previous?.directionTo(current) ?: MotionHorizontallyDirection.Forward
 
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     val bottomBarContent = @Composable {
-        NavigationBar {
-            TopLevelDestinations.forEach { destination ->
-                NavigationBarItem(
-                    icon = { Icon(destination.icon, null) },
-                    label = { Text(stringResource(destination.name)) },
-                    selected = backStack.any { it == destination },
-                    onClick = { goto(destination) },
-                )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            HorizontalFloatingToolbar(
+                expanded = true,
+                colors = FloatingToolbarDefaults.standardFloatingToolbarColors(
+                    toolbarContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    toolbarContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+                floatingActionButton = {
+                    FloatingActionButton(
+                        onClick = { goto(Search) },
+                        shape = MaterialTheme.shapes.large,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.sharedBoundsTransition(
+                            key = SearchPageKey,
+                            enter = scaleIn(),
+                            exit = fadeOut() + scaleOut(),
+                        ),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = stringResource(R.string.cd_search),
+                        )
+                    }
+                },
+            ) {
+                TopLevelDestinations.forEach { destination ->
+                    val selected = backStack.any { it == destination }
+                    val label = stringResource(destination.name)
+                    Surface(
+                        onClick = { goto(destination) },
+                        shape = CircleShape,
+                        color = if (selected) {
+                            MaterialTheme.colorScheme.secondaryContainer
+                        } else {
+                            Color.Transparent
+                        },
+                        contentColor = if (selected) {
+                            MaterialTheme.colorScheme.onSecondaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        modifier = Modifier
+                            .heightIn(min = 48.dp)
+                            .animateContentSize(),
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.padding(
+                                horizontal = if (selected) 16.dp else 14.dp,
+                                vertical = 10.dp,
+                            ),
+                        ) {
+                            Icon(
+                                imageVector = destination.icon,
+                                contentDescription = label,
+                                modifier = Modifier.size(22.dp),
+                            )
+                            AnimatedVisibility(
+                                visible = selected,
+                                enter = fadeIn(),
+                                exit = fadeOut(),
+                            ) {
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }

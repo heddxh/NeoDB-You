@@ -36,7 +36,11 @@ kotlin {
 
 android {
     namespace = "day.vitayuzu.neodb"
-    compileSdk = 37
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 2
+        }
+    }
 
     defaultConfig {
         applicationId = android.namespace

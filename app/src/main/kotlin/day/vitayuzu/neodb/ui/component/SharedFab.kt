@@ -12,11 +12,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import day.vitayuzu.neodb.R
 import day.vitayuzu.neodb.ui.page.search.SearchPageKey
 import day.vitayuzu.neodb.util.AppNavigator
 import day.vitayuzu.neodb.util.LocalNavigator
 import day.vitayuzu.neodb.util.sharedBoundsTransition
 import day.vitayuzu.neodb.util.sharedElementTransition
+
+val FloatingDockBottomPadding = 106.dp
 
 @Composable
 fun SharedFab(
@@ -50,7 +55,7 @@ fun SharedSearchFab(modifier: Modifier = Modifier) {
     ) {
         Icon(
             imageVector = Icons.Default.Search,
-            contentDescription = "Perform search",
+            contentDescription = stringResource(R.string.cd_search),
         )
     }
 }

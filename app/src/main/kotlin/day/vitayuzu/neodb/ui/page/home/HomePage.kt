@@ -71,7 +71,6 @@ fun HomeScreen(
     Scaffold(
         modifier = modifier,
         bottomBar = sharedBottomBar,
-        floatingActionButton = { SharedSearchFab() },
     ) { padding ->
         PullToRefreshBox(
             state = pullToRefreshState,

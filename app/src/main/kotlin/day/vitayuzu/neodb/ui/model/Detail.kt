@@ -3,6 +3,7 @@ package day.vitayuzu.neodb.ui.model
 import day.vitayuzu.neodb.data.schema.detail.AlbumSchema
 import day.vitayuzu.neodb.data.schema.detail.DetailSchema
 import day.vitayuzu.neodb.data.schema.detail.EditionSchema
+import day.vitayuzu.neodb.data.schema.detail.ExternalResource
 import day.vitayuzu.neodb.data.schema.detail.GameSchema
 import day.vitayuzu.neodb.data.schema.detail.MovieSchema
 import day.vitayuzu.neodb.data.schema.detail.PerformanceProductionSchema
@@ -20,6 +21,11 @@ data class Detail(
     val rating: Float?,
     val info: String?,
     val des: String?,
+    val ratingCount: Int? = null,
+    val ratingDistribution: List<Int> = emptyList(),
+    val tags: List<String> = emptyList(),
+    val externalResources: List<ExternalResource> = emptyList(),
+    val infoItems: List<String> = emptyList(),
 )
 
 fun DetailSchema.toDetail(): Detail {
@@ -94,6 +100,8 @@ fun DetailSchema.toDetail(): Detail {
         }
     }
 
+    val cleanedInfoItems = infoParts.map { it.trim() }.filter { it.isNotBlank() }.distinct()
+
     return Detail(
         type = this.category,
         title = this.title,
@@ -101,6 +109,11 @@ fun DetailSchema.toDetail(): Detail {
         coverUrl = this.coverImageUrl,
         rating = this.rating,
         des = this.description,
-        info = infoParts.filter { it.isNotBlank() }.joinToString(separator = " / "),
+        info = cleanedInfoItems.joinToString(separator = " / ").ifBlank { null },
+        ratingCount = this.ratingCount,
+        ratingDistribution = this.ratingDistribution.orEmpty(),
+        tags = this.tags.orEmpty().filter { it.isNotBlank() },
+        externalResources = this.externalResources.orEmpty().filter { it.url.isNotBlank() },
+        infoItems = cleanedInfoItems,
     )
 }

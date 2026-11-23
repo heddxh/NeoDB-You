@@ -2,6 +2,7 @@ package day.vitayuzu.neodb.ui.model
 
 import day.vitayuzu.neodb.data.schema.MarkSchema
 import day.vitayuzu.neodb.util.ShelfType
+import day.vitayuzu.neodb.util.Visibility
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -13,6 +14,8 @@ import kotlin.time.Instant
  * @param date Mark date
  * @param rating Rating scores in 10 point system.
  * @param comment User comment
+ * @param tags User personal tags for this mark
+ * @param visibility Mark visibility setting
  */
 data class Mark(
     val entry: Entry,
@@ -20,6 +23,8 @@ data class Mark(
     val date: LocalDate,
     val rating: Int?,
     val comment: String?,
+    val tags: List<String> = emptyList(),
+    val visibility: Visibility = Visibility.Public,
 ) {
     constructor(scheme: MarkSchema, preferredLang: String) : this(
         entry = Entry(scheme.entrySchema),
@@ -31,6 +36,8 @@ data class Mark(
                 .date,
         rating = scheme.ratingGrade,
         comment = scheme.commentText,
+        tags = scheme.tags.orEmpty().filter { it.isNotBlank() },
+        visibility = Visibility.entries.getOrElse(scheme.visibility) { Visibility.Public },
     )
 
     val fullStars = rating?.div(2) ?: 0
@@ -45,6 +52,8 @@ data class Mark(
             rating = 7,
             comment =
                 "This is a test comment.\nThis is a test comment\nThis is a test comment\nThis is a test comment",
+            tags = listOf("sci-fi", "classic"),
+            visibility = Visibility.Public,
         )
     }
 }
